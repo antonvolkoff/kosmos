@@ -1,5 +1,6 @@
 import * as p5 from "p5";
 import { Atom, create, connect } from "./atom";
+import executor from "./executor";
 
 interface MousePosition {
   x: number;
@@ -20,6 +21,8 @@ let lines : Line[] = [];
 let mouseStack: MousePosition[] = [];
 let valueInput: p5.Element = undefined;
 let connectButton: p5.Element = undefined;
+let evalButton: p5.Element = undefined;
+let evalResult = "";
 
 const selectedAtom = (): Atom | undefined => {
   return atoms.find(atom => atom.selected);
@@ -145,6 +148,21 @@ function connectAtoms() {
   connect(selectedAtoms[1], selectedAtoms[0]);
 }
 
+function evalAtom() {
+  evalResult = executor(selectedAtom());
+}
+
+function drawResult(s: p5) {
+  s.push();
+
+  s.textSize(14);
+  s.stroke(0);
+  s.strokeWeight(0);
+  s.text(evalResult, s.width / 2, 20);
+
+  s.pop();
+}
+
 export default function(s: p5) {
   let points = [];
   let rPoints = [];
@@ -190,12 +208,17 @@ export default function(s: p5) {
     connectButton = s.createButton("Connect");
     connectButton.position(s.width - 200, 100);
     connectButton.mousePressed(connectAtoms);
+
+    connectButton = s.createButton("Eval");
+    connectButton.position(s.width - 200, 135);
+    connectButton.mousePressed(evalAtom);
   };
 
   s.draw = () => {
     s.image(bg, 0, 0, s.windowWidth, s.windowHeight);
     drawLines(s);
     drawAtoms(s);
+    drawResult(s);
     drawFPS();
   };
 
