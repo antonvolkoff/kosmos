@@ -1,5 +1,5 @@
 import * as p5 from "p5";
-import { Atom } from "./atom";
+import { Atom, create } from "./atom";
 
 interface MousePosition {
   x: number;
@@ -18,10 +18,30 @@ const ATOM_DIAMETER = 50;
 let atoms : Atom[] = [];
 let lines : Line[] = [];
 let mouseStack: MousePosition[] = [];
+let valueInput: p5.Element = undefined;
+
+const selectedAtom = (): Atom | undefined => {
+  console.log(atoms);
+  return atoms.find(atom => atom.selected);
+}
+
+const hasSelectedAtom = (): boolean => {
+  return (selectedAtom() == undefined) ? false : true;
+};
 
 function createAtom() {
   const position = mouseStack.pop();
-  atoms.push({ ...position, selected: false });
+  const atom = create(position.x, position.y);
+  atoms.push(atom);
+
+  if (hasSelectedAtom()) {
+    selectedAtom().selected = false;
+    valueInput.value('');
+  }
+
+  atom.selected = true;
+  valueInput.value(atom.value);
+  valueInput.elt.focus();
 };
 
 function createLine() {
@@ -44,13 +64,19 @@ function hasClickedOnAtom(mouse: MousePosition, atom: Atom) {
   );
 }
 
-function selectAtom() {
-  const position = mouseStack.pop();
-
+function selectAtom(mouse: MousePosition) {
   for (let i = 0; i < atoms.length; i++) {
     const atom = atoms[i];
-    if (hasClickedOnAtom(position, atom)) {
+
+    if (hasClickedOnAtom(mouse, atom)) {
       atom.selected = !atom.selected;
+      if (atom.selected) {
+        valueInput.value(atom.value);
+        valueInput.elt.focus();
+      } else {
+        valueInput.value('');
+      }
+
       return
     }
   }
@@ -70,6 +96,13 @@ function drawAtoms(s: p5) {
     }
 
     s.circle(atom.x, atom.y, ATOM_DIAMETER);
+
+    s.push();
+    s.fill(50);
+    s.strokeWeight(0);
+    s.textAlign(s.CENTER, s.CENTER);
+    s.text(atom.value, atom.x, atom.y);
+    s.pop();
   });
 
   s.pop();
@@ -91,6 +124,11 @@ function drawLines(s: p5) {
 function pushMousePosition(x: number, y: number) {
   mouseStack.push({ x: x, y: y });
 };
+
+function inputEvent() {
+  const atom = selectedAtom();
+  atom.value = this.value();
+}
 
 export default function(s: p5) {
   let points = [];
@@ -129,8 +167,11 @@ export default function(s: p5) {
   s.setup = () => {
     s.createCanvas(s.windowWidth, s.windowHeight);
     bg = drawBackground(s.createGraphics(s.windowWidth, s.windowHeight));
-  };
 
+    valueInput = s.createInput();
+    valueInput.position(s.width - 200, 65);
+    (valueInput as any).input(inputEvent);
+  };
 
   s.draw = () => {
     s.image(bg, 0, 0, s.windowWidth, s.windowHeight);
@@ -150,7 +191,6 @@ export default function(s: p5) {
   }
 
   s.mouseClicked = () => {
-    pushMousePosition(s.mouseX, s.mouseY);
-    selectAtom();
+    selectAtom({ x: s.mouseX, y: s.mouseY });
   }
 };
