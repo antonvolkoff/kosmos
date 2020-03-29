@@ -1,14 +1,9 @@
 import * as p5 from "p5";
+import { Atom } from "./atom";
 
 interface MousePosition {
   x: number;
   y: number;
-}
-
-interface Atom {
-  x: number;
-  y: number;
-  selected: boolean;
 }
 
 interface Line {
