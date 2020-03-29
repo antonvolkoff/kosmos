@@ -4,12 +4,17 @@ interface Atom {
   y: number;
   selected: boolean;
   value: string;
+  adjacentAtoms: Atom[];
 };
 
 let id = 0;
 
 const create = (x: number, y: number): Atom => {
-  return { id: id++, x: x, y: y, selected: false, value: '' };
+  return { id: id++, x: x, y: y, selected: false, value: '', adjacentAtoms: [] };
 };
 
-export { Atom, create }
+const connect = (parent: Atom, child: Atom) => {
+  parent.adjacentAtoms.push(child);
+};
+
+export { Atom, create, connect }
