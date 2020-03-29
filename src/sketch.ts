@@ -8,6 +8,7 @@ interface MousePosition {
 interface Atom {
   x: number;
   y: number;
+  selected: boolean;
 }
 
 interface Line {
@@ -25,27 +26,54 @@ let mouseStack: MousePosition[] = [];
 
 function createAtom() {
   const position = mouseStack.pop();
-  atoms.push(position);
-
-  console.log(mouseStack);
+  atoms.push({ ...position, selected: false });
 };
 
 function createLine() {
   const end = mouseStack.pop();
   const start = mouseStack.pop();
   lines.push({ x1: start.x, y1: start.y, x2: end.x, y2: end.y });
+}
 
-  console.log(mouseStack);
+function hasClickedOnAtom(mouse: MousePosition, atom: Atom) {
+  const leftBoundary = atom.x - (ATOM_DIAMETER / 2);
+  const rightBoundary = atom.x + (ATOM_DIAMETER / 2);
+  const topBoundary = atom.y + (ATOM_DIAMETER / 2);
+  const bottomBoundary = atom.y - (ATOM_DIAMETER / 2);
+
+  return (
+    mouse.x > leftBoundary &&
+    mouse.x < rightBoundary &&
+    mouse.y > bottomBoundary &&
+    mouse.y < topBoundary
+  );
+}
+
+function selectAtom() {
+  const position = mouseStack.pop();
+
+  for (let i = 0; i < atoms.length; i++) {
+    const atom = atoms[i];
+    if (hasClickedOnAtom(position, atom)) {
+      atom.selected = !atom.selected;
+      return
+    }
+  }
 }
 
 function drawAtoms(s: p5) {
   s.push();
 
-  s.fill(255);
   s.strokeWeight(5);
   s.stroke(190);
 
   atoms.forEach(atom => {
+    if (atom.selected) {
+      s.fill(255, 255, 0);
+    } else {
+      s.fill(255);
+    }
+
     s.circle(atom.x, atom.y, ATOM_DIAMETER);
   });
 
@@ -126,13 +154,8 @@ export default function(s: p5) {
     createAtom();
   }
 
-  s.mousePressed = () => {
+  s.mouseClicked = () => {
     pushMousePosition(s.mouseX, s.mouseY);
-  }
-
-  s.mouseReleased = (event) => {
-    console.log(event);
-    pushMousePosition(s.mouseX, s.mouseY);
-    createLine();
+    selectAtom();
   }
 };
