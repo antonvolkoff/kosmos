@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Kosmos</title>
+    <!-- https://electronjs.org/docs/tutorial/security#csp-meta-tag -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+
+    <!-- <script src='./recognizer.js'></script>
+    <script src='./sketch.js'></script>
+    <script>
+      var p5 = require('p5');
+    </script> -->
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        -webkit-app-region: drag;
+        -webkit-user-select: none;
+      }
+
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+
+    <script>
+      require("./dist/app.js");
+    </script>
+  </body>
+</html>
