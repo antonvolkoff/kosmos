@@ -235,6 +235,11 @@ duplexer3@^0.1.4:
   resolved "https://registry.yarnpkg.com/duplexer3/-/duplexer3-0.1.4.tgz#ee01dd1cac0ed3cbc7fdbea37dc0a8f1ce002ce2"
   integrity sha1-7gHdHKwO08vH/b6jfcCo8c4ALOI=
 
+ecsy@0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/ecsy/-/ecsy-0.2.3.tgz#82bc7c0c2235a2afe62317048eea9c91c96858ee"
+  integrity sha512-OAQap3oGQhONBD6IaM0VWXLk8IwEkPu5zUWrW8oSNMfh3jzN4qzZJlDv24QlLgWnK6cYl3hUCn6yOdxRv2Ua3w==
+
 electron@8.2.0:
   version "8.2.0"
   resolved "https://registry.yarnpkg.com/electron/-/electron-8.2.0.tgz#f3e3de23a6178b5ad7baa70f4814d6332a3212c2"

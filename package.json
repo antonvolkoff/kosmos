@@ -15,6 +15,7 @@
     "typescript": "3.8.3"
   },
   "dependencies": {
+    "ecsy": "0.2.3",
     "p5": "1.0.0"
   }
 }
