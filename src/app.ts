@@ -18,7 +18,6 @@ const ATOM_DIAMETER = 50;
 
 let atoms : Atom[] = [];
 let lines : Line[] = [];
-let mouseStack: MousePosition[] = [];
 let valueInput: p5.Element = undefined;
 let connectButton: p5.Element = undefined;
 let evalButton: p5.Element = undefined;
@@ -33,9 +32,8 @@ const hasSelectedAtom = (): boolean => {
   return (selectedAtom() == undefined) ? false : true;
 };
 
-function createAtom() {
-  const position = mouseStack.pop();
-  const atom = create(position.x, position.y);
+function createAtom(mouse: MousePosition) {
+  const atom = create(mouse.x, mouse.y);
   atoms.push(atom);
 
   if (hasSelectedAtom()) {
@@ -118,10 +116,6 @@ function drawLines(s: p5) {
 
   s.pop();
 }
-
-function pushMousePosition(x: number, y: number) {
-  mouseStack.push({ x: x, y: y });
-};
 
 function inputEvent() {
   const atom = selectedAtom();
@@ -217,8 +211,7 @@ const handlers = {
   },
 
   doubleClicked(s: p5) {
-    pushMousePosition(s.mouseX, s.mouseY);
-    createAtom();
+    createAtom({ x: s.mouseX, y: s.mouseY });
   },
 
   mouseClicked(s: p5) {
