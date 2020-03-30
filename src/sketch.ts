@@ -47,12 +47,6 @@ function createAtom() {
   valueInput.elt.focus();
 };
 
-function createLine() {
-  const end = mouseStack.pop();
-  const start = mouseStack.pop();
-  lines.push({ x1: start.x, y1: start.y, x2: end.x, y2: end.y });
-}
-
 function hasClickedOnAtom(mouse: MousePosition, atom: Atom) {
   const leftBoundary = atom.x - (ATOM_DIAMETER / 2);
   const rightBoundary = atom.x + (ATOM_DIAMETER / 2);
@@ -164,10 +158,6 @@ function drawResult(s: p5) {
 }
 
 export default function(s: p5) {
-  let points = [];
-  let rPoints = [];
-  let shapeName = "";
-
   let bg: p5.Graphics = null;
 
   const drawFPS = () => {
@@ -209,9 +199,9 @@ export default function(s: p5) {
     connectButton.position(s.width - 200, 100);
     connectButton.mousePressed(connectAtoms);
 
-    connectButton = s.createButton("Eval");
-    connectButton.position(s.width - 200, 135);
-    connectButton.mousePressed(evalAtom);
+    evalButton = s.createButton("Eval");
+    evalButton.position(s.width - 200, 135);
+    evalButton.mousePressed(evalAtom);
   };
 
   s.draw = () => {
