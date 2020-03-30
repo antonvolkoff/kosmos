@@ -16,13 +16,14 @@ interface Line {
 
 const ATOM_DIAMETER = 50;
 
-let atoms : Atom[] = [];
-let lines : Line[] = [];
 let valueInput: p5.Element = undefined;
 let connectButton: p5.Element = undefined;
 let evalButton: p5.Element = undefined;
-let evalResult = "";
 let bg: p5.Graphics = null;
+
+let atoms : Atom[] = [];
+let lines : Line[] = [];
+let evalResult = "";
 
 const selectedAtom = (): Atom | undefined => {
   return atoms.find(atom => atom.selected);
@@ -179,50 +180,44 @@ function drawFPS(s: p5) {
   s.text("FPS: " + fps.toFixed(2), 10, s.height - 10);
 };
 
-const handlers = {
-  setup(s: p5) {
-    s.createCanvas(s.windowWidth, s.windowHeight);
-    bg = drawBackground(s.createGraphics(s.windowWidth, s.windowHeight), s);
+const sketch = (p: p5) => {
+  p.setup = () => {
+    p.createCanvas(p.windowWidth, p.windowHeight);
+    bg = drawBackground(p.createGraphics(p.windowWidth, p.windowHeight), p);
 
-    valueInput = s.createInput();
-    valueInput.position(s.width - 200, 65);
+    valueInput = p.createInput();
+    valueInput.position(p.width - 200, 65);
     (valueInput as any).input(inputEvent);
 
-    connectButton = s.createButton("Connect");
-    connectButton.position(s.width - 200, 100);
+    connectButton = p.createButton("Connect");
+    connectButton.position(p.width - 200, 100);
     connectButton.mousePressed(connectAtoms);
 
-    evalButton = s.createButton("Eval");
-    evalButton.position(s.width - 200, 135);
+    evalButton = p.createButton("Eval");
+    evalButton.position(p.width - 200, 135);
     evalButton.mousePressed(evalAtom);
-  },
+  };
 
-  draw(s: p5) {
-    s.image(bg, 0, 0, s.windowWidth, s.windowHeight);
-    drawLines(s);
-    drawAtoms(s);
-    drawResult(s);
-    drawFPS(s);
-  },
+  p.draw = () => {
+    p.image(bg, 0, 0, p.windowWidth, p.windowHeight);
+    drawLines(p);
+    drawAtoms(p);
+    drawResult(p);
+    drawFPS(p);
+  };
 
-  windowResized(s: p5) {
-    bg = drawBackground(s.createGraphics(s.windowWidth, s.windowHeight), s);
-    s.resizeCanvas(s.windowWidth, s.windowHeight);
-  },
+  p.windowResized = () => {
+    bg = drawBackground(p.createGraphics(p.windowWidth, p.windowHeight), p);
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
+  };
 
-  doubleClicked(s: p5) {
-    createAtom({ x: s.mouseX, y: s.mouseY });
-  },
+  p.doubleClicked = () => {
+    createAtom({ x: p.mouseX, y: p.mouseY });
+  };
 
-  mouseClicked(s: p5) {
-    selectAtom({ x: s.mouseX, y: s.mouseY });
-  },
+  p.mouseClicked = () => {
+    selectAtom({ x: p.mouseX, y: p.mouseY });
+  };
 };
 
-new p5(function(s: p5) {
-  s.setup = () => handlers.setup(s);
-  s.draw = () => handlers.draw(s);
-  s.windowResized = () => handlers.windowResized(s);
-  s.doubleClicked = () => handlers.doubleClicked(s);
-  s.mouseClicked = () => handlers.mouseClicked(s);
-});
+new p5(sketch);
