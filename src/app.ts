@@ -1,5 +1,5 @@
 import * as p5 from "p5";
-import { Atom, create, connect } from "./atom";
+import Atom from "./atom";
 import executor from "./executor";
 
 interface MousePosition {
@@ -33,8 +33,16 @@ const hasSelectedAtom = (): boolean => {
   return (selectedAtom() == undefined) ? false : true;
 };
 
+const findDraggingAtom = (atoms: Atom[]) => {
+  return atoms.find(atom => atom.dragging);
+};
+
+const findMouseOverAtom = (atoms: Atom[], mouse: MousePosition) => {
+  return atoms.find(atom => isWithinAtomBoundaries(mouse, atom));
+}
+
 function createAtom(mouse: MousePosition) {
-  const atom = create(mouse.x, mouse.y);
+  const atom = new Atom(mouse.x, mouse.y);
   atoms.push(atom);
 
   if (hasSelectedAtom()) {
@@ -47,7 +55,7 @@ function createAtom(mouse: MousePosition) {
   valueInput.elt.focus();
 };
 
-function hasClickedOnAtom(mouse: MousePosition, atom: Atom) {
+function isWithinAtomBoundaries(mouse: MousePosition, atom: Atom): boolean {
   const leftBoundary = atom.x - (ATOM_DIAMETER / 2);
   const rightBoundary = atom.x + (ATOM_DIAMETER / 2);
   const topBoundary = atom.y + (ATOM_DIAMETER / 2);
@@ -65,7 +73,7 @@ function selectAtom(mouse: MousePosition) {
   for (let i = 0; i < atoms.length; i++) {
     const atom = atoms[i];
 
-    if (hasClickedOnAtom(mouse, atom)) {
+    if (isWithinAtomBoundaries(mouse, atom)) {
       atom.selected = !atom.selected;
       if (atom.selected) {
         valueInput.value(atom.value);
@@ -111,8 +119,10 @@ function drawLines(s: p5) {
   s.strokeWeight(5);
   s.stroke(190);
 
-  lines.forEach(line => {
-    s.line(line.x1, line.y1, line.x2, line.y2);
+  atoms.forEach(atom => {
+    atom.adjacentAtoms.forEach(childAtom => {
+      s.line(atom.x, atom.y, childAtom.x, childAtom.y);
+    });
   });
 
   s.pop();
@@ -134,8 +144,8 @@ function connectAtoms() {
     y2: selectedAtoms[1].y,
   });
 
-  connect(selectedAtoms[0], selectedAtoms[1]);
-  connect(selectedAtoms[1], selectedAtoms[0]);
+  selectedAtoms[0].connect(selectedAtoms[1]);
+  selectedAtoms[1].connect(selectedAtoms[0]);
 }
 
 function evalAtom() {
@@ -216,8 +226,28 @@ const sketch = (p: p5) => {
   };
 
   p.mouseClicked = () => {
-    selectAtom({ x: p.mouseX, y: p.mouseY });
+    const draggingAtom = findDraggingAtom(atoms);
+    if (draggingAtom) {
+      draggingAtom.dragging = false;
+      draggingAtom.x = p.mouseX;
+      draggingAtom.y = p.mouseY;
+    } else {
+      selectAtom({ x: p.mouseX, y: p.mouseY });
+    }
   };
+
+  p.mouseDragged = () => {
+    const draggingAtom = findDraggingAtom(atoms);
+    if (draggingAtom) {
+      draggingAtom.x = p.mouseX;
+      draggingAtom.y = p.mouseY;
+    };
+
+    const overAtom = findMouseOverAtom(atoms, { x: p.pmouseX, y: p.mouseY });
+    if (overAtom) {
+      overAtom.dragging = true;
+    }
+  }
 };
 
 new p5(sketch);

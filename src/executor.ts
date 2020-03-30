@@ -1,4 +1,4 @@
-import { Atom } from "./atom";
+import Atom from "./atom";
 
 const sum = (atom: Atom): number => {
   const values = atom.adjacentAtoms.map(childAtom => executor(childAtom));

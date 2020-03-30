@@ -1,20 +1,21 @@
-interface Atom {
-  id: number;
-  x: number;
-  y: number;
-  selected: boolean;
-  value: string;
-  adjacentAtoms: Atom[];
-};
+export default class Atom {
+  public x: number;
+  public y: number;
+  public selected: boolean;
+  public value: string;
+  public adjacentAtoms: Atom[];
+  public dragging: boolean;
 
-let id = 0;
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+    this.selected = false;
+    this.value = '';
+    this.adjacentAtoms = [];
+    this.dragging = false;
+  }
 
-const create = (x: number, y: number): Atom => {
-  return { id: id++, x: x, y: y, selected: false, value: '', adjacentAtoms: [] };
-};
-
-const connect = (parent: Atom, child: Atom) => {
-  parent.adjacentAtoms.push(child);
-};
-
-export { Atom, create, connect }
+  connect(child: Atom) {
+    this.adjacentAtoms.push(child);
+  }
+}
