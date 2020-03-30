@@ -1,4 +1,3 @@
-import * as p5 from "p5";
-import sketch from "./sketch";
+import Sketch from "./sketch";
 
-new p5(sketch);
+let sketch = new Sketch();

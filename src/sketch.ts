@@ -23,6 +23,7 @@ let valueInput: p5.Element = undefined;
 let connectButton: p5.Element = undefined;
 let evalButton: p5.Element = undefined;
 let evalResult = "";
+let bg: p5.Graphics = null;
 
 const selectedAtom = (): Atom | undefined => {
   return atoms.find(atom => atom.selected);
@@ -157,39 +158,37 @@ function drawResult(s: p5) {
   s.pop();
 }
 
-export default function(s: p5) {
-  let bg: p5.Graphics = null;
+function drawBackground(bg: p5.Graphics, s: p5) {
+  bg.background(244, 248, 252);
 
-  const drawFPS = () => {
-    const fps = s.frameRate();
-    s.textSize(14);
-    s.fill(0);
-    s.stroke(0);
-    s.text("FPS: " + fps.toFixed(2), 10, s.height - 10);
-  };
+  bg.stroke(190);
+  bg.strokeWeight(3);
 
-  const drawBackground = (bg: p5.Graphics) => {
-    bg.background(244, 248, 252);
+  const spaceBetweenDots = 20;
+  const maxColumns = s.windowWidth / 10;
+  const maxRows = s.windowHeight / 10;
 
-    bg.stroke(190);
-    bg.strokeWeight(3);
-
-    const spaceBetweenDots = 20;
-    const maxColumns = s.windowWidth / 10;
-    const maxRows = s.windowHeight / 10;
-
-    for(let c = 0; c < maxColumns; c++) {
-      for(let r = 0; r < maxRows; r++) {
-        bg.point(spaceBetweenDots * c, spaceBetweenDots * r);
-      }
+  for(let c = 0; c < maxColumns; c++) {
+    for(let r = 0; r < maxRows; r++) {
+      bg.point(spaceBetweenDots * c, spaceBetweenDots * r);
     }
+  }
 
-    return bg;
-  };
+  return bg;
+};
 
-  s.setup = () => {
+function drawFPS(s: p5) {
+  const fps = s.frameRate();
+  s.textSize(14);
+  s.fill(0);
+  s.stroke(0);
+  s.text("FPS: " + fps.toFixed(2), 10, s.height - 10);
+};
+
+const handlers = {
+  setup(s: p5) {
     s.createCanvas(s.windowWidth, s.windowHeight);
-    bg = drawBackground(s.createGraphics(s.windowWidth, s.windowHeight));
+    bg = drawBackground(s.createGraphics(s.windowWidth, s.windowHeight), s);
 
     valueInput = s.createInput();
     valueInput.position(s.width - 200, 65);
@@ -202,27 +201,39 @@ export default function(s: p5) {
     evalButton = s.createButton("Eval");
     evalButton.position(s.width - 200, 135);
     evalButton.mousePressed(evalAtom);
-  };
+  },
 
-  s.draw = () => {
+  draw(s: p5) {
     s.image(bg, 0, 0, s.windowWidth, s.windowHeight);
     drawLines(s);
     drawAtoms(s);
     drawResult(s);
-    drawFPS();
-  };
+    drawFPS(s);
+  },
 
-  s.windowResized = () => {
-    bg = drawBackground(s.createGraphics(s.windowWidth, s.windowHeight));
+  windowResized(s: p5) {
+    bg = drawBackground(s.createGraphics(s.windowWidth, s.windowHeight), s);
     s.resizeCanvas(s.windowWidth, s.windowHeight);
-  }
+  },
 
-  s.doubleClicked = () => {
+  doubleClicked(s: p5) {
     pushMousePosition(s.mouseX, s.mouseY);
     createAtom();
-  }
+  },
 
-  s.mouseClicked = () => {
+  mouseClicked(s: p5) {
     selectAtom({ x: s.mouseX, y: s.mouseY });
+  },
+};
+
+export default class Sketch {
+  constructor() {
+    new p5(function(s: p5) {
+      s.setup = () => handlers.setup(s);
+      s.draw = () => handlers.draw(s);
+      s.windowResized = () => handlers.windowResized(s);
+      s.doubleClicked = () => handlers.doubleClicked(s);
+      s.mouseClicked = () => handlers.mouseClicked(s);
+    });
   }
 };
