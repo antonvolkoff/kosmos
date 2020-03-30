@@ -241,7 +241,12 @@ const sketch = (p: p5) => {
     if (draggingAtom) {
       draggingAtom.x = p.mouseX;
       draggingAtom.y = p.mouseY;
+      return
     };
+
+    const movedX = Math.abs(p.pmouseX - p.mouseX);
+    const movedY = Math.abs(p.pmouseY - p.mouseY);
+    if (movedX < 2 || movedY < 2) return;
 
     const overAtom = findMouseOverAtom(atoms, { x: p.pmouseX, y: p.mouseY });
     if (overAtom) {
