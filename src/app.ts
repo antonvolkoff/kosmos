@@ -95,7 +95,9 @@ function inputEvent() {
 }
 
 function evalAtom() {
-  evalResult = executor(findSelectedAtom(atoms));
+  executor(findSelectedAtom(atoms))
+    .then((result) => { evalResult = result });
+  return false;
 }
 
 function drawResult(s: p5) {

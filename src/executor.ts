@@ -1,67 +1,43 @@
+import * as util from 'util';
+import * as repl from "nrepl-client";
+
 import Atom from "./atom";
+
+const replClient = repl.connect({ port: 58597 });
+replClient.once('connect', () => {
+  console.log("Connected to REPL");
+});
+
+const evalPromise = util.promisify(replClient.eval);
 
 let env = new Map();
 
-export default function executor(atom: Atom): any {
-  let result: any = "ERROR";
+const collectAtomValues = (atom: Atom) => {
+  return atom.sortedAdjacentAtoms().map(child => child.value);
+}
 
-  switch (atom.value) {
-    case (atom.value.match(/^[0-9]*$/) || {}).input:
-      result = parseInt(atom.value);
-      break;
+const compile = (atom: Atom): string => {
+  // Integer
+  if (atom.value.match(/^[0-9]*$/))
+    return atom.value;
 
-    case (atom.value.match(/^"(?:\\.|[^\\"])*"$/) || {}).input:
-      result =  atom.value.slice(1, atom.value.length-1).replace(/\\(.)/g, (_, c) => {
-        return c === "n" ? "\n" : c;
-      });
+  // String
+  if (atom.value.match(/^"(?:\\.|[^\\"])*"$/))
+    return atom.value;
 
-    default:
-      if (env.has(atom.value)) {
-        const fn = env.get(atom.value);
-        return fn(atom);
-      }
+  // Ref
+  if (atom.adjacentAtoms.length == 0)
+    return atom.value;
 
-      break;
-  }
+  const childValues = atom.sortedAdjacentAtoms().map(child => compile(child));
 
-  return result;
+  return `(${[atom.value, ...childValues].join(" ")})`;
 };
 
-env.set("+", (atom: Atom) => {
-  const values = atom.adjacentAtoms.map(childAtom => executor(childAtom));
-  const sumFn = (sum: number, val: number) => sum += val;
-  return values.reduce(sumFn, 0);
-});
-
-env.set("-", (atom: Atom) => {
-  const values = atom.sortedAdjacentAtoms().map(childAtom => executor(childAtom));
-  return values.reduce((pval, cval) => {
-    if (pval === null) {
-      return cval;
-    } else {
-      return pval - cval;
-    }
-  }, null);
-});
-
-env.set("*", (atom: Atom) => {
-  const values = atom.adjacentAtoms.map(childAtom => executor(childAtom));
-  const multiplyFn = (total: number, val: number) => total *= val;
-  return values.reduce(multiplyFn, 1);
-});
-
-env.set("/", (atom: Atom) => {
-  const values = atom.sortedAdjacentAtoms().map(childAtom => executor(childAtom));
-  return values.reduce((pval, cval) => {
-    if (pval === null) {
-      return cval;
-    } else {
-      return pval / cval;
-    }
-  }, null);
-});
-
-env.set("print", (atom: Atom) => {
-  const values = atom.sortedAdjacentAtoms().map(childAtom => executor(childAtom));
-  return values.join(" ");
-});
+export default async function executor(atom: Atom): Promise<string> {
+  const evalString = compile(atom);
+  console.log("Compiled:", evalString);
+  const result = await evalPromise(evalString);
+  console.log(result);
+  return result[0].out || result[0].value;
+};
