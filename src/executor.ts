@@ -62,6 +62,6 @@ env.set("/", (atom: Atom) => {
 });
 
 env.set("print", (atom: Atom) => {
-  const values = atom.adjacentAtoms.map(childAtom => executor(childAtom));
+  const values = atom.sortedAdjacentAtoms().map(childAtom => executor(childAtom));
   return values.join(" ");
 });
