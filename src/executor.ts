@@ -33,10 +33,32 @@ env.set("+", (atom: Atom) => {
   return values.reduce(sumFn, 0);
 });
 
+env.set("-", (atom: Atom) => {
+  const values = atom.sortedAdjacentAtoms().map(childAtom => executor(childAtom));
+  return values.reduce((pval, cval) => {
+    if (pval === null) {
+      return cval;
+    } else {
+      return pval - cval;
+    }
+  }, null);
+});
+
 env.set("*", (atom: Atom) => {
   const values = atom.adjacentAtoms.map(childAtom => executor(childAtom));
   const multiplyFn = (total: number, val: number) => total *= val;
   return values.reduce(multiplyFn, 1);
+});
+
+env.set("/", (atom: Atom) => {
+  const values = atom.sortedAdjacentAtoms().map(childAtom => executor(childAtom));
+  return values.reduce((pval, cval) => {
+    if (pval === null) {
+      return cval;
+    } else {
+      return pval / cval;
+    }
+  }, null);
 });
 
 env.set("print", (atom: Atom) => {

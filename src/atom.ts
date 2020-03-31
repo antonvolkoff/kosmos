@@ -18,4 +18,12 @@ export default class Atom {
   connect(child: Atom) {
     this.adjacentAtoms.push(child);
   }
+
+  score() {
+    return this.x * this.y;
+  }
+
+  sortedAdjacentAtoms() {
+    return this.adjacentAtoms.sort((a, b) => a.score() - b.score());
+  }
 }
