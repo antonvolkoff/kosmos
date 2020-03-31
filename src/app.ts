@@ -109,8 +109,8 @@ function drawResult(s: p5) {
   s.pop();
 }
 
-function drawBackground(bg: p5.Graphics, s: p5) {
-  bg.background(244, 248, 252);
+function drawBackground(s: p5, bg: p5.Graphics, color: p5.Color) {
+  bg.background(color);
 
   bg.stroke(190);
   bg.strokeWeight(3);
@@ -157,9 +157,12 @@ const unselectAtom = (atom: Atom) => {
 }
 
 const sketch = (p: p5) => {
+  const backgroundColor = p.color('#F2F7FC');
+
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
-    bg = drawBackground(p.createGraphics(p.windowWidth, p.windowHeight), p);
+    bg = p.createGraphics(p.windowWidth, p.windowHeight);
+    bg = drawBackground(p, bg, backgroundColor);
 
     valueInput = p.createInput();
     valueInput.position(p.width - 200, 65);
@@ -193,7 +196,8 @@ const sketch = (p: p5) => {
   };
 
   p.windowResized = () => {
-    bg = drawBackground(p.createGraphics(p.windowWidth, p.windowHeight), p);
+    bg = p.createGraphics(p.windowWidth, p.windowHeight);
+    bg = drawBackground(p, bg, backgroundColor);
     p.resizeCanvas(p.windowWidth, p.windowHeight);
   };
 
