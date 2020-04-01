@@ -2,6 +2,28 @@ import * as p5 from "p5";
 import Atom from "./atom";
 import executor from "./executor";
 
+////////////////////////////////////////////////////////////////////////////////
+import { createStore, createSlice } from "@reduxjs/toolkit";
+import { devToolsEnhancer } from "redux-devtools-extension";
+
+const transcript = createSlice({
+  name: "transcript",
+  initialState: [],
+  reducers: {
+    add(state, action) {
+      state.push(action.payload);
+    },
+
+    clear(state) {
+      state = [];
+    },
+  }
+});
+
+const store = createStore(transcript.reducer, devToolsEnhancer({}));
+
+////////////////////////////////////////////////////////////////////////////////
+
 interface MousePosition {
   x: number;
   y: number;
@@ -22,7 +44,6 @@ let bg: p5.Graphics = null;
 
 let atoms : Atom[] = [];
 let lines: Line[] = [];
-let evalResult = "";
 
 const findSelectedAtom = (atoms: Atom[]) => {
   return atoms.find(atom => atom.selected);
@@ -96,17 +117,22 @@ function inputEvent() {
 
 function evalAtom() {
   executor(findSelectedAtom(atoms))
-    .then((result) => { evalResult = result });
+    .then((result) => {
+      store.dispatch(transcript.actions.add(result));
+    });
   return false;
 }
 
 function drawResult(s: p5) {
+  const state = store.getState() as string[];
+  const lastResult = state[state.length - 1];
+
   s.push();
 
   s.textSize(14);
   s.stroke(0);
   s.strokeWeight(0);
-  s.text(evalResult, s.width / 2, 20);
+  s.text(lastResult, s.width / 2, 20);
 
   s.pop();
 }
