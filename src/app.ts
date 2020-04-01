@@ -1,6 +1,7 @@
 import * as p5 from "p5";
 import Atom from "./atom";
 import executor from "./executor";
+import { Line, distance, pointAt } from "./geometry";
 
 ////////////////////////////////////////////////////////////////////////////////
 import { createStore, createSlice } from "@reduxjs/toolkit";
@@ -27,13 +28,6 @@ const store = createStore(transcript.reducer, devToolsEnhancer({}));
 interface MousePosition {
   x: number;
   y: number;
-}
-
-interface Line {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
 }
 
 const ATOM_DIAMETER = 50;
@@ -81,19 +75,33 @@ function isWithinAtomBoundaries(mouse: MousePosition, atom: Atom): boolean {
 function drawAtoms(s: p5) {
   s.push();
 
-  s.strokeWeight(3);
+  s.strokeWeight(2);
   s.fill(255);
 
+  // Connections
   atoms.forEach(atom => {
     s.stroke(150);
 
     atom.adjacentAtoms.forEach(childAtom => {
-      s.line(atom.x, atom.y, childAtom.x, childAtom.y);
-    });
+      const d = distance(atom, childAtom);
+      const offset = (ATOM_DIAMETER / 2 + 8);
+      const r1 = 1 - (offset / d);
+      const point = pointAt(atom, childAtom, r1);
 
+      s.line(atom.x, atom.y, point.x, point.y);
+      s.push();
+      s.circle(point.x, point.y, 10);
+      s.pop();
+    });
+  });
+
+  // Atoms
+  atoms.forEach(atom => {
     if (atom.selected) {
+      s.strokeWeight(3);
       s.stroke(s.color('#1DA159'));
     } else {
+      s.strokeWeight(2);
       s.stroke(150);
     }
 
@@ -125,7 +133,7 @@ function evalAtom() {
 
 function drawResult(s: p5) {
   const state = store.getState() as string[];
-  const lastResult = state[state.length - 1];
+  const lastResult = state[state.length - 1] || "";
 
   s.push();
 
