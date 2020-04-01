@@ -193,6 +193,9 @@ const unselectAtom = (atom: Atom) => {
 }
 
 const sketch = (p: p5) => {
+  let timestamp: number = null;
+  let startPoint: MousePosition = null;
+
   const backgroundColor = p.color('#F2F7FC');
 
   p.setup = () => {
@@ -237,11 +240,26 @@ const sketch = (p: p5) => {
     p.resizeCanvas(p.windowWidth, p.windowHeight);
   };
 
-  p.doubleClicked = () => {
-    createAtom({ x: p.mouseX, y: p.mouseY });
-  };
+  p.mousePressed = () => {
+    timestamp = new Date().getTime();
+    startPoint = { x: p.mouseX, y: p.mouseY };
+  }
+
+  p.mouseReleased = () => {
+    const now = new Date().getTime();
+    const td = now - timestamp;
+    const endPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
+    const d = distance(startPoint, endPoint);
+    const overAtom = findMouseOverAtom(atoms, endPoint);
+
+    if (!overAtom && td > 500 && d < 10) {
+      createAtom({ x: p.mouseX, y: p.mouseY });
+    }
+  }
 
   p.mouseClicked = () => {
+    if (p.mouseButton === p.RIGHT) return;
+
     const draggingAtom = findDraggingAtom(atoms);
     if (draggingAtom) {
       draggingAtom.dragging = false;
