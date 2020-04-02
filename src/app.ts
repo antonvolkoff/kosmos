@@ -33,7 +33,6 @@ interface MousePosition {
 const ATOM_DIAMETER = 50;
 
 let valueInput: p5.Element = undefined;
-let evalButton: p5.Element = undefined;
 let bg: p5.Graphics = null;
 
 let atoms : Atom[] = [];
@@ -49,6 +48,12 @@ const findDraggingAtom = (atoms: Atom[]) => {
 
 const findMouseOverAtom = (atoms: Atom[], mouse: MousePosition) => {
   return atoms.find(atom => isWithinAtomBoundaries(mouse, atom));
+}
+
+const evaluateAtom = (atom: Atom): void => {
+  executor(atom).then((result) => {
+    store.dispatch(transcript.actions.add(result));
+  });
 }
 
 function createAtom(mouse: MousePosition) {
@@ -123,14 +128,6 @@ function inputEvent() {
   atom.value = this.value();
 }
 
-function evalAtom() {
-  executor(findSelectedAtom(atoms))
-    .then((result) => {
-      store.dispatch(transcript.actions.add(result));
-    });
-  return false;
-}
-
 function drawBackground(s: p5, bg: p5.Graphics, color: p5.Color) {
   bg.background(color);
 
@@ -194,10 +191,6 @@ const sketch = (p: p5) => {
     valueInput = p.createInput();
     valueInput.position(p.width - 200, 65);
     (valueInput as any).input(inputEvent);
-
-    evalButton = p.createButton("Eval");
-    evalButton.position(p.width - 200, 135);
-    evalButton.mousePressed(evalAtom);
   };
 
   p.draw = () => {
@@ -227,7 +220,6 @@ const sketch = (p: p5) => {
     p.resizeCanvas(p.windowWidth, p.windowHeight);
 
     valueInput.position(p.width - 200, 65);
-    evalButton.position(p.width - 200, 135);
   };
 
   p.mousePressed = () => {
@@ -279,6 +271,7 @@ const sketch = (p: p5) => {
     if (draggingAtom) {
       draggingAtom.x = p.mouseX;
       draggingAtom.y = p.mouseY;
+      selectAtom(draggingAtom);
       return
     };
 
@@ -290,6 +283,15 @@ const sketch = (p: p5) => {
     if (overAtom && overAtom.selected) {
       overAtom.dragging = true;
     }
+  }
+
+  p.keyReleased = () => {
+    if (p.keyCode != p.ENTER) return;
+
+    const selectedAtom = findSelectedAtom(atoms);
+    if (!selectedAtom) return;
+
+    evaluateAtom(selectedAtom);
   }
 };
 
