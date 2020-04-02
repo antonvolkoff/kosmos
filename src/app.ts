@@ -131,20 +131,6 @@ function evalAtom() {
   return false;
 }
 
-function drawResult(s: p5) {
-  const state = store.getState() as string[];
-  const lastResult = state[state.length - 1] || "";
-
-  s.push();
-
-  s.textSize(14);
-  s.stroke(0);
-  s.strokeWeight(0);
-  s.text(lastResult, s.width / 2, 20);
-
-  s.pop();
-}
-
 function drawBackground(s: p5, bg: p5.Graphics, color: p5.Color) {
   bg.background(color);
 
@@ -169,7 +155,7 @@ function drawFPS(s: p5) {
   s.textSize(14);
   s.fill(0);
   s.stroke(0);
-  s.text("FPS: " + fps.toFixed(2), 10, s.height - 10);
+  s.text("FPS: " + fps.toFixed(2), 10, s.height - 110);
 };
 
 const selectAtom = (atom: Atom) => {
@@ -191,6 +177,8 @@ const unselectAtom = (atom: Atom) => {
   atom.selected = false;
   valueInput.value('');
 }
+
+const canvasPlaceholder = document.getElementById('canvas');
 
 const sketch = (p: p5) => {
   let timestamp: number = null;
@@ -230,14 +218,16 @@ const sketch = (p: p5) => {
     p.pop();
 
     drawAtoms(p);
-    drawResult(p);
-    drawFPS(p);
+    if (false) drawFPS(p);
   };
 
   p.windowResized = () => {
     bg = p.createGraphics(p.windowWidth, p.windowHeight);
     bg = drawBackground(p, bg, backgroundColor);
     p.resizeCanvas(p.windowWidth, p.windowHeight);
+
+    valueInput.position(p.width - 200, 65);
+    evalButton.position(p.width - 200, 135);
   };
 
   p.mousePressed = () => {
@@ -303,4 +293,14 @@ const sketch = (p: p5) => {
   }
 };
 
-new p5(sketch);
+new p5(sketch, canvasPlaceholder);
+
+////////////////////////////////////////////////////////////////////////////////
+import { render } from "react-dom";
+import { html } from "htm/react";
+import Transcript from "./transcript";
+
+render(
+  html`<${Transcript} store="${store}" />`,
+  document.getElementById('transcript'),
+);

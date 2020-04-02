@@ -6,28 +6,58 @@
     <!-- https://electronjs.org/docs/tutorial/security#csp-meta-tag -->
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
 
-    <!-- <script src='./recognizer.js'></script>
-    <script src='./sketch.js'></script>
-    <script>
-      var p5 = require('p5');
-    </script> -->
-
     <style>
       body {
         margin: 0;
         padding: 0;
         -webkit-app-region: drag;
         -webkit-user-select: none;
+        overflow: hidden;
+        font-family: monospace;
       }
 
-      canvas {
-        display: block;
+      canvas { display: block; }
+
+      /* ------ Layout ------ */
+      .transcript {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        background-color: #fff;
+        height: 160px;
+        border-top: 2px solid #999;
+        overflow: auto;
+      }
+
+      .transcript-wrapper {
+        position: relative;
+        height: auto;
+        width: 100%;
+      }
+
+      .transcript-list {
+        padding: 0.25rem 0;
+      }
+
+      .transcript-list-item {
+        padding: 0.5rem 2rem;
+        border-bottom: 1px solid #ccc;
+      }
+
+      .transcript-list-item.has-no-border {
+        border: none;
       }
     </style>
   </head>
   <body>
+    <div class="container">
+      <div id="canvas" class="canvas"></div>
+      <div id="transcript" class="transcript"></div>
+    </div>
 
-    <script>
+    <script type="module">
       require("./dist/app.js");
     </script>
   </body>
