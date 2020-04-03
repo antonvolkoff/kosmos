@@ -116,6 +116,7 @@ function drawAtoms(s: p5) {
     s.fill(50);
     s.strokeWeight(0);
     s.textAlign(s.CENTER, s.CENTER);
+    s.textFont("monospace", 14);
     s.text(atom.value, atom.x, atom.y);
     s.pop();
   });
