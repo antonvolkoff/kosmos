@@ -56,10 +56,16 @@ const evaluateAtom = (atom: Atom): void => {
   });
 }
 
-function createAtom(mouse: MousePosition) {
-  const atom = new Atom(mouse.x, mouse.y);
-  atoms.push(atom);
+const snapToGrid = (mouse: MousePosition): MousePosition => {
+  const gridSize = 20;
+  const x = Math.round(mouse.x / gridSize) * gridSize;
+  const y = Math.round(mouse.y / gridSize) * gridSize;
+  return { x, y };
+}
 
+function createAtom({ x, y }: MousePosition) {
+  const atom = new Atom(x, y);
+  atoms.push(atom);
   selectAtom(atom);
 };
 
@@ -110,7 +116,8 @@ function drawAtoms(s: p5) {
       s.stroke(150);
     }
 
-    s.circle(atom.x, atom.y, ATOM_DIAMETER);
+    const diameter = atom.dragging ? ATOM_DIAMETER * 1.2 : ATOM_DIAMETER;
+    s.circle(atom.x, atom.y, diameter);
 
     s.push();
     s.fill(50);
@@ -230,61 +237,72 @@ const sketch = (p: p5) => {
 
   p.mouseReleased = () => {
     const now = new Date().getTime();
-    const td = now - timestamp;
-    const endPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
-    const d = distance(startPoint, endPoint);
-    const overAtom = findMouseOverAtom(atoms, endPoint);
+    const mousePressedDuration = now - timestamp;
+    const currentPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
 
-    if (!overAtom && td > 500 && d < 10) {
-      createAtom({ x: p.mouseX, y: p.mouseY });
-    }
-  }
+    const isClickAndHold = mousePressedDuration > 500;
+    if (isClickAndHold) {
+      const atomAtStartPoint = findMouseOverAtom(atoms, startPoint);
+      const atomAtCurrentPoint = findMouseOverAtom(atoms, currentPoint);
+      const dist = distance(startPoint, currentPoint);
 
-  p.mouseClicked = () => {
-    if (p.mouseButton === p.RIGHT) return;
-
-    const draggingAtom = findDraggingAtom(atoms);
-    if (draggingAtom) {
-      draggingAtom.dragging = false;
-      draggingAtom.x = p.mouseX;
-      draggingAtom.y = p.mouseY;
-    } else {
-      const endAtom = findMouseOverAtom(atoms, { x: p.mouseX, y: p.mouseY });
-      if (!endAtom) {
-        const selectedAtom = findSelectedAtom(atoms);
-        if (selectedAtom) unselectAtom(selectedAtom);
-        return
+      const isDraw = () => {
+        return !atomAtStartPoint && !atomAtCurrentPoint && dist > 40;
+      };
+      const isConnect = () => {
+        return atomAtStartPoint && atomAtCurrentPoint && atomAtStartPoint != atomAtCurrentPoint;
+      };
+      const isCreate = () => {
+        return !atomAtStartPoint && !atomAtCurrentPoint && dist <= 40;
+      }
+      const isDragStart = () => {
+        return (
+          atomAtStartPoint &&
+          atomAtCurrentPoint &&
+          atomAtStartPoint == atomAtCurrentPoint &&
+          atomAtCurrentPoint.selected
+        );
       };
 
-      const firstLine = lines[0];
-      const startAtom = findMouseOverAtom(atoms, { x: firstLine.x1, y: firstLine.y1 });
+      if (isDraw()) {
+        return;
+      } else if (isConnect()) {
+        atomAtStartPoint.connect(atomAtCurrentPoint);
+      } else if (isCreate()) {
+        createAtom(snapToGrid(currentPoint));
+      } else if (isDragStart()) {
+        atomAtCurrentPoint.dragging = true;
+      }
 
-      if (startAtom && endAtom && startAtom.x != endAtom.x && startAtom.y != endAtom.y) {
-        startAtom.connect(endAtom);
-      } else if (endAtom) {
-        selectAtom(endAtom);
+    } else {
+      const atomAtCurrentPoint = findMouseOverAtom(atoms, currentPoint);
+      const selectedAtom = findSelectedAtom(atoms);
+
+      if (atomAtCurrentPoint) {
+        if (atomAtCurrentPoint.dragging) {
+          const { x, y } = snapToGrid(currentPoint)
+          selectedAtom.x = x;
+          selectedAtom.y = y;
+          selectedAtom.dragging = false;
+          unselectAtom(atomAtCurrentPoint);
+        } else {
+          selectAtom(atomAtCurrentPoint);
+        }
+      } else {
+        if (selectedAtom) {
+          unselectAtom(selectedAtom);
+        }
       }
     }
-  };
+  }
 
-  p.mouseDragged = () => {
+  p.mouseMoved = () => {
     const draggingAtom = findDraggingAtom(atoms);
     if (draggingAtom) {
       draggingAtom.x = p.mouseX;
       draggingAtom.y = p.mouseY;
-      selectAtom(draggingAtom);
-      return
-    };
-
-    const movedX = Math.abs(p.pmouseX - p.mouseX);
-    const movedY = Math.abs(p.pmouseY - p.mouseY);
-    if (movedX < 2 || movedY < 2) return;
-
-    const overAtom = findMouseOverAtom(atoms, { x: p.pmouseX, y: p.mouseY });
-    if (overAtom && overAtom.selected) {
-      overAtom.dragging = true;
     }
-  }
+  };
 
   p.keyReleased = () => {
     if (p.keyCode != p.ENTER) return;
