@@ -160,7 +160,7 @@ function drawFPS(s: p5) {
   s.textSize(14);
   s.fill(0);
   s.stroke(0);
-  s.text("FPS: " + fps.toFixed(2), 10, s.height - 110);
+  s.text("FPS: " + fps.toFixed(2), 10, 20);
 };
 
 const selectAtom = (atom: Atom) => {
@@ -186,9 +186,13 @@ const unselectAtom = (atom: Atom) => {
 const canvasPlaceholder = document.getElementById('canvas');
 
 const sketch = (p: p5) => {
-  let timestamp: number = null;
-  let startPoint: MousePosition = null;
+  const HOLD_DURATION = 750;
+  const HOLD_DIST_THRESHOLD = 20;
+
+  let timestamp: number = undefined;
+  let startPoint: MousePosition = undefined;
   let keepDrawings = false;
+  let showFPS = false;
 
   const backgroundColor = p.color('#F2F7FC');
 
@@ -220,7 +224,46 @@ const sketch = (p: p5) => {
     p.pop();
 
     drawAtoms(p);
-    if (false) drawFPS(p);
+
+    // Hold animation
+    if (startPoint) {
+      const f = () => {
+        const currentPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
+        const dist = distance(startPoint, currentPoint);
+        if (dist >= HOLD_DIST_THRESHOLD) return;
+
+        const now = new Date().getTime();
+        const mousePressedDuration = now - timestamp;
+        if (mousePressedDuration < 250) return;
+
+        let angleRad =  p.TWO_PI;
+
+        const r = mousePressedDuration / HOLD_DURATION;
+        if (r < 1) {
+          angleRad = angleRad * r;
+        }
+
+        let radius = 20;
+        let { x, y } = startPoint;
+
+        const atom = findMouseOverAtom(atoms, currentPoint);
+        if (atom) {
+          x = atom.x;
+          y = atom.y;
+        }
+
+        p.push();
+        p.stroke(0, 0, 0, 50);
+        p.noFill();
+        p.strokeCap(p.PROJECT);
+        p.strokeWeight(6);
+        p.arc(x, y, radius, radius, 0, angleRad);
+        p.pop();
+      }
+      f();
+    }
+
+    if (showFPS) drawFPS(p);
   };
 
   p.windowResized = () => {
@@ -239,7 +282,7 @@ const sketch = (p: p5) => {
   p.mouseReleased = () => {
     const now = new Date().getTime();
     const mousePressedDuration = now - timestamp;
-    const isClickAndHold = mousePressedDuration > 500;
+    const isClickAndHold = mousePressedDuration > HOLD_DURATION;
 
     const startAtom = findMouseOverAtom(atoms, startPoint);
     const currentPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
@@ -252,7 +295,7 @@ const sketch = (p: p5) => {
     if (startAtom && currentAtom && startAtom != currentAtom) {
       action = "connect";
     }
-    else if (isClickAndHold && !startAtom && !currentAtom && dist <= 40) {
+    else if (isClickAndHold && !startAtom && !currentAtom && dist <= HOLD_DIST_THRESHOLD) {
       action = "create";
     }
     else if (isClickAndHold && startAtom && currentAtom && startAtom == currentAtom && currentAtom.selected) {
@@ -269,6 +312,9 @@ const sketch = (p: p5) => {
     } else {
       action = "draw";
     }
+
+    startPoint = undefined;
+    timestamp = undefined;
 
     switch (action) {
       case "create":
@@ -320,6 +366,10 @@ const sketch = (p: p5) => {
 
     if (p.key == "d" && !selectedAtom) {
       keepDrawings = !keepDrawings;
+    }
+
+    if (p.key == "f" && !selectedAtom) {
+      showFPS = !showFPS;
     }
 
     if (p.keyCode == p.ENTER && selectedAtom) {
