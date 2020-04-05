@@ -188,6 +188,7 @@ const canvasPlaceholder = document.getElementById('canvas');
 const sketch = (p: p5) => {
   let timestamp: number = null;
   let startPoint: MousePosition = null;
+  let keepDrawings = false;
 
   const backgroundColor = p.color('#F2F7FC');
 
@@ -205,14 +206,14 @@ const sketch = (p: p5) => {
     if (p.mouseIsPressed === true) {
       lines.push({ x1: p.mouseX, y1: p.mouseY, x2: p.pmouseX, y2: p.pmouseY });
     } else {
-      lines = [];
+      if (!keepDrawings) lines = [];
     }
 
     p.image(bg, 0, 0, p.windowWidth, p.windowHeight);
 
     p.push();
-    p.stroke(0, 0, 0, 50);
-    p.strokeWeight(3);
+    p.stroke(150);
+    p.strokeWeight(2);
     lines.forEach(l => {
       p.line(l.x1, l.y1, l.x2, l.y2);
     });
@@ -315,12 +316,15 @@ const sketch = (p: p5) => {
   };
 
   p.keyReleased = () => {
-    if (p.keyCode != p.ENTER) return;
-
     const selectedAtom = findSelectedAtom(atoms);
-    if (!selectedAtom) return;
 
-    evaluateAtom(selectedAtom);
+    if (p.key == "d" && !selectedAtom) {
+      keepDrawings = !keepDrawings;
+    }
+
+    if (p.keyCode == p.ENTER && selectedAtom) {
+      evaluateAtom(selectedAtom);
+    }
   }
 };
 
