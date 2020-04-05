@@ -238,61 +238,71 @@ const sketch = (p: p5) => {
   p.mouseReleased = () => {
     const now = new Date().getTime();
     const mousePressedDuration = now - timestamp;
-    const currentPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
-
     const isClickAndHold = mousePressedDuration > 500;
-    if (isClickAndHold) {
-      const atomAtStartPoint = findMouseOverAtom(atoms, startPoint);
-      const atomAtCurrentPoint = findMouseOverAtom(atoms, currentPoint);
-      const dist = distance(startPoint, currentPoint);
 
-      const isDraw = () => {
-        return !atomAtStartPoint && !atomAtCurrentPoint && dist > 40;
-      };
-      const isConnect = () => {
-        return atomAtStartPoint && atomAtCurrentPoint && atomAtStartPoint != atomAtCurrentPoint;
-      };
-      const isCreate = () => {
-        return !atomAtStartPoint && !atomAtCurrentPoint && dist <= 40;
-      }
-      const isDragStart = () => {
-        return (
-          atomAtStartPoint &&
-          atomAtCurrentPoint &&
-          atomAtStartPoint == atomAtCurrentPoint &&
-          atomAtCurrentPoint.selected
-        );
-      };
+    const startAtom = findMouseOverAtom(atoms, startPoint);
+    const currentPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
+    const currentAtom = findMouseOverAtom(atoms, currentPoint);
+    const dist = distance(startPoint, currentPoint);
+    const selectedAtom = findSelectedAtom(atoms);
 
-      if (isDraw()) {
-        return;
-      } else if (isConnect()) {
-        atomAtStartPoint.connect(atomAtCurrentPoint);
-      } else if (isCreate()) {
-        createAtom(snapToGrid(currentPoint));
-      } else if (isDragStart()) {
-        atomAtCurrentPoint.dragging = true;
-      }
+    let action: string = "";
 
+    if (startAtom && currentAtom && startAtom != currentAtom) {
+      action = "connect";
+    }
+    else if (isClickAndHold && !startAtom && !currentAtom && dist <= 40) {
+      action = "create";
+    }
+    else if (isClickAndHold && startAtom && currentAtom && startAtom == currentAtom && currentAtom.selected) {
+      action = "startDrag";
+    }
+    else if(!isClickAndHold && currentAtom && currentAtom.dragging) {
+      action = "finishDrag";
+    }
+    else if (!isClickAndHold && currentAtom && !currentAtom.dragging) {
+      action = "select";
+    }
+    else if (!isClickAndHold && !currentAtom && selectedAtom) {
+      action = "unselect";
     } else {
-      const atomAtCurrentPoint = findMouseOverAtom(atoms, currentPoint);
-      const selectedAtom = findSelectedAtom(atoms);
+      action = "draw";
+    }
 
-      if (atomAtCurrentPoint) {
-        if (atomAtCurrentPoint.dragging) {
-          const { x, y } = snapToGrid(currentPoint)
-          selectedAtom.x = x;
-          selectedAtom.y = y;
-          selectedAtom.dragging = false;
-          unselectAtom(atomAtCurrentPoint);
-        } else {
-          selectAtom(atomAtCurrentPoint);
-        }
-      } else {
-        if (selectedAtom) {
-          unselectAtom(selectedAtom);
-        }
-      }
+    switch (action) {
+      case "create":
+        createAtom(snapToGrid(currentPoint));
+        break;
+
+      case "select":
+        selectAtom(currentAtom);
+        break;
+
+      case "unselect":
+        unselectAtom(selectedAtom);
+        break;
+
+      case "connect":
+        startAtom.connect(currentAtom);
+        break;
+
+      case "startDrag":
+        currentAtom.dragging = true;
+        break;
+
+      case "finishDrag":
+        const { x, y } = snapToGrid(currentPoint)
+        selectedAtom.x = x;
+        selectedAtom.y = y;
+        selectedAtom.dragging = false;
+        break;
+
+      case "draw":
+        // do nothing here yet
+        break;
+
+      default:
+        break;
     }
   }
 
