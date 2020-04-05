@@ -139,7 +139,7 @@ function inputEvent() {
 function drawBackground(s: p5, bg: p5.Graphics, color: p5.Color) {
   bg.background(color);
 
-  bg.stroke(190);
+  bg.stroke(210);
   bg.strokeWeight(3);
 
   const spaceBetweenDots = 20;
@@ -194,7 +194,7 @@ const sketch = (p: p5) => {
   let keepDrawings = false;
   let showFPS = false;
 
-  const backgroundColor = p.color('#F2F7FC');
+  const backgroundColor = p.color("#FDFDFD");
 
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);

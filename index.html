@@ -15,18 +15,44 @@
         font-family: monospace;
       }
 
+      * {
+        box-sizing: border-box;
+      }
+
       canvas { display: block; }
 
       /* ------ Layout ------ */
-      .transcript {
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        width: 100%;
+      .container {
+        display: flex;
+      }
+
+      aside {
+        width: 420px;
+        display: block;
         background-color: #fff;
-        height: 160px;
-        border-top: 2px solid #999;
+        border-left: 1px solid #D0D0D0;
+        color: #5A5A5A;
+        z-index: 10;
+        font-size: 12px;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      aside nav {
+        background-color: #f3f3f3;
+        padding: .5rem;
+        border-bottom: 1px solid #D0D0D0;
+        height: 32px;
+      }
+
+      .canvas {
+        width: auto;
+        overflow: hidden;
+      }
+
+      .transcript {
+        position: relative;
+        background-color: #fff;
+        height: calc(100vh - 32px);
         overflow: auto;
       }
 
@@ -53,7 +79,12 @@
   <body>
     <div class="container">
       <div id="canvas" class="canvas"></div>
-      <div id="transcript" class="transcript"></div>
+      <aside>
+        <nav>
+          Transcript
+        </nav>
+        <div id="transcript" class="transcript"></div>
+      </aside>
     </div>
 
     <script type="module">
