@@ -4,6 +4,7 @@ import executor from "./executor";
 import { Line, distance, pointAt } from "./geometry";
 
 ////////////////////////////////////////////////////////////////////////////////
+
 import { createStore, createSlice } from "@reduxjs/toolkit";
 import { devToolsEnhancer } from "redux-devtools-extension";
 
@@ -22,6 +23,41 @@ const transcript = createSlice({
 });
 
 const store = createStore(transcript.reducer, devToolsEnhancer({}));
+let atoms : Atom[] = [];
+let lines: Line[] = [];
+
+////////////////////////////////////////////////////////////////////////////////
+
+import { remote } from "electron";
+import { addMenuItem } from "./menu";
+const { dialog } = remote;
+
+const menu = remote.Menu.getApplicationMenu();
+
+addMenuItem(menu, "File", {
+  label: "Open",
+  click() {
+    dialog.showOpenDialog({}).then(result => {
+      console.log(result.filePaths);
+    });
+  },
+});
+addMenuItem(menu, "File", {
+  label: "Save",
+  click() {
+    console.log('Clicked save');
+  },
+});
+addMenuItem(menu, "File", {
+  label: "Save As",
+  click() {
+    dialog.showSaveDialog({}).then(result => {
+      console.log(result.filePath);
+    });
+  },
+});
+
+remote.Menu.setApplicationMenu(menu);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,9 +70,6 @@ const ATOM_DIAMETER = 50;
 
 let valueInput: p5.Element = undefined;
 let bg: p5.Graphics = null;
-
-let atoms : Atom[] = [];
-let lines: Line[] = [];
 
 const findSelectedAtom = (atoms: Atom[]) => {
   return atoms.find(atom => atom.selected);
@@ -381,6 +414,7 @@ const sketch = (p: p5) => {
 new p5(sketch, canvasPlaceholder);
 
 ////////////////////////////////////////////////////////////////////////////////
+
 import { render } from "react-dom";
 import { html } from "htm/react";
 import Transcript from "./transcript";
