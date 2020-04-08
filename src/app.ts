@@ -12,12 +12,21 @@ import transcript from "./reducers/transcript";
 const store = createStore(transcript.reducer, devToolsEnhancer({}));
 let atoms : Atom[] = [];
 let lines: Line[] = [];
+let currentFilePath: string = undefined;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+import * as fs from "fs";
 import { remote } from "electron";
 import { addMenuItem } from "./menu";
+import { pack, unpack } from "./atom";
 const { dialog } = remote;
+
+const writeToFile = (path: string, atoms: Atom[]): void => {
+  const packedAtoms = pack(atoms);
+  const rawJson = JSON.stringify(packedAtoms);
+  fs.writeFileSync(path, rawJson);
+};
 
 const menu = remote.Menu.getApplicationMenu();
 
@@ -25,21 +34,33 @@ addMenuItem(menu, "File", {
   label: "Open",
   click() {
     dialog.showOpenDialog({}).then(result => {
-      console.log(result.filePaths);
+      currentFilePath = result.filePaths[0];
+
+      const rawJson = fs.readFileSync(currentFilePath);
+      const packedAtoms = JSON.parse(rawJson.toString());
+      atoms = unpack(packedAtoms);
     });
   },
 });
 addMenuItem(menu, "File", {
   label: "Save",
   click() {
-    console.log('Clicked save');
+    if (currentFilePath) {
+      writeToFile(currentFilePath, atoms);
+    } else {
+      dialog.showSaveDialog({}).then(result => {
+        currentFilePath = result.filePath;
+        writeToFile(currentFilePath, atoms);
+      });
+    }
   },
 });
 addMenuItem(menu, "File", {
   label: "Save As",
   click() {
     dialog.showSaveDialog({}).then(result => {
-      console.log(result.filePath);
+      currentFilePath = result.filePath;
+      writeToFile(currentFilePath, atoms);
     });
   },
 });
@@ -405,6 +426,7 @@ new p5(sketch, canvasPlaceholder);
 import { render } from "react-dom";
 import { html } from "htm/react";
 import Transcript from "./transcript";
+import { fstat } from "fs";
 
 render(
   html`<${Transcript} store="${store}" />`,
