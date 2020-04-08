@@ -5,22 +5,9 @@ import { Line, distance, pointAt } from "./geometry";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-import { createStore, createSlice } from "@reduxjs/toolkit";
+import { createStore } from "@reduxjs/toolkit";
 import { devToolsEnhancer } from "redux-devtools-extension";
-
-const transcript = createSlice({
-  name: "transcript",
-  initialState: [],
-  reducers: {
-    add(state, action) {
-      state.push(action.payload);
-    },
-
-    clear(state) {
-      state = [];
-    },
-  }
-});
+import transcript from "./reducers/transcript";
 
 const store = createStore(transcript.reducer, devToolsEnhancer({}));
 let atoms : Atom[] = [];
@@ -85,7 +72,7 @@ const findMouseOverAtom = (atoms: Atom[], mouse: MousePosition) => {
 
 const evaluateAtom = (atom: Atom): void => {
   executor(atom).then((result) => {
-    store.dispatch(transcript.actions.add(result));
+    store.dispatch(transcript.add(result));
   });
 }
 
