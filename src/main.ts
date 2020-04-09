@@ -1,13 +1,15 @@
-import { app, BrowserWindow, Menu, MenuItemConstructorOptions, dialog } from "electron";
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
 import installExtension, { REDUX_DEVTOOLS } from 'electron-devtools-installer';
 
 installExtension(REDUX_DEVTOOLS)
     .then((name) => console.log(`Added Extension:  ${name}`))
     .catch((err) => console.log('An error occurred: ', err));
 
+let win: BrowserWindow = undefined;
+
 function createWindow () {
   // Create the browser window.
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -17,9 +19,6 @@ function createWindow () {
 
   // and load the index.html of the app.
   win.loadFile("../index.html")
-
-  // Open the DevTools.
-  // win.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished
@@ -44,29 +43,96 @@ app.on("activate", () => {
   }
 })
 
-// const template : MenuItemConstructorOptions[] = [
-//   { role: "appMenu" },
-//   // { role: "fileMenu" },
-//   {
-//     label: "File",
-//     submenu: [
-//       {
-//         label: "Open...",
-//         click: () => {
-//           dialog.showOpenDialog({ properties: ['openFile'] }).then(value => {
-//             console.log(value.filePaths);
-//           });
-//         },
-//       },
-//       { label: "Save" },
-//       { role: "close" },
-//     ],
-//   },
-//   { role: "editMenu" },
-//   { role: "windowMenu" },
-// ];
-// const menu = Menu.buildFromTemplate(template);
-// Menu.setApplicationMenu(menu);
+const template: MenuItemConstructorOptions[] = [
+  // { role: 'appMenu' },
+  {
+    label: app.name,
+    submenu: [
+      { role: 'about' },
+      { type: 'separator' },
+      { role: 'services' },
+      { type: 'separator' },
+      { role: 'hide' },
+      { role: 'hideOthers' },
+      { role: 'unhide' },
+      { type: 'separator' },
+      { role: 'quit' }
+    ]
+  },
+  // { role: 'fileMenu' }
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: "New",
+        click() {
+          win.webContents.send('click-new');
+        },
+      },
+      { type: 'separator' },
+      {
+        label: "Open",
+        click() {
+          win.webContents.send('click-open');
+        },
+      },
+      { type: 'separator' },
+      {
+        label: "Save",
+        click() {
+          win.webContents.send('click-save');
+        },
+      },
+      {
+        label: "Save As",
+        click() {
+          win.webContents.send('click-save-as');
+        },
+      },
+      { type: 'separator' },
+      { role: 'close' },
+    ]
+  },
+  // { role: 'editMenu' }
+  {
+    label: 'Edit',
+    submenu: [
+      { role: 'undo' },
+      { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+      { role: 'pasteAndMatchStyle' },
+      { role: 'delete' },
+      { role: 'selectAll' },
+      { type: 'separator' },
+    ]
+  },
+  // { role: 'viewMenu' }
+  {
+    label: 'View',
+    submenu: [
+      { role: 'reload' },
+      { role: 'forceReload' },
+      { role: 'toggleDevTools' },
+      { type: 'separator' },
+      { role: 'togglefullscreen' }
+    ]
+  },
+  // { role: 'windowMenu' }
+  {
+    label: 'Window',
+    submenu: [
+      { role: 'minimize' },
+      { role: 'zoom' },
+      { type: 'separator' },
+      { role: 'front' },
+      { type: 'separator' },
+      { role: 'window' }
+    ]
+  }
+];
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+const menu = Menu.buildFromTemplate(template);
+Menu.setApplicationMenu(menu);

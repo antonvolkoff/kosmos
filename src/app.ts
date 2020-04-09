@@ -17,8 +17,7 @@ let currentFilePath: string = undefined;
 ////////////////////////////////////////////////////////////////////////////////
 
 import * as fs from "fs";
-import { remote } from "electron";
-import { addMenuItem } from "./menu";
+import { remote, ipcRenderer } from "electron";
 import { pack, unpack } from "./atom";
 const { dialog } = remote;
 
@@ -28,51 +27,35 @@ const writeToFile = (path: string, atoms: Atom[]): void => {
   fs.writeFileSync(path, rawJson);
 };
 
-const menu = remote.Menu.getApplicationMenu();
+ipcRenderer.on('click-new', () => {
+  currentFilePath = undefined;
+  atoms = [];
+});
+ipcRenderer.on('click-open', () => {
+  dialog.showOpenDialog({}).then(result => {
+    currentFilePath = result.filePaths[0];
 
-addMenuItem(menu, "File", {
-  label: "New",
-  click() {
-    currentFilePath = undefined;
-    atoms = [];
-  },
+    const rawJson = fs.readFileSync(currentFilePath);
+    const packedAtoms = JSON.parse(rawJson.toString());
+    atoms = unpack(packedAtoms);
+  });
 });
-addMenuItem(menu, "File", {
-  label: "Open",
-  click() {
-    dialog.showOpenDialog({}).then(result => {
-      currentFilePath = result.filePaths[0];
-
-      const rawJson = fs.readFileSync(currentFilePath);
-      const packedAtoms = JSON.parse(rawJson.toString());
-      atoms = unpack(packedAtoms);
-    });
-  },
-});
-addMenuItem(menu, "File", {
-  label: "Save",
-  click() {
-    if (currentFilePath) {
-      writeToFile(currentFilePath, atoms);
-    } else {
-      dialog.showSaveDialog({}).then(result => {
-        currentFilePath = result.filePath;
-        writeToFile(currentFilePath, atoms);
-      });
-    }
-  },
-});
-addMenuItem(menu, "File", {
-  label: "Save As",
-  click() {
+ipcRenderer.on('click-save', () => {
+  if (currentFilePath) {
+    writeToFile(currentFilePath, atoms);
+  } else {
     dialog.showSaveDialog({}).then(result => {
       currentFilePath = result.filePath;
       writeToFile(currentFilePath, atoms);
     });
-  },
+  }
 });
-
-remote.Menu.setApplicationMenu(menu);
+ipcRenderer.on('click-save-as', () => {
+  dialog.showSaveDialog({}).then(result => {
+    currentFilePath = result.filePath;
+    writeToFile(currentFilePath, atoms);
+  });
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 
