@@ -31,6 +31,13 @@ const writeToFile = (path: string, atoms: Atom[]): void => {
 const menu = remote.Menu.getApplicationMenu();
 
 addMenuItem(menu, "File", {
+  label: "New",
+  click() {
+    currentFilePath = undefined;
+    atoms = [];
+  },
+});
+addMenuItem(menu, "File", {
   label: "Open",
   click() {
     dialog.showOpenDialog({}).then(result => {
