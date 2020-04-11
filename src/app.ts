@@ -406,6 +406,13 @@ const sketch = (p: p5) => {
     if (p.keyCode == p.ENTER && selectedAtom) {
       evaluateAtom(selectedAtom);
     }
+
+    if (p.keyCode == p.BACKSPACE && selectedAtom) {
+      const idx = atoms.findIndex((a) => a.id == selectedAtom.id);
+      if(idx == -1 || !selectedAtom.dragging) return;
+
+      atoms.splice(idx, 1);
+    }
   }
 };
 
