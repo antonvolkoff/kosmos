@@ -1,13 +1,14 @@
 import { Component, createRef } from "react";
 import { html } from "htm/react";
+import { State } from "./state";
 
 type TranscriptProps = {
-  store: any;
+  state: State;
 };
 
 type TranscriptState = {
-  results: string[];
-  lastResult: string;
+  entries: string[];
+  lastEntry: string;
 };
 
 const last = (results: string[]): string => {
@@ -15,8 +16,7 @@ const last = (results: string[]): string => {
 };
 
 const propsToState = (props: TranscriptProps): TranscriptState => {
-  const results = props.store.getState() as string[];
-  return { results: results, lastResult: last(results) };
+  return { entries: props.state.entries(), lastEntry: last(props.state.entries()) };
 };
 
 export default class Transcript extends Component<TranscriptProps, TranscriptState> {
@@ -28,7 +28,7 @@ export default class Transcript extends Component<TranscriptProps, TranscriptSta
   }
 
   componentDidMount() {
-    this.props.store.subscribe(() => {
+    this.props.state.subscribe(() => {
       this.setState(propsToState(this.props));
     });
     this.scrollToBottom()
@@ -54,7 +54,7 @@ export default class Transcript extends Component<TranscriptProps, TranscriptSta
   }
 
   renderEntries() {
-    return this.state.results.map(result => {
+    return this.state.entries.map(result => {
       return html`<div className="transcript-list-item">${result}</div>`;
     });
   }

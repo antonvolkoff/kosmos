@@ -5,55 +5,33 @@ import { Line, distance, pointAt } from "./geometry";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-import { createStore } from "@reduxjs/toolkit";
-import { devToolsEnhancer } from "redux-devtools-extension";
-import transcript from "./reducers/transcript";
-
-const store = createStore(transcript.reducer, devToolsEnhancer({}));
-let atoms : Atom[] = [];
-let lines: Line[] = [];
-let currentFilePath: string = undefined;
+import State from "./state";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-import * as fs from "fs";
 import { remote, ipcRenderer } from "electron";
-import { pack, unpack } from "./atom";
 const { dialog } = remote;
 
-const writeToFile = (path: string, atoms: Atom[]): void => {
-  const packedAtoms = pack(atoms);
-  const rawJson = JSON.stringify(packedAtoms);
-  fs.writeFileSync(path, rawJson);
-};
-
 ipcRenderer.on('click-new', () => {
-  currentFilePath = undefined;
-  atoms = [];
+  State.newFile();
 });
 ipcRenderer.on('click-open', () => {
   dialog.showOpenDialog({}).then(result => {
-    currentFilePath = result.filePaths[0];
-
-    const rawJson = fs.readFileSync(currentFilePath);
-    const packedAtoms = JSON.parse(rawJson.toString());
-    atoms = unpack(packedAtoms);
+    State.openFile(result.filePaths[0]);
   });
 });
 ipcRenderer.on('click-save', () => {
-  if (currentFilePath) {
-    writeToFile(currentFilePath, atoms);
+  if (State.hasFile()) {
+    State.saveFile();
   } else {
     dialog.showSaveDialog({}).then(result => {
-      currentFilePath = result.filePath;
-      writeToFile(currentFilePath, atoms);
+      State.saveAsFile(result.filePath);
     });
   }
-});
+})
 ipcRenderer.on('click-save-as', () => {
   dialog.showSaveDialog({}).then(result => {
-    currentFilePath = result.filePath;
-    writeToFile(currentFilePath, atoms);
+    State.saveAsFile(result.filePath);
   });
 });
 
@@ -69,21 +47,13 @@ const ATOM_DIAMETER = 50;
 let valueInput: p5.Element = undefined;
 let bg: p5.Graphics = null;
 
-const findSelectedAtom = (atoms: Atom[]) => {
-  return atoms.find(atom => atom.selected);
-}
-
-const findDraggingAtom = (atoms: Atom[]) => {
-  return atoms.find(atom => atom.dragging);
-};
-
 const findMouseOverAtom = (atoms: Atom[], mouse: MousePosition) => {
   return atoms.find(atom => isWithinAtomBoundaries(mouse, atom));
 }
 
 const evaluateAtom = (atom: Atom): void => {
   executor(atom).then((result) => {
-    store.dispatch(transcript.add(result));
+    State.addTranscriptEntry(result);
   });
 }
 
@@ -96,7 +66,7 @@ const snapToGrid = (mouse: MousePosition): MousePosition => {
 
 function createAtom({ x, y }: MousePosition) {
   const atom = new Atom(x, y);
-  atoms.push(atom);
+  State.addAtom(atom);
   selectAtom(atom);
 };
 
@@ -121,7 +91,7 @@ function drawAtoms(s: p5) {
   s.fill(255);
 
   // Connections
-  atoms.forEach(atom => {
+  State.atoms().forEach(atom => {
     s.stroke(150);
 
     atom.adjacentAtoms.forEach(childAtom => {
@@ -138,7 +108,7 @@ function drawAtoms(s: p5) {
   });
 
   // Atoms
-  atoms.forEach(atom => {
+  State.atoms().forEach(atom => {
     if (atom.selected) {
       s.strokeWeight(3);
       s.stroke(s.color('#1DA159'));
@@ -163,7 +133,7 @@ function drawAtoms(s: p5) {
 };
 
 function inputEvent() {
-  const atom = findSelectedAtom(atoms);
+  const atom = State.findSelectedAtom();
   atom.value = this.value();
 }
 
@@ -201,7 +171,7 @@ const selectAtom = (atom: Atom) => {
     return
   }
 
-  const selectedAtom = findSelectedAtom(atoms);
+  const selectedAtom = State.findSelectedAtom();
   if (selectedAtom) unselectAtom(selectedAtom);
 
   atom.selected = true;
@@ -224,6 +194,7 @@ const sketch = (p: p5) => {
   let startPoint: MousePosition = undefined;
   let keepDrawings = false;
   let showFPS = false;
+  let lines: Line[] = [];
 
   const backgroundColor = p.color("#FDFDFD");
 
@@ -277,7 +248,7 @@ const sketch = (p: p5) => {
         let radius = 20;
         let { x, y } = startPoint;
 
-        const atom = findMouseOverAtom(atoms, currentPoint);
+        const atom = findMouseOverAtom(State.atoms(), currentPoint);
         if (atom) {
           x = atom.x;
           y = atom.y;
@@ -315,11 +286,11 @@ const sketch = (p: p5) => {
     const mousePressedDuration = now - timestamp;
     const isClickAndHold = mousePressedDuration > HOLD_DURATION;
 
-    const startAtom = findMouseOverAtom(atoms, startPoint);
+    const startAtom = findMouseOverAtom(State.atoms(), startPoint);
     const currentPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
-    const currentAtom = findMouseOverAtom(atoms, currentPoint);
+    const currentAtom = findMouseOverAtom(State.atoms(), currentPoint);
     const dist = distance(startPoint, currentPoint);
-    const selectedAtom = findSelectedAtom(atoms);
+    const selectedAtom = State.findSelectedAtom();
 
     let action: string = "";
 
@@ -385,7 +356,7 @@ const sketch = (p: p5) => {
   }
 
   p.mouseMoved = () => {
-    const draggingAtom = findDraggingAtom(atoms);
+    const draggingAtom = State.findDraggingAtom();
     if (draggingAtom) {
       draggingAtom.x = p.mouseX;
       draggingAtom.y = p.mouseY;
@@ -393,7 +364,7 @@ const sketch = (p: p5) => {
   };
 
   p.keyReleased = () => {
-    const selectedAtom = findSelectedAtom(atoms);
+    const selectedAtom = State.findSelectedAtom();
 
     if (p.key == "d" && !selectedAtom) {
       keepDrawings = !keepDrawings;
@@ -408,10 +379,10 @@ const sketch = (p: p5) => {
     }
 
     if (p.keyCode == p.BACKSPACE && selectedAtom) {
-      const idx = atoms.findIndex((a) => a.id == selectedAtom.id);
+      const idx = State.atoms().findIndex((a) => a.id == selectedAtom.id);
       if(idx == -1 || !selectedAtom.dragging) return;
 
-      atoms.splice(idx, 1);
+      State.atoms().splice(idx, 1);
     }
   }
 };
@@ -423,9 +394,8 @@ new p5(sketch, canvasPlaceholder);
 import { render } from "react-dom";
 import { html } from "htm/react";
 import Transcript from "./transcript";
-import { fstat } from "fs";
 
 render(
-  html`<${Transcript} store="${store}" />`,
+  html`<${Transcript} state="${State}" />`,
   document.getElementById('transcript'),
 );
