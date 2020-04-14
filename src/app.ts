@@ -1,7 +1,7 @@
 import * as p5 from "p5";
 import Atom from "./atom";
 import executor from "./executor";
-import { Line, distance, pointAt } from "./geometry";
+import { Line, Point, distance, pointAt } from "./geometry";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,17 +37,12 @@ ipcRenderer.on('click-save-as', () => {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-interface MousePosition {
-  x: number;
-  y: number;
-}
-
 const ATOM_DIAMETER = 50;
 
 let valueInput: p5.Element = undefined;
 let bg: p5.Graphics = null;
 
-const findMouseOverAtom = (atoms: Atom[], mouse: MousePosition) => {
+const findMouseOverAtom = (atoms: Atom[], mouse: Point) => {
   return atoms.find(atom => isWithinAtomBoundaries(mouse, atom));
 }
 
@@ -57,20 +52,20 @@ const evaluateAtom = (atom: Atom): void => {
   });
 }
 
-const snapToGrid = (mouse: MousePosition): MousePosition => {
+const snapToGrid = (mouse: Point): Point => {
   const gridSize = 20;
   const x = Math.round(mouse.x / gridSize) * gridSize;
   const y = Math.round(mouse.y / gridSize) * gridSize;
   return { x, y };
 }
 
-function createAtom({ x, y }: MousePosition) {
+function createAtom({ x, y }: Point) {
   const atom = new Atom(x, y);
   State.addAtom(atom);
   selectAtom(atom);
 };
 
-function isWithinAtomBoundaries(mouse: MousePosition, atom: Atom): boolean {
+function isWithinAtomBoundaries(mouse: Point, atom: Atom): boolean {
   const leftBoundary = atom.x - (ATOM_DIAMETER / 2);
   const rightBoundary = atom.x + (ATOM_DIAMETER / 2);
   const topBoundary = atom.y + (ATOM_DIAMETER / 2);
@@ -191,7 +186,7 @@ const sketch = (p: p5) => {
   const HOLD_DIST_THRESHOLD = 20;
 
   let timestamp: number = undefined;
-  let startPoint: MousePosition = undefined;
+  let startPoint: Point = undefined;
   let keepDrawings = false;
   let showFPS = false;
   let lines: Line[] = [];
@@ -230,7 +225,7 @@ const sketch = (p: p5) => {
     // Hold animation
     if (startPoint) {
       const f = () => {
-        const currentPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
+        const currentPoint: Point = { x: p.mouseX, y: p.mouseY };
         const dist = distance(startPoint, currentPoint);
         if (dist >= HOLD_DIST_THRESHOLD) return;
 
@@ -287,7 +282,7 @@ const sketch = (p: p5) => {
     const isClickAndHold = mousePressedDuration > HOLD_DURATION;
 
     const startAtom = findMouseOverAtom(State.atoms(), startPoint);
-    const currentPoint: MousePosition = { x: p.mouseX, y: p.mouseY };
+    const currentPoint: Point = { x: p.mouseX, y: p.mouseY };
     const currentAtom = findMouseOverAtom(State.atoms(), currentPoint);
     const dist = distance(startPoint, currentPoint);
     const selectedAtom = State.findSelectedAtom();
