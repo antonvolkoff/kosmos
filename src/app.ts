@@ -2,8 +2,8 @@ import * as p5 from "p5";
 import Atom from "./atom";
 import executor from "./executor";
 import { Line, Point, distance, pointAt } from "./geometry";
-import AtomShape from "./shapes/atom_shape";
-import { ATOM_SIZE } from "./shapes/atom_shape";
+import AtomShape from "./shapes/atom_v2_shape";
+import { ATOM_SIZE } from "./shapes/atom_v2_shape";
 import { render } from "react-dom";
 import { html } from "htm/react";
 import Transcript from "./transcript";
@@ -43,7 +43,7 @@ let valueInput: p5.Element = undefined;
 let bg: p5.Graphics = null;
 
 const findMouseOverAtom = (atoms: Atom[], mouse: Point) => {
-  return atoms.find(atom => isWithinAtomBoundaries(mouse, atom));
+  return atoms.find(atom => AtomShape.within(mouse, atom));
 }
 
 const evaluateAtom = (atom: Atom): void => {
@@ -64,20 +64,6 @@ function createAtom({ x, y }: Point) {
   State.addAtom(atom);
   selectAtom(atom);
 };
-
-function isWithinAtomBoundaries(mouse: Point, atom: Atom): boolean {
-  const leftBoundary = atom.x - (ATOM_SIZE / 2);
-  const rightBoundary = atom.x + (ATOM_SIZE / 2);
-  const topBoundary = atom.y + (ATOM_SIZE / 2);
-  const bottomBoundary = atom.y - (ATOM_SIZE / 2);
-
-  return (
-    mouse.x > leftBoundary &&
-    mouse.x < rightBoundary &&
-    mouse.y > bottomBoundary &&
-    mouse.y < topBoundary
-  );
-}
 
 function drawAtoms(s: p5) {
   s.push();

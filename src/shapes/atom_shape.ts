@@ -1,5 +1,6 @@
 import * as p5 from "p5";
 import Atom from "../atom";
+import { Point } from "../geometry";
 
 export const ATOM_SIZE = 50;
 
@@ -23,5 +24,19 @@ export default {
     s.textFont("monospace", 14);
     s.text(atom.value, atom.x, atom.y);
     s.pop();
-  }
+  },
+
+  within(mouse: Point, atom: Atom): boolean {
+    const leftBoundary = atom.x - (ATOM_SIZE / 2);
+    const rightBoundary = atom.x + (ATOM_SIZE / 2);
+    const topBoundary = atom.y + (ATOM_SIZE / 2);
+    const bottomBoundary = atom.y - (ATOM_SIZE / 2);
+
+    return (
+      mouse.x > leftBoundary &&
+      mouse.x < rightBoundary &&
+      mouse.y > bottomBoundary &&
+      mouse.y < topBoundary
+    );
+  },
 };
