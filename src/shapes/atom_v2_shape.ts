@@ -2,8 +2,8 @@ import * as p5 from "p5";
 import Atom from "../atom";
 import { Point } from "../geometry";
 
-export const ATOM_SIZE = 50;
-export const BORDER_RADIUS = 50;
+export const ATOM_SIZE = 40;
+export const BORDER_RADIUS = 40;
 
 export default {
   draw(s: p5, atom: Atom) {
