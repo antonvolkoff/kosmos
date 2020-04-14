@@ -94,7 +94,7 @@ function drawAtoms(s: p5) {
   State.atoms().forEach(atom => {
     s.stroke(150);
 
-    atom.adjacentAtoms.forEach(childAtom => {
+    atom.outgoing.forEach(childAtom => {
       const d = distance(atom, childAtom);
       const offset = (ATOM_DIAMETER / 2 + 8);
       const r1 = 1 - (offset / d);
@@ -332,7 +332,7 @@ const sketch = (p: p5) => {
         break;
 
       case "connect":
-        startAtom.connect(currentAtom);
+        State.connectAtoms(startAtom, currentAtom);
         break;
 
       case "startDrag":
@@ -378,11 +378,8 @@ const sketch = (p: p5) => {
       evaluateAtom(selectedAtom);
     }
 
-    if (p.keyCode == p.BACKSPACE && selectedAtom) {
-      const idx = State.atoms().findIndex((a) => a.id == selectedAtom.id);
-      if(idx == -1 || !selectedAtom.dragging) return;
-
-      State.atoms().splice(idx, 1);
+    if (p.keyCode == p.BACKSPACE && selectedAtom && selectedAtom.dragging) {
+      State.deleteAtom(selectedAtom);
     }
   }
 };

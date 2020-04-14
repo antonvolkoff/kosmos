@@ -4,7 +4,8 @@ export default class Atom {
   public y: number;
   public selected: boolean;
   public value: string;
-  public adjacentAtoms: Atom[];
+  public outgoing: Atom[];
+  public incoming: Atom[];
   public dragging: boolean;
 
   constructor(x: number, y: number, id: string = undefined, value = '') {
@@ -14,12 +15,10 @@ export default class Atom {
     this.value = value;
 
     this.selected = false;
-    this.adjacentAtoms = [];
     this.dragging = false;
-  }
 
-  connect(child: Atom) {
-    this.adjacentAtoms.push(child);
+    this.outgoing = [];
+    this.incoming = [];
   }
 
   score() {
@@ -27,7 +26,7 @@ export default class Atom {
   }
 
   sortedAdjacentAtoms() {
-    return this.adjacentAtoms.sort((a, b) => a.score() - b.score());
+    return this.outgoing.sort((a, b) => a.score() - b.score());
   }
 
   private generateID(): string {
@@ -61,7 +60,7 @@ export function pack(atoms: Atom[]): object {
 
   atoms.forEach(atom => {
     nodes[atom.id] = { x: atom.x, y: atom.y, value: atom.value };
-    atom.adjacentAtoms.forEach(targetAtom => {
+    atom.outgoing.forEach(targetAtom => {
       edges.push({ source: atom.id, target: targetAtom.id });
     });
   });
@@ -82,7 +81,8 @@ export function unpack({ graph }: PackObject): Atom[] {
   graph.edges.forEach(({ source, target}) => {
     const sourceAtom = atomsById[source];
     const targetAtom = atomsById[target];
-    sourceAtom.connect(targetAtom);
+    sourceAtom.outgoing.push(targetAtom);
+    targetAtom.incoming.push(sourceAtom);
   });
 
   return Object.values(atomsById);

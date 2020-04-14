@@ -26,7 +26,7 @@ const compile = (atom: Atom): string => {
     return atom.value;
 
   // Ref
-  if (atom.adjacentAtoms.length == 0)
+  if (atom.outgoing.length == 0)
     return atom.value;
 
   const childValues = atom.sortedAdjacentAtoms().map(child => compile(child));

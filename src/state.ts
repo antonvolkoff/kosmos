@@ -15,6 +15,8 @@ export interface State {
   subscribe(handler: any): void;
 
   addAtom(atom: Atom): void;
+  deleteAtom(atom: Atom): void;
+  connectAtoms(source: Atom, target: Atom): void;
   findSelectedAtom(): Atom | undefined;
   findDraggingAtom(): Atom | undefined;
 
@@ -67,6 +69,18 @@ export function addAtom(atom: Atom): void {
   atoms.push(atom);
 }
 
+export function deleteAtom(atom: Atom): void {
+  const idx = atoms.findIndex((a) => a.id == atom.id);
+  if(idx == -1) return;
+
+  atoms.splice(idx, 1);
+}
+
+export function connectAtoms(source: Atom, target: Atom): void {
+  source.outgoing.push(target);
+  target.incoming.push(source);
+}
+
 export function findSelectedAtom(): Atom | undefined {
   return atoms.find(atom => atom.selected);
 }
@@ -104,6 +118,8 @@ export default {
   saveAsFile,
   hasFile,
   addAtom,
+  deleteAtom,
+  connectAtoms,
   findSelectedAtom,
   findDraggingAtom,
   addTranscriptEntry,
