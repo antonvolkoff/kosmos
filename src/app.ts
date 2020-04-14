@@ -2,12 +2,14 @@ import * as p5 from "p5";
 import Atom from "./atom";
 import executor from "./executor";
 import { Line, Point, distance, pointAt } from "./geometry";
-import AtomShape from "./shapes/atom_v2_shape";
-import { ATOM_SIZE } from "./shapes/atom_v2_shape";
 import { render } from "react-dom";
 import { html } from "htm/react";
 import Transcript from "./transcript";
 import State from "./state";
+
+import AtomShape from "./shapes/atom_v2_shape";
+import { ATOM_SIZE } from "./shapes/atom_v2_shape";
+import LegendShape from "./shapes/legend_shape";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -228,6 +230,8 @@ const sketch = (p: p5) => {
       }
       f();
     }
+
+    LegendShape.draw(p);
 
     if (showFPS) drawFPS(p);
   };
