@@ -2,9 +2,11 @@ import * as p5 from "p5";
 import Atom from "./atom";
 import executor from "./executor";
 import { Line, Point, distance, pointAt } from "./geometry";
-
-////////////////////////////////////////////////////////////////////////////////
-
+import AtomShape from "./shapes/atom_shape";
+import { ATOM_SIZE } from "./shapes/atom_shape";
+import { render } from "react-dom";
+import { html } from "htm/react";
+import Transcript from "./transcript";
 import State from "./state";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,8 +39,6 @@ ipcRenderer.on('click-save-as', () => {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const ATOM_DIAMETER = 50;
-
 let valueInput: p5.Element = undefined;
 let bg: p5.Graphics = null;
 
@@ -66,10 +66,10 @@ function createAtom({ x, y }: Point) {
 };
 
 function isWithinAtomBoundaries(mouse: Point, atom: Atom): boolean {
-  const leftBoundary = atom.x - (ATOM_DIAMETER / 2);
-  const rightBoundary = atom.x + (ATOM_DIAMETER / 2);
-  const topBoundary = atom.y + (ATOM_DIAMETER / 2);
-  const bottomBoundary = atom.y - (ATOM_DIAMETER / 2);
+  const leftBoundary = atom.x - (ATOM_SIZE / 2);
+  const rightBoundary = atom.x + (ATOM_SIZE / 2);
+  const topBoundary = atom.y + (ATOM_SIZE / 2);
+  const bottomBoundary = atom.y - (ATOM_SIZE / 2);
 
   return (
     mouse.x > leftBoundary &&
@@ -91,7 +91,7 @@ function drawAtoms(s: p5) {
 
     atom.outgoing.forEach(childAtom => {
       const d = distance(atom, childAtom);
-      const offset = (ATOM_DIAMETER / 2 + 8);
+      const offset = (ATOM_SIZE / 2 + 8);
       const r1 = 1 - (offset / d);
       const point = pointAt(atom, childAtom, r1);
 
@@ -104,24 +104,7 @@ function drawAtoms(s: p5) {
 
   // Atoms
   State.atoms().forEach(atom => {
-    if (atom.selected) {
-      s.strokeWeight(3);
-      s.stroke(s.color('#1DA159'));
-    } else {
-      s.strokeWeight(2);
-      s.stroke(150);
-    }
-
-    const diameter = atom.dragging ? ATOM_DIAMETER * 1.2 : ATOM_DIAMETER;
-    s.circle(atom.x, atom.y, diameter);
-
-    s.push();
-    s.fill(50);
-    s.strokeWeight(0);
-    s.textAlign(s.CENTER, s.CENTER);
-    s.textFont("monospace", 14);
-    s.text(atom.value, atom.x, atom.y);
-    s.pop();
+    AtomShape.draw(s, atom);
   });
 
   s.pop();
@@ -382,10 +365,6 @@ const sketch = (p: p5) => {
 new p5(sketch, canvasPlaceholder);
 
 ////////////////////////////////////////////////////////////////////////////////
-
-import { render } from "react-dom";
-import { html } from "htm/react";
-import Transcript from "./transcript";
 
 render(
   html`<${Transcript} state="${State}" />`,
