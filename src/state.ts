@@ -38,6 +38,13 @@ function notify(): void {
   subscribers.forEach(handler => handler());
 }
 
+function deleteAtomFromArray(atoms: Atom[], atom: Atom): void {
+  const idx = atoms.findIndex((a) => a.id == atom.id);
+  if(idx == -1) return;
+
+  atoms.splice(idx, 1);
+}
+
 export function newFile(): void {
   file = { path: undefined };
   atoms = [];
@@ -70,10 +77,15 @@ export function addAtom(atom: Atom): void {
 }
 
 export function deleteAtom(atom: Atom): void {
-  const idx = atoms.findIndex((a) => a.id == atom.id);
-  if(idx == -1) return;
+  atom.incoming.forEach(source => {
+    deleteAtomFromArray(source.outgoing, atom);
+  });
 
-  atoms.splice(idx, 1);
+  atom.outgoing.forEach(target => {
+    deleteAtomFromArray(target.incoming, atom);
+  });
+
+  deleteAtomFromArray(atoms, atom);
 }
 
 export function connectAtoms(source: Atom, target: Atom): void {
