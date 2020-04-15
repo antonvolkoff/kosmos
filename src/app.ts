@@ -11,6 +11,25 @@ import AtomShape from "./shapes/atom_v2_shape";
 import { ATOM_SIZE } from "./shapes/atom_v2_shape";
 import LegendShape from "./shapes/legend_shape";
 
+import { World } from "ecsy";
+
+////////////////////////////////////////////////////////////////////////////////
+
+import Atomable from "./components/atomable";
+import Position from "./components/position";
+import Mouse from "./components/mouse";
+
+import ControlSystem from "./systems/control_system";
+
+let world = new World();
+world.registerComponent(Atomable);
+world.registerComponent(Position);
+world.registerComponent(Mouse);
+world.registerSystem(ControlSystem);
+
+const mouse = world.createEntity();
+mouse.addComponent(Position).addComponent(Mouse);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 import { remote, ipcRenderer } from "electron";
@@ -175,6 +194,8 @@ const sketch = (p: p5) => {
   };
 
   p.draw = () => {
+    world.execute(p.deltaTime, new Date().getTime());
+
     if (p.mouseIsPressed === true) {
       lines.push({ x1: p.mouseX, y1: p.mouseY, x2: p.pmouseX, y2: p.pmouseY });
     } else {
@@ -245,11 +266,17 @@ const sketch = (p: p5) => {
   };
 
   p.mousePressed = () => {
+    mouse.getMutableComponent(Position).set(p.mouseX, p.mouseY);
+    mouse.getMutableComponent(Mouse).state = 'pressed';
+
     timestamp = new Date().getTime();
     startPoint = { x: p.mouseX, y: p.mouseY };
   }
 
   p.mouseReleased = () => {
+    mouse.getMutableComponent(Position).set(p.mouseX, p.mouseY);
+    mouse.getMutableComponent(Mouse).state = 'released';
+
     const now = new Date().getTime();
     const mousePressedDuration = now - timestamp;
     const isClickAndHold = mousePressedDuration > HOLD_DURATION;
@@ -324,6 +351,8 @@ const sketch = (p: p5) => {
   }
 
   p.mouseMoved = () => {
+    mouse.getMutableComponent(Position).set(p.mouseX, p.mouseY);
+
     const draggingAtom = State.findDraggingAtom();
     if (draggingAtom) {
       draggingAtom.x = p.mouseX;
