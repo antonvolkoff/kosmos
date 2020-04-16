@@ -74,6 +74,39 @@
       .transcript-list-item.has-no-border {
         border: none;
       }
+
+      .control {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        display: flex;
+        justify-content: center;
+        z-index: 100;
+      }
+
+      .control-panel {
+        min-width: 200px;
+        background-color: #fff;
+        border: 1px solid #D0D0D0;
+        color: #5A5A5A;
+        padding: .75rem 1rem;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0px 1px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .control-panel.at-top {
+        border-top: none;
+      }
+
+      .control-button {
+        border: none;
+        cursor: pointer;
+        outline: none;
+      }
+      .control-button:active {
+        color: #D0D0D0;
+      }
     </style>
   </head>
   <body>
@@ -85,6 +118,7 @@
         </nav>
         <div id="transcript" class="transcript"></div>
       </aside>
+      <div id="control" class="control"></div>
     </div>
 
     <script type="module">

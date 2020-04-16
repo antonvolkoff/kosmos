@@ -4,9 +4,9 @@ import { render } from "react-dom";
 import { html } from "htm/react";
 
 import Atom from "./atom";
-import executor from "./executor";
 import { Line, Point, distance, pointAt } from "./geometry";
 import Transcript from "./transcript";
+import Control from "./control";
 import State from "./state";
 
 import AtomShape from "./shapes/atom_v2_shape";
@@ -47,12 +47,6 @@ let bg: p5.Graphics = null;
 
 const findMouseOverAtom = (atoms: Atom[], mouse: Point) => {
   return atoms.find(atom => AtomShape.within(mouse, atom));
-}
-
-const evaluateAtom = (atom: Atom): void => {
-  executor(atom).then((result) => {
-    State.addTranscriptEntry(result);
-  });
 }
 
 const snapToGrid = (mouse: Point): Point => {
@@ -141,13 +135,13 @@ const selectAtom = (atom: Atom) => {
   const selectedAtom = State.findSelectedAtom();
   if (selectedAtom) unselectAtom(selectedAtom);
 
-  atom.selected = true;
+  State.selectAtom(atom);
   valueInput.elt.focus();
   valueInput.value(atom.value);
 };
 
 const unselectAtom = (atom: Atom) => {
-  atom.selected = false;
+  State.unselectAtom(atom);
   valueInput.value('');
 }
 
@@ -245,12 +239,16 @@ const sketch = (p: p5) => {
     valueInput.position(p.width - 200, 65);
   };
 
-  p.mousePressed = () => {
+  p.mousePressed = (event: MouseEvent) => {
+    if ((event.srcElement as HTMLElement).tagName !== "CANVAS") return;
+
     timestamp = new Date().getTime();
     startPoint = { x: p.mouseX, y: p.mouseY };
   }
 
-  p.mouseReleased = () => {
+  p.mouseReleased = (event: MouseEvent) => {
+    if ((event.srcElement as HTMLElement).tagName !== "CANVAS") return;
+
     const now = new Date().getTime();
     const mousePressedDuration = now - timestamp;
     const isClickAndHold = mousePressedDuration > HOLD_DURATION;
@@ -344,7 +342,7 @@ const sketch = (p: p5) => {
     }
 
     if (p.keyCode == p.ENTER && selectedAtom) {
-      evaluateAtom(selectedAtom);
+      State.evalAtom(selectedAtom);
     }
 
     if (p.keyCode == p.BACKSPACE && selectedAtom && selectedAtom.dragging) {
@@ -360,4 +358,9 @@ new p5(sketch, canvasPlaceholder);
 render(
   html`<${Transcript} state="${State}" />`,
   document.getElementById('transcript'),
+);
+
+render(
+  html`<${Control} state=${State} />`,
+  document.getElementById('control'),
 );

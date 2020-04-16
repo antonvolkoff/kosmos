@@ -2,6 +2,7 @@ import * as fs from "fs";
 
 import Atom from "./atom";
 import { pack, unpack } from "./atom";
+import executor from "./executor";
 
 interface File {
   path: string;
@@ -17,6 +18,12 @@ export interface State {
   addAtom(atom: Atom): void;
   deleteAtom(atom: Atom): void;
   connectAtoms(source: Atom, target: Atom): void;
+
+  evalAtom(atom: Atom): void;
+
+  selectAtom(atom: Atom);
+  unselectAtom(atom: Atom);
+
   findSelectedAtom(): Atom | undefined;
   findDraggingAtom(): Atom | undefined;
 
@@ -76,6 +83,22 @@ export function addAtom(atom: Atom): void {
   atoms.push(atom);
 }
 
+export function evalAtom(atom: Atom): void {
+  executor(atom).then((result) => {
+    addTranscriptEntry(result);
+  });
+}
+
+export function selectAtom(atom: Atom): void {
+  atom.selected = true;
+  notify();
+}
+
+export function unselectAtom(atom: Atom): void {
+  atom.selected = false;
+  notify();
+}
+
 export function deleteAtom(atom: Atom): void {
   atom.incoming.forEach(source => {
     deleteAtomFromArray(source.outgoing, atom);
@@ -131,6 +154,9 @@ export default {
   hasFile,
   addAtom,
   deleteAtom,
+  evalAtom,
+  selectAtom,
+  unselectAtom,
   connectAtoms,
   findSelectedAtom,
   findDraggingAtom,
