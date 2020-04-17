@@ -65,7 +65,7 @@ function createAtom({ x, y }: Point) {
 function drawAtoms(s: p5) {
   s.push();
 
-  s.strokeWeight(2);
+  s.strokeWeight(1);
   s.fill(255);
 
   // Connections
@@ -73,14 +73,35 @@ function drawAtoms(s: p5) {
     s.stroke(150);
 
     atom.outgoing.forEach(childAtom => {
-      const d = distance(atom, childAtom);
-      const offset = (ATOM_SIZE / 2 + 8);
-      const r1 = 1 - (offset / d);
-      const point = pointAt(atom, childAtom, r1);
+      const point = pointAt(atom, childAtom, 0.75);
 
-      s.line(atom.x, atom.y, point.x, point.y);
+      s.line(atom.x, atom.y, childAtom.x, childAtom.y);
+      s.circle(point.x, point.y, 16);
+
+      const a: Point = { x: atom.x, y: atom.y };
+      const b: Point = { x: childAtom.x, y: childAtom.y };
+      const c: Point = { x: atom.x, y: childAtom.y };
+      const ab = distance(a, b);
+      const bc = distance(b, c);
+      const sinX = bc / ab;
+      let angleRad = Math.asin(sinX) - s.HALF_PI;
+
+      if (childAtom.y > atom.y) {
+        angleRad = -angleRad;
+      }
+      if (childAtom.x < atom.x) {
+        angleRad = s.HALF_PI + (s.HALF_PI - angleRad);
+      }
+
       s.push();
-      s.circle(point.x, point.y, 10);
+      s.fill(150);
+      s.strokeWeight(0);
+
+      s.translate(point.x, point.y);
+      s.rotate(angleRad);
+
+      s.triangle(5, 0, -3, -4, -3, 4);
+
       s.pop();
     });
   });
