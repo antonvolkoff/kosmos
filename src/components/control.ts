@@ -3,6 +3,7 @@ import { html } from "htm/react";
 
 import { State } from "../state";
 import PlayIcon from "./play_icon";
+import TrashIcon from "./trash_icon";
 
 interface Props {
   state: State;
@@ -15,15 +16,23 @@ export default function Control({ state }: Props) {
     setSelectedAtom(state.findSelectedAtom());
   });
 
-  const onClick = (event) => {
+  const onEvalClick = (event) => {
     event.preventDefault();
     state.evalAtom(selectedAtom);
   }
 
+  const onDeleteClick = (event) => {
+    event.preventDefault();
+    state.deleteAtom(selectedAtom);
+  }
+
   return html`
     <div className="control-panel at-top">
-      <button className="control-button" disabled=${!selectedAtom} onClick=${onClick}>
+      <button className="control-button" disabled=${!selectedAtom} onClick=${onEvalClick}>
         <${PlayIcon} />
+      </button>
+      <button className="control-button" disabled=${!selectedAtom} onClick=${onDeleteClick}>
+        <${TrashIcon} />
       </button>
     </div>
   `;

@@ -109,6 +109,7 @@ export function deleteAtom(atom: Atom): void {
   });
 
   deleteAtomFromArray(atoms, atom);
+  notify();
 }
 
 export function connectAtoms(source: Atom, target: Atom): void {
