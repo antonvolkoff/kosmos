@@ -5,8 +5,8 @@ import { html } from "htm/react";
 
 import Atom from "./atom";
 import { Line, Point, distance, pointAt } from "./geometry";
-import Transcript from "./transcript";
-import Control from "./control";
+import Transcript from "./components/transcript";
+import Control from "./components/control";
 import State from "./state";
 
 import AtomShape from "./shapes/atom_v2_shape";
