@@ -17,10 +17,10 @@ export default {
       s.strokeWeight(2);
     }
 
-    const x = atom.x - 20;
-    const y = atom.y - 20;
     const width = 60;
-    const height = 40;
+    const height = 34;
+    const x = atom.x - 20;
+    const y = atom.y - (height / 2);
 
     let widthExtension = 0;
     if (atom.value.length > 1) {
