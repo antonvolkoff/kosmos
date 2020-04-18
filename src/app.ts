@@ -38,6 +38,11 @@ ipcRenderer.on('click-save-as', () => {
     State.saveAsFile(result.filePath);
   });
 });
+ipcRenderer.on("click-export", () => {
+  dialog.showSaveDialog({}).then(result => {
+    State.exportAsClojure(result.filePath);
+  });
+});
 
 State.subscribe(() => {
   document.title = `${State.file().name} - Kosmos`;

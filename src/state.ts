@@ -1,8 +1,8 @@
 import * as fs from "fs";
 
 import Atom from "./atom";
-import { pack, unpack } from "./packers/json_packer";
-import { translate } from "./packers/clojure_packer";
+import * as JsonPacker from "./packers/json_packer";
+import * as ClojurePacker  from "./packers/clojure_packer";
 import executor from "./executor";
 import * as File from "./state/file";
 
@@ -32,6 +32,8 @@ export interface State {
   saveAsFile(path: string): void;
   saveFile(): void;
   hasFile(): boolean;
+
+  exportAsClojure(path: string): void;
 };
 
 let subscribers: any[] = [];
@@ -59,12 +61,12 @@ export function newFile(): void {
 export function openFile(path: string): void {
   file = File.setPath(file, path);
   const rawJson = fs.readFileSync(file.path);
-  atoms = unpack(rawJson.toString());
+  atoms = JsonPacker.unpack(rawJson.toString());
   notify();
 }
 
 export function saveFile(): void {
-  const rawJson = pack(atoms);
+  const rawJson = JsonPacker.pack(atoms);
   fs.writeFileSync(file.path, rawJson);
 }
 
@@ -82,7 +84,7 @@ export function addAtom(atom: Atom): void {
 }
 
 export function evalAtom(atom: Atom): void {
-  executor(translate(atom)).then(addTranscriptEntry);
+  executor(ClojurePacker.translate(atom)).then(addTranscriptEntry);
 }
 
 export function selectAtom(atom: Atom): void {
@@ -126,6 +128,11 @@ export function addTranscriptEntry(entry: string): void {
   notify();
 }
 
+export function exportAsClojure(path: string): void {
+  const data = ClojurePacker.pack(atoms);
+  fs.writeFileSync(path, data);
+};
+
 export function getState(): string[] {
   return entries;
 }
@@ -159,4 +166,5 @@ export default {
   findDraggingAtom,
   addTranscriptEntry,
   subscribe,
+  exportAsClojure,
 } as State;

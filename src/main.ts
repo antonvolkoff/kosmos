@@ -61,36 +61,43 @@ const template: MenuItemConstructorOptions[] = [
   },
   // { role: 'fileMenu' }
   {
-    label: 'File',
+    label: "File",
     submenu: [
       {
         label: "New",
         click() {
-          win.webContents.send('click-new');
+          win.webContents.send("click-new");
         },
       },
-      { type: 'separator' },
+      { type: "separator" },
       {
         label: "Open",
         click() {
-          win.webContents.send('click-open');
+          win.webContents.send("click-open");
         },
       },
-      { type: 'separator' },
+      { type: "separator" },
       {
         label: "Save",
         click() {
-          win.webContents.send('click-save');
+          win.webContents.send("click-save");
         },
       },
       {
         label: "Save As",
         click() {
-          win.webContents.send('click-save-as');
+          win.webContents.send("click-save-as");
         },
       },
-      { type: 'separator' },
-      { role: 'close' },
+      { type: "separator" },
+      {
+        label: "Export",
+        click() {
+          win.webContents.send("click-export");
+        },
+      },
+      { type: "separator" },
+      { role: "close" },
     ]
   },
   // { role: 'editMenu' }
