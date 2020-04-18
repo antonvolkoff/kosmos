@@ -1,6 +1,6 @@
 import Atom from "../atom";
 
-export function translate(atom: Atom): string {
+function translate(atom: Atom): string {
   // Integer
   if (atom.value.match(/^[0-9]*$/))
     return atom.value;
@@ -19,8 +19,14 @@ export function translate(atom: Atom): string {
 }
 
 export function pack(atoms: Atom[]): string {
-  const topLevelAtoms = atoms.filter(atom => atom.incoming.length == 0);
-  return topLevelAtoms.map(translate).join("\n");
+  let topLevelAtoms: Atom[] = [];
+  if (atoms.length == 1) {
+    topLevelAtoms = atoms;
+  } else {
+    topLevelAtoms = atoms.filter(atom => atom.incoming.length == 0);
+  }
+
+  return topLevelAtoms.map(translate).join("\n") + "\n";
 }
 
 export function unpack(data: string): Atom[] {

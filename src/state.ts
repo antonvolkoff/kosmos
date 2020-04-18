@@ -84,7 +84,7 @@ export function addAtom(atom: Atom): void {
 }
 
 export function evalAtom(atom: Atom): void {
-  executor(ClojurePacker.translate(atom)).then(addTranscriptEntry);
+  executor(ClojurePacker.pack([atom])).then(addTranscriptEntry);
 }
 
 export function selectAtom(atom: Atom): void {
