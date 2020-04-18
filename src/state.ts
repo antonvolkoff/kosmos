@@ -1,7 +1,7 @@
 import * as fs from "fs";
 
 import Atom from "./atom";
-import { pack, unpack } from "./atom";
+import { pack, unpack } from "./packers/json_packer";
 import executor from "./executor";
 import * as File from "./state/file";
 
@@ -58,14 +58,12 @@ export function newFile(): void {
 export function openFile(path: string): void {
   file = File.setPath(file, path);
   const rawJson = fs.readFileSync(file.path);
-  const packedAtoms = JSON.parse(rawJson.toString());
-  atoms = unpack(packedAtoms);
+  atoms = unpack(rawJson.toString());
   notify();
 }
 
 export function saveFile(): void {
-  const packedAtoms = pack(atoms);
-  const rawJson = JSON.stringify(packedAtoms);
+  const rawJson = pack(atoms);
   fs.writeFileSync(file.path, rawJson);
 }
 
