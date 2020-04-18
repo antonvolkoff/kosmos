@@ -40,6 +40,10 @@ ipcRenderer.on('click-save-as', () => {
   });
 });
 
+State.subscribe(() => {
+  document.title = `${State.file().name} - Kosmos`;
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 
 let valueInput: p5.Element = undefined;

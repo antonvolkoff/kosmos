@@ -3,14 +3,11 @@ import * as fs from "fs";
 import Atom from "./atom";
 import { pack, unpack } from "./atom";
 import executor from "./executor";
-
-interface File {
-  path: string;
-}
+import * as File from "./state/file";
 
 export interface State {
   entries(): string[];
-  file(): File;
+  file(): File.File;
   atoms(): Atom[];
 
   subscribe(handler: any): void;
@@ -37,7 +34,7 @@ export interface State {
 };
 
 let subscribers: any[] = [];
-export let file: File = { path: undefined };
+export let file = File.init();
 export let atoms: Atom[] = [];
 export let entries: string[] = [];
 
@@ -53,15 +50,17 @@ function deleteAtomFromArray(atoms: Atom[], atom: Atom): void {
 }
 
 export function newFile(): void {
-  file = { path: undefined };
+  file = File.init();
   atoms = [];
+  notify();
 };
 
 export function openFile(path: string): void {
-  file.path = path;
+  file = File.setPath(file, path);
   const rawJson = fs.readFileSync(file.path);
   const packedAtoms = JSON.parse(rawJson.toString());
   atoms = unpack(packedAtoms);
+  notify();
 }
 
 export function saveFile(): void {
@@ -71,7 +70,7 @@ export function saveFile(): void {
 }
 
 export function saveAsFile(path: string): void {
-  file.path = path;
+  file = File.setPath(file, path);
   saveFile();
 }
 
