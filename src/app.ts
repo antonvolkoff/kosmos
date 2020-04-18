@@ -123,6 +123,16 @@ function inputEvent() {
   atom.value = this.value();
 }
 
+function focusInput(atom: Atom) {
+  valueInput.elt.focus();
+  valueInput.value(atom.value);
+}
+
+function blurInput() {
+  valueInput.elt.blur();
+  valueInput.value('');
+}
+
 function drawBackground(s: p5, bg: p5.Graphics, color: p5.Color) {
   bg.background(color);
 
@@ -152,8 +162,7 @@ function drawFPS(s: p5) {
 
 const selectAtom = (atom: Atom) => {
   if (atom.selected) {
-    valueInput.elt.focus();
-    valueInput.value(atom.value);
+    focusInput(atom);
     return
   }
 
@@ -161,13 +170,12 @@ const selectAtom = (atom: Atom) => {
   if (selectedAtom) unselectAtom(selectedAtom);
 
   State.selectAtom(atom);
-  valueInput.elt.focus();
-  valueInput.value(atom.value);
+  focusInput(atom);
 };
 
 const unselectAtom = (atom: Atom) => {
   State.unselectAtom(atom);
-  valueInput.value('');
+  blurInput();
 }
 
 const canvasPlaceholder = document.getElementById('canvas');
@@ -336,6 +344,7 @@ const sketch = (p: p5) => {
         selectedAtom.x = x;
         selectedAtom.y = y;
         selectedAtom.dragging = false;
+        focusInput(selectedAtom);
         break;
 
       case "draw":
