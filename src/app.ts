@@ -9,8 +9,7 @@ import Transcript from "./components/transcript";
 import Control from "./components/control";
 import State from "./state";
 
-import AtomShape from "./shapes/atom_v2_shape";
-import { ATOM_SIZE } from "./shapes/atom_v2_shape";
+import AtomShape from "./shapes/atom_shape";
 import LegendShape from "./shapes/legend_shape";
 
 ////////////////////////////////////////////////////////////////////////////////
