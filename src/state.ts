@@ -2,6 +2,7 @@ import * as fs from "fs";
 
 import Atom from "./atom";
 import { pack, unpack } from "./packers/json_packer";
+import { translate } from "./packers/clojure_packer";
 import executor from "./executor";
 import * as File from "./state/file";
 
@@ -81,9 +82,7 @@ export function addAtom(atom: Atom): void {
 }
 
 export function evalAtom(atom: Atom): void {
-  executor(atom).then((result) => {
-    addTranscriptEntry(result);
-  });
+  executor(translate(atom)).then(addTranscriptEntry);
 }
 
 export function selectAtom(atom: Atom): void {
