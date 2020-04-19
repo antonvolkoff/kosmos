@@ -2,3 +2,4 @@ node_modules
 dist
 .nrepl-port
 out/
+.DS_Store

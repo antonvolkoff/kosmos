@@ -1,6 +1,6 @@
 {
-  "name": "kosmos",
-  "version": "1.0.0",
+  "name": "Kosmos",
+  "version": "0.1.0",
   "main": "main.ts",
   "scripts": {
     "build": "tsc",
@@ -41,9 +41,7 @@
         },
         {
           "name": "@electron-forge/maker-dmg",
-          "platforms": [
-            "darwin"
-          ]
+          "platforms": []
         }
       ]
     }
