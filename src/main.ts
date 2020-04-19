@@ -1,11 +1,6 @@
 import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
-import installExtension, { REDUX_DEVTOOLS } from 'electron-devtools-installer';
 
-installExtension(REDUX_DEVTOOLS)
-    .then((name) => console.log(`Added Extension:  ${name}`))
-    .catch((err) => console.log('An error occurred: ', err));
-
-let win: BrowserWindow = undefined;
+let win: BrowserWindow;
 
 function createWindow () {
   // Create the browser window.
