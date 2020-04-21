@@ -4,6 +4,7 @@ import { Point } from "../geometry";
 
 export const ATOM_SIZE = 40;
 export const BORDER_RADIUS = 40;
+export const FONT_WIDTH = 8.6;
 
 export default {
   draw(s: p5, atom: Atom) {
@@ -24,7 +25,7 @@ export default {
 
     let widthExtension = 0;
     if (atom.value.length > 1) {
-      widthExtension = (atom.value.length - 1) * 8.6;
+      widthExtension = (atom.value.length - 1) * FONT_WIDTH;
     }
 
     s.rect(x, y, width + widthExtension, height, BORDER_RADIUS);
@@ -46,13 +47,27 @@ export default {
   within(mouse: Point, atom: Atom): boolean {
     let width = 60;
     if (atom.value.length > 1) {
-      width += (atom.value.length - 1) * 8.6;
+      width += (atom.value.length - 1) * FONT_WIDTH;
     }
 
     const leftBoundary = atom.x - 20;
     const rightBoundary = atom.x + width - 20;
     const topBoundary = atom.y + 20;
     const bottomBoundary = atom.y - 20;
+
+    return (
+      mouse.x > leftBoundary &&
+      mouse.x < rightBoundary &&
+      mouse.y > bottomBoundary &&
+      mouse.y < topBoundary
+    );
+  },
+
+  withinDragArea(mouse: Point, atom: Atom): boolean {
+    const leftBoundary = atom.x - 8;
+    const rightBoundary = atom.x + 8;
+    const topBoundary = atom.y + 8;
+    const bottomBoundary = atom.y - 8;
 
     return (
       mouse.x > leftBoundary &&

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { html } from "htm/react";
 
-import { State } from "../state";
+import { State } from "../state/state";
 import PlayIcon from "./play_icon";
 import TrashIcon from "./trash_icon";
 

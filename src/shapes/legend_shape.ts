@@ -1,5 +1,5 @@
 import * as p5 from "p5";
-import State from "../state";
+import State from "../state/state";
 
 const UNSELECTED = "Press & Hold to create an atom";
 const SELECTED = "Type to set value; Press & Hold to drag; Press Enter to evaluate";

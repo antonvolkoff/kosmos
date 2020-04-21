@@ -1,6 +1,6 @@
 import { Component, createRef } from "react";
 import { html } from "htm/react";
-import { State } from "../state";
+import { State } from "../state/state";
 
 type TranscriptProps = {
   state: State;

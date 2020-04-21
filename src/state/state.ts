@@ -1,10 +1,10 @@
 import * as fs from "fs";
 
-import Atom from "./atom";
-import * as JsonPacker from "./packers/json_packer";
-import * as ClojurePacker  from "./packers/clojure_packer";
-import executor from "./executor";
-import * as File from "./state/file";
+import Atom from "../atom";
+import * as JsonPacker from "../packers/json_packer";
+import * as ClojurePacker  from "../packers/clojure_packer";
+import executor from "../executor";
+import * as File from "./file";
 
 export interface State {
   entries(): string[];

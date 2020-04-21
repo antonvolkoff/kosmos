@@ -7,7 +7,7 @@ import Atom from "./atom";
 import { Line, Point, distance, pointAt } from "./geometry";
 import Transcript from "./components/transcript";
 import Control from "./components/control";
-import State from "./state";
+import State from "./state/state";
 
 import AtomShape from "./shapes/atom_shape";
 import LegendShape from "./shapes/legend_shape";
@@ -196,6 +196,52 @@ const sketch = (p: p5) => {
 
   const backgroundColor = p.color("#FDFDFD");
 
+  function handleMouseEvent(name: string) {
+    const currentPoint: Point = { x: p.mouseX, y: p.mouseY };
+    const startAtom = findMouseOverAtom(State.atoms(), startPoint);
+    const currentAtom = findMouseOverAtom(State.atoms(), currentPoint);
+
+    switch (name) {
+      case "startDrag":
+        startAtom.dragging = true;
+        startAtom.selected = true;
+        break;
+
+      case "finishDrag":
+        const draggingAtom = State.findDraggingAtom();
+
+        const { x, y } = snapToGrid(currentPoint);
+        draggingAtom.x = x;
+        draggingAtom.y = y;
+        draggingAtom.dragging = false;
+        focusInput(draggingAtom);
+        break;
+
+      case "create":
+        createAtom(snapToGrid(currentPoint));
+        break;
+
+      case "select":
+        selectAtom(currentAtom);
+        break;
+
+      case "unselect":
+        unselectAtom(State.findSelectedAtom());
+        break;
+
+      case "connect":
+        State.connectAtoms(startAtom, currentAtom);
+        break;
+
+      case "draw":
+        // Do nothing
+        break;
+
+      default:
+        break;
+    }
+  }
+
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
     bg = p.createGraphics(p.windowWidth, p.windowHeight);
@@ -281,6 +327,11 @@ const sketch = (p: p5) => {
 
     timestamp = new Date().getTime();
     startPoint = { x: p.mouseX, y: p.mouseY };
+
+    const startAtom = findMouseOverAtom(State.atoms(), startPoint);
+    if (startAtom && AtomShape.withinDragArea(startPoint, startAtom)) {
+      handleMouseEvent("startDrag");
+    }
   }
 
   p.mouseReleased = (event: MouseEvent) => {
@@ -295,78 +346,36 @@ const sketch = (p: p5) => {
     const currentAtom = findMouseOverAtom(State.atoms(), currentPoint);
     const dist = distance(startPoint, currentPoint);
     const selectedAtom = State.findSelectedAtom();
+    const draggingAtom = State.findDraggingAtom();
 
-    let action: string = "";
-
-    if (startAtom && currentAtom && startAtom != currentAtom) {
-      action = "connect";
-    }
-    else if (isClickAndHold && !startAtom && !currentAtom && dist <= HOLD_DIST_THRESHOLD) {
-      action = "create";
-    }
-    else if (isClickAndHold && startAtom && currentAtom && startAtom == currentAtom && currentAtom.selected) {
-      action = "startDrag";
-    }
-    else if(!isClickAndHold && currentAtom && currentAtom.dragging) {
-      action = "finishDrag";
-    }
-    else if (!isClickAndHold && currentAtom && !currentAtom.dragging) {
-      action = "select";
-    }
-    else if (!isClickAndHold && !currentAtom && selectedAtom) {
-      action = "unselect";
+    if (draggingAtom) {
+      handleMouseEvent("finishDrag");
+    } else if (startAtom && currentAtom && startAtom != currentAtom) {
+      handleMouseEvent("connect");
+    } else if (isClickAndHold && !startAtom && !currentAtom && dist <= HOLD_DIST_THRESHOLD) {
+      handleMouseEvent("create");
+    } else if (!isClickAndHold && currentAtom && !currentAtom.dragging) {
+      handleMouseEvent("select");
+    } else if (!isClickAndHold && !currentAtom && selectedAtom) {
+      handleMouseEvent("unselect");
     } else {
-      action = "draw";
+      handleMouseEvent("draw");
     }
 
     startPoint = undefined;
     timestamp = undefined;
-
-    switch (action) {
-      case "create":
-        createAtom(snapToGrid(currentPoint));
-        break;
-
-      case "select":
-        selectAtom(currentAtom);
-        break;
-
-      case "unselect":
-        unselectAtom(selectedAtom);
-        break;
-
-      case "connect":
-        State.connectAtoms(startAtom, currentAtom);
-        break;
-
-      case "startDrag":
-        currentAtom.dragging = true;
-        break;
-
-      case "finishDrag":
-        const { x, y } = snapToGrid(currentPoint)
-        selectedAtom.x = x;
-        selectedAtom.y = y;
-        selectedAtom.dragging = false;
-        focusInput(selectedAtom);
-        break;
-
-      case "draw":
-        // do nothing here yet
-        break;
-
-      default:
-        break;
-    }
   }
 
   p.mouseMoved = () => {
+  }
+
+  p.mouseDragged = () => {
     const draggingAtom = State.findDraggingAtom();
     if (draggingAtom) {
       draggingAtom.x = p.mouseX;
       draggingAtom.y = p.mouseY;
     }
-  };
+  }
 
   p.keyReleased = () => {
     const selectedAtom = State.findSelectedAtom();
