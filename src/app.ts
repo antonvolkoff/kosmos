@@ -264,7 +264,7 @@ const sketch = (p: p5) => {
   };
 
   p.draw = () => {
-    if (p.mouseIsPressed === true) {
+    if (p.mouseIsPressed === true && !State.findDraggingAtom()) {
       lines.push({ x1: p.mouseX, y1: p.mouseY, x2: p.pmouseX, y2: p.pmouseY });
     } else {
       if (!keepDrawings) lines = [];
