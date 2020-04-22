@@ -4,9 +4,19 @@ import { Point } from "../geometry";
 
 export const ATOM_SIZE = 40;
 export const BORDER_RADIUS = 40;
+export const BASE_WIDTH = 60;
 export const FONT_WIDTH = 8.6;
 
 export default {
+  width(atom: Atom) {
+    let width = BASE_WIDTH;
+    if (atom.value.length > 1) {
+      width += (atom.value.length - 1) * FONT_WIDTH;
+    }
+
+    return width;
+  },
+
   draw(s: p5, atom: Atom) {
     s.push();
 
@@ -18,17 +28,12 @@ export default {
       s.strokeWeight(2);
     }
 
-    const width = 60;
+    const width = this.width(atom);
     const height = 34;
     const x = atom.x - 20;
     const y = atom.y - (height / 2);
 
-    let widthExtension = 0;
-    if (atom.value.length > 1) {
-      widthExtension = (atom.value.length - 1) * FONT_WIDTH;
-    }
-
-    s.rect(x, y, width + widthExtension, height, BORDER_RADIUS);
+    s.rect(x, y, width, height, BORDER_RADIUS);
     s.circle(atom.x, atom.y, 16);
 
     s.push();
@@ -45,10 +50,7 @@ export default {
   },
 
   within(mouse: Point, atom: Atom): boolean {
-    let width = 60;
-    if (atom.value.length > 1) {
-      width += (atom.value.length - 1) * FONT_WIDTH;
-    }
+    const width = this.width(atom);
 
     const leftBoundary = atom.x - 20;
     const rightBoundary = atom.x + width - 20;

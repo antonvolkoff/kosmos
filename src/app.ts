@@ -2,11 +2,14 @@ import * as p5 from "p5";
 import { remote, ipcRenderer } from "electron";
 import { render } from "react-dom";
 import { html } from "htm/react";
+import * as Mousetrap from "mousetrap";
 
 import State from "./state/state";
 import Transcript from "./components/transcript";
 import Control from "./components/control";
 import Sketch from "./sketch";
+import Atom from "./atom";
+import AtomShape from "./shapes/atom_shape";
 
 const { dialog } = remote;
 
@@ -40,6 +43,74 @@ ipcRenderer.on("click-export", () => {
 
 State.subscribe(() => {
   document.title = `${State.file().name} - Kosmos`;
+});
+
+Mousetrap.bind("command+e", () => {
+  const atom = State.findSelectedAtom();
+  if (atom) State.evalAtom(atom);
+});
+Mousetrap.bind("command+backspace", () => {
+  const atom = State.findSelectedAtom();
+  if (atom) State.deleteAtom(atom);
+});
+Mousetrap.bind("tab", (event) => {
+  const atom = State.findSelectedAtom();
+  if (!atom) return;
+
+  event.preventDefault();
+
+  const width = AtomShape.width(atom);
+  const child = new Atom(atom.x + width + 50, atom.y);
+  State.addAtom(child);
+
+  State.connectAtoms(atom, child);
+  State.selectAtom(child);
+});
+Mousetrap.bind("esc", () => {
+  const atom = State.findSelectedAtom();
+  if (atom) State.unselectAtom(atom);
+});
+Mousetrap.bind("option+left", () => {
+  const atom = State.findSelectedAtom();
+  if (!atom || atom.incoming.length == 0) return;
+
+  const parent = atom.incoming[0];
+  State.selectAtom(parent);
+});
+Mousetrap.bind("option+right", () => {
+  const atom = State.findSelectedAtom();
+  if (!atom || atom.outgoing.length == 0) return;
+
+  const child = atom.outgoing[0];
+  State.selectAtom(child);
+});
+Mousetrap.bind("option+down", () => {
+  const atom = State.findSelectedAtom();
+  if (!atom || atom.incoming.length == 0) return;
+
+  const parent = atom.incoming[0];
+  const sortedOutgoing = parent.sortedAdjacentAtoms();
+  if (sortedOutgoing.length == 1) return;
+
+  const myPos = sortedOutgoing.findIndex(a => a.id == atom.id);
+  if (myPos == sortedOutgoing.length - 1) return;
+
+  const bottomAtom = sortedOutgoing[myPos + 1];
+  State.selectAtom(bottomAtom);
+});
+Mousetrap.bind("option+up", () => {
+  const atom = State.findSelectedAtom();
+  if (!atom || atom.incoming.length == 0) return;
+
+  const parent = atom.incoming[0];
+  const sortedOutgoing = parent.sortedAdjacentAtoms();
+  if (sortedOutgoing.length == 1) return;
+
+  const myPos = sortedOutgoing.findIndex(a => a.id == atom.id);
+  if (myPos == 0) return;
+
+  const topAtom = sortedOutgoing[myPos - 1];
+  State.selectAtom(topAtom);
 });
 
 const canvasPlaceholder = document.getElementById("canvas");

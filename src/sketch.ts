@@ -31,12 +31,6 @@ export default function Sketch(p: p5) {
     return { x, y };
   }
 
-  function createAtom({ x, y }: Point) {
-    const atom = new Atom(x, y);
-    State.addAtom(atom);
-    selectAtom(atom);
-  };
-
   function inputEvent() {
     const atom = State.findSelectedAtom();
     atom.value = this.value();
@@ -52,24 +46,6 @@ export default function Sketch(p: p5) {
     valueInput.value('');
   }
 
-  const selectAtom = (atom: Atom) => {
-    if (atom.selected) {
-      focusInput(atom);
-      return
-    }
-
-    const selectedAtom = State.findSelectedAtom();
-    if (selectedAtom) unselectAtom(selectedAtom);
-
-    State.selectAtom(atom);
-    focusInput(atom);
-  };
-
-  const unselectAtom = (atom: Atom) => {
-    State.unselectAtom(atom);
-    blurInput();
-  }
-
   function handleMouseEvent(name: string) {
     const currentPoint: Point = { x: p.mouseX, y: p.mouseY };
     const startAtom = findMouseOverAtom(State.atoms(), startPoint);
@@ -78,7 +54,7 @@ export default function Sketch(p: p5) {
     switch (name) {
       case "startDrag":
         startAtom.dragging = true;
-        selectAtom(startAtom);
+        State.selectAtom(startAtom);
         break;
 
       case "finishDrag":
@@ -92,15 +68,18 @@ export default function Sketch(p: p5) {
         break;
 
       case "create":
-        createAtom(snapToGrid(currentPoint));
+        const pointOnGrid = snapToGrid(currentPoint);
+        const atom = new Atom(pointOnGrid.x, pointOnGrid.y);
+        State.addAtom(atom);
+        State.selectAtom(atom);
         break;
 
       case "select":
-        selectAtom(currentAtom);
+        State.selectAtom(currentAtom);
         break;
 
       case "unselect":
-        unselectAtom(State.findSelectedAtom());
+        State.unselectAtom(State.findSelectedAtom());
         break;
 
       case "connect":
@@ -216,7 +195,17 @@ export default function Sketch(p: p5) {
 
     valueInput = p.createInput();
     valueInput.position(p.width - 200, 65);
+    valueInput.class("mousetrap");
     (valueInput as any).input(inputEvent);
+
+    State.subscribe(() => {
+      const atom = State.findSelectedAtom();
+      if (atom) {
+        focusInput(atom);
+      } else {
+        blurInput();
+      }
+    })
   };
 
   p.draw = () => {
@@ -311,22 +300,14 @@ export default function Sketch(p: p5) {
   }
 
   p.keyReleased = () => {
-    const selectedAtom = State.findSelectedAtom();
+    const atom = State.findSelectedAtom();
 
-    if (p.key == "d" && !selectedAtom) {
+    if (p.key == "d" && !atom) {
       keepDrawings = !keepDrawings;
     }
 
-    if (p.key == "f" && !selectedAtom) {
+    if (p.key == "f" && !atom) {
       showFPS = !showFPS;
-    }
-
-    if (p.keyCode == p.ENTER && selectedAtom) {
-      State.evalAtom(selectedAtom);
-    }
-
-    if (p.keyCode == p.BACKSPACE && selectedAtom && selectedAtom.dragging) {
-      State.deleteAtom(selectedAtom);
     }
   }
 }

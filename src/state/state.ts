@@ -102,6 +102,11 @@ function evalAtom(atom: Atom): void {
 }
 
 function selectAtom(atom: Atom): void {
+  const selectedAtom = findSelectedAtom();
+  if (selectedAtom) {
+    selectedAtom.selected = false;
+  }
+
   atom.selected = true;
   notify();
 }
@@ -146,10 +151,6 @@ function exportAsClojure(path: string): void {
   const data = ClojurePacker.pack(atoms);
   fs.writeFileSync(path, data);
 };
-
-function getState(): string[] {
-  return entries;
-}
 
 function subscribe(handler: any): void {
   subscribers.push(handler);
