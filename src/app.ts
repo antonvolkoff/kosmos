@@ -49,9 +49,16 @@ Mousetrap.bind("command+e", () => {
   const atom = State.findSelectedAtom();
   if (atom) State.evalAtom(atom);
 });
-Mousetrap.bind("command+backspace", () => {
+Mousetrap.bind("command+backspace", (event) => {
   const atom = State.findSelectedAtom();
-  if (atom) State.deleteAtom(atom);
+  if (!atom) return;
+
+  event.preventDefault();
+
+  const parent = atom.incoming[0];
+  State.deleteAtom(atom);
+
+  if (parent) State.selectAtom(parent);
 });
 Mousetrap.bind("tab", (event) => {
   const atom = State.findSelectedAtom();
@@ -60,10 +67,36 @@ Mousetrap.bind("tab", (event) => {
   event.preventDefault();
 
   const width = AtomShape.width(atom);
-  const child = new Atom(atom.x + width + 50, atom.y);
+  let height = 0;
+  const bottomAtom = atom.sortedAdjacentAtoms()[atom.outgoing.length - 1];
+  if (bottomAtom) {
+    height = bottomAtom.y - atom.y + 40;
+  }
+
+  const child = new Atom(atom.x + width + 40, atom.y + height);
   State.addAtom(child);
 
   State.connectAtoms(atom, child);
+  State.selectAtom(child);
+});
+Mousetrap.bind("enter", (event) => {
+  const atom = State.findSelectedAtom();
+  if (!atom && atom.incoming.length != 0) return;
+
+  event.preventDefault();
+
+  const parent = atom.incoming[0];
+  const width = AtomShape.width(parent);
+  let height = 0;
+  const bottomAtom = parent.sortedAdjacentAtoms()[parent.outgoing.length - 1];
+  if (bottomAtom) {
+    height = bottomAtom.y - parent.y + 40;
+  }
+
+  const child = new Atom(parent.x + width + 40, parent.y + height);
+  State.addAtom(child);
+
+  State.connectAtoms(parent, child);
   State.selectAtom(child);
 });
 Mousetrap.bind("esc", () => {
