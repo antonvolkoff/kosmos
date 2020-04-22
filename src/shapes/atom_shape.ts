@@ -12,7 +12,7 @@ export default {
 
     s.fill(s.color('#ffffff'));
     s.stroke(s.color('#999999'));
-    s.strokeWeight(1.25);
+    s.strokeWeight(1.5);
     if (atom.selected) {
       s.stroke(s.color('#1DA159'));
       s.strokeWeight(2);

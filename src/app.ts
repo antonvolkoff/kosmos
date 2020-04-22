@@ -193,7 +193,7 @@ const sketch = (p: p5) => {
   function drawEdges() {
     p.push();
 
-    p.strokeWeight(1);
+    p.strokeWeight(1.5);
     p.stroke(150);
 
     State.edges().forEach(edge => {
