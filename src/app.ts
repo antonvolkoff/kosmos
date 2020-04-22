@@ -70,58 +70,6 @@ function createAtom({ x, y }: Point) {
   selectAtom(atom);
 };
 
-function drawAtoms(s: p5) {
-  s.push();
-
-  s.strokeWeight(1);
-  s.fill(255);
-
-  // Connections
-  State.atoms().forEach(atom => {
-    s.stroke(150);
-
-    atom.outgoing.forEach(childAtom => {
-      const point = pointAt(atom, childAtom, 0.75);
-
-      s.line(atom.x, atom.y, childAtom.x, childAtom.y);
-      s.circle(point.x, point.y, 16);
-
-      const a: Point = { x: atom.x, y: atom.y };
-      const b: Point = { x: childAtom.x, y: childAtom.y };
-      const c: Point = { x: atom.x, y: childAtom.y };
-      const ab = distance(a, b);
-      const bc = distance(b, c);
-      const sinX = bc / ab;
-      let angleRad = Math.asin(sinX) - s.HALF_PI;
-
-      if (childAtom.y > atom.y) {
-        angleRad = -angleRad;
-      }
-      if (childAtom.x < atom.x) {
-        angleRad = s.HALF_PI + (s.HALF_PI - angleRad);
-      }
-
-      s.push();
-      s.fill(150);
-      s.strokeWeight(0);
-
-      s.translate(point.x, point.y);
-      s.rotate(angleRad);
-
-      s.triangle(5, 0, -3, -4, -3, 4);
-
-      s.pop();
-    });
-  });
-
-  // Atoms
-  State.atoms().forEach(atom => {
-    AtomShape.draw(s, atom);
-  });
-
-  s.pop();
-};
-
 function inputEvent() {
   const atom = State.findSelectedAtom();
   atom.value = this.value();
@@ -242,6 +190,69 @@ const sketch = (p: p5) => {
     }
   }
 
+  function drawEdges() {
+    p.push();
+
+    p.strokeWeight(1);
+    p.stroke(150);
+
+    State.edges().forEach(edge => {
+      p.line(edge.x1, edge.y1, edge.x2, edge.y2);
+    });
+
+    p.pop();
+  }
+
+  function drawAtoms() {
+    p.push();
+
+    // Atoms
+    State.atoms().forEach(atom => {
+      AtomShape.draw(p, atom);
+    });
+
+    p.pop();
+  }
+
+  function drawHoldAnimation() {
+    if (!startPoint) return;
+
+    const f = () => {
+      const currentPoint: Point = { x: p.mouseX, y: p.mouseY };
+      const dist = distance(startPoint, currentPoint);
+      if (dist >= HOLD_DIST_THRESHOLD) return;
+
+      const now = new Date().getTime();
+      const mousePressedDuration = now - timestamp;
+      if (mousePressedDuration < 250) return;
+
+      let angleRad =  p.TWO_PI;
+
+      const r = mousePressedDuration / HOLD_DURATION;
+      if (r < 1) {
+        angleRad = angleRad * r;
+      }
+
+      let radius = 20;
+      let { x, y } = startPoint;
+
+      const atom = findMouseOverAtom(State.atoms(), currentPoint);
+      if (atom) {
+        x = atom.x;
+        y = atom.y;
+      }
+
+      p.push();
+      p.stroke(0, 0, 0, 50);
+      p.noFill();
+      p.strokeCap(p.PROJECT);
+      p.strokeWeight(6);
+      p.arc(x, y, radius, radius, 0, angleRad);
+      p.pop();
+    }
+    f();
+  }
+
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
     bg = p.createGraphics(p.windowWidth, p.windowHeight);
@@ -269,45 +280,11 @@ const sketch = (p: p5) => {
     });
     p.pop();
 
-    drawAtoms(p);
+    drawEdges();
+    drawAtoms();
 
     // Hold animation
-    if (startPoint) {
-      const f = () => {
-        const currentPoint: Point = { x: p.mouseX, y: p.mouseY };
-        const dist = distance(startPoint, currentPoint);
-        if (dist >= HOLD_DIST_THRESHOLD) return;
-
-        const now = new Date().getTime();
-        const mousePressedDuration = now - timestamp;
-        if (mousePressedDuration < 250) return;
-
-        let angleRad =  p.TWO_PI;
-
-        const r = mousePressedDuration / HOLD_DURATION;
-        if (r < 1) {
-          angleRad = angleRad * r;
-        }
-
-        let radius = 20;
-        let { x, y } = startPoint;
-
-        const atom = findMouseOverAtom(State.atoms(), currentPoint);
-        if (atom) {
-          x = atom.x;
-          y = atom.y;
-        }
-
-        p.push();
-        p.stroke(0, 0, 0, 50);
-        p.noFill();
-        p.strokeCap(p.PROJECT);
-        p.strokeWeight(6);
-        p.arc(x, y, radius, radius, 0, angleRad);
-        p.pop();
-      }
-      f();
-    }
+    drawHoldAnimation();
 
     LegendShape.draw(p);
 

@@ -5,11 +5,13 @@ import * as JsonPacker from "../packers/json_packer";
 import * as ClojurePacker  from "../packers/clojure_packer";
 import executor from "../executor";
 import * as File from "./file";
+import { Line } from "../geometry";
 
 export interface State {
   entries(): string[];
   file(): File.File;
   atoms(): Atom[];
+  edges(): Line[];
 
   subscribe(handler: any): void;
 
@@ -37,9 +39,9 @@ export interface State {
 };
 
 let subscribers: any[] = [];
-export let file = File.init();
-export let atoms: Atom[] = [];
-export let entries: string[] = [];
+let file = File.init();
+let atoms: Atom[] = [];
+let entries: string[] = [];
 
 function notify(): void {
   subscribers.forEach(handler => handler());
@@ -52,52 +54,64 @@ function deleteAtomFromArray(atoms: Atom[], atom: Atom): void {
   atoms.splice(idx, 1);
 }
 
-export function newFile(): void {
+function edges(): Line[] {
+  let lines: Line[] = [];
+
+  atoms.forEach(source => {
+    source.outgoing.forEach(target => {
+      lines.push({ x1: source.x, y1: source.y, x2: target.x, y2: target.y });
+    });
+  })
+
+  return lines;
+}
+
+function newFile(): void {
   file = File.init();
   atoms = [];
   notify();
 };
 
-export function openFile(path: string): void {
+function openFile(path: string): void {
   file = File.setPath(file, path);
   const rawJson = fs.readFileSync(file.path);
   atoms = JsonPacker.unpack(rawJson.toString());
   notify();
 }
 
-export function saveFile(): void {
+function saveFile(): void {
   const rawJson = JsonPacker.pack(atoms);
   fs.writeFileSync(file.path, rawJson);
 }
 
-export function saveAsFile(path: string): void {
+function saveAsFile(path: string): void {
   file = File.setPath(file, path);
   saveFile();
 }
 
-export function hasFile(): boolean {
+function hasFile(): boolean {
   return !!file.path;
 }
 
-export function addAtom(atom: Atom): void {
+function addAtom(atom: Atom): void {
   atoms.push(atom);
 }
 
-export function evalAtom(atom: Atom): void {
+function evalAtom(atom: Atom): void {
   executor(ClojurePacker.pack([atom])).then(addTranscriptEntry);
 }
 
-export function selectAtom(atom: Atom): void {
+function selectAtom(atom: Atom): void {
   atom.selected = true;
   notify();
 }
 
-export function unselectAtom(atom: Atom): void {
+function unselectAtom(atom: Atom): void {
   atom.selected = false;
   notify();
 }
 
-export function deleteAtom(atom: Atom): void {
+function deleteAtom(atom: Atom): void {
   atom.incoming.forEach(source => {
     deleteAtomFromArray(source.outgoing, atom);
   });
@@ -110,34 +124,34 @@ export function deleteAtom(atom: Atom): void {
   notify();
 }
 
-export function connectAtoms(source: Atom, target: Atom): void {
+function connectAtoms(source: Atom, target: Atom): void {
   source.outgoing.push(target);
   target.incoming.push(source);
 }
 
-export function findSelectedAtom(): Atom | undefined {
+function findSelectedAtom(): Atom | undefined {
   return atoms.find(atom => atom.selected);
 }
 
-export function findDraggingAtom(): Atom | undefined {
+function findDraggingAtom(): Atom | undefined {
   return atoms.find(atom => atom.dragging);
 }
 
-export function addTranscriptEntry(entry: string): void {
+function addTranscriptEntry(entry: string): void {
   entries.push(entry);
   notify();
 }
 
-export function exportAsClojure(path: string): void {
+function exportAsClojure(path: string): void {
   const data = ClojurePacker.pack(atoms);
   fs.writeFileSync(path, data);
 };
 
-export function getState(): string[] {
+function getState(): string[] {
   return entries;
 }
 
-export function subscribe(handler: any): void {
+function subscribe(handler: any): void {
   subscribers.push(handler);
 }
 
@@ -151,6 +165,7 @@ export default {
   entries() {
     return entries;
   },
+  edges,
   newFile,
   openFile,
   saveFile,
