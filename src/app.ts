@@ -152,7 +152,7 @@ const sketch = (p: p5) => {
     switch (name) {
       case "startDrag":
         startAtom.dragging = true;
-        startAtom.selected = true;
+        selectAtom(startAtom);
         break;
 
       case "finishDrag":
