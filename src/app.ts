@@ -52,7 +52,7 @@ Mousetrap.bind("command+backspace", (event) => {
 
   event.preventDefault();
 
-  const parent = atom.incoming[0];
+  const parent = atom.parent();
   State.deleteAtom(atom);
 
   if (parent) State.selectAtom(parent);
@@ -82,7 +82,7 @@ Mousetrap.bind("enter", (event) => {
 
   event.preventDefault();
 
-  const parent = atom.incoming[0];
+  const parent = atom.parent();
   const width = AtomShape.width(parent);
   let height = 0;
   const bottomAtom = parent.sortedAdjacentAtoms()[parent.outgoing.length - 1];
@@ -104,7 +104,7 @@ Mousetrap.bind("option+left", () => {
   const atom = State.findSelectedAtom();
   if (!atom || atom.incoming.length == 0) return;
 
-  const parent = atom.incoming[0];
+  const parent = atom.parent();
   State.selectAtom(parent);
 });
 Mousetrap.bind("option+right", () => {
@@ -118,7 +118,7 @@ Mousetrap.bind("option+down", () => {
   const atom = State.findSelectedAtom();
   if (!atom || atom.incoming.length == 0) return;
 
-  const parent = atom.incoming[0];
+  const parent = atom.parent();
   const sortedOutgoing = parent.sortedAdjacentAtoms();
   if (sortedOutgoing.length == 1) return;
 
@@ -132,7 +132,7 @@ Mousetrap.bind("option+up", () => {
   const atom = State.findSelectedAtom();
   if (!atom || atom.incoming.length == 0) return;
 
-  const parent = atom.incoming[0];
+  const parent = atom.parent();
   const sortedOutgoing = parent.sortedAdjacentAtoms();
   if (sortedOutgoing.length == 1) return;
 

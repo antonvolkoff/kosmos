@@ -29,6 +29,10 @@ export default class Atom {
     return this.outgoing.sort((a, b) => a.score() - b.score());
   }
 
+  parent(): Atom | undefined {
+    return this.incoming[0];
+  }
+
   private generateID(): string {
     return Date.now().toString();
   }
