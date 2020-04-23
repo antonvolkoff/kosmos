@@ -2,8 +2,10 @@ import * as Mousetrap from "mousetrap";
 import { State } from "./state/state";
 import AtomShape from "./shapes/atom_shape";
 import Atom from "./atom";
+import { nearestGridPoint } from "./grid";
 
 export default function Keyboard(state: State) {
+  const standardAtomOffset = 40;
   const evaluateAtom = () => state.evalSelectedAtom();
   const deleteAtom = (event) => {
     const atom = state.findSelectedAtom();
@@ -22,10 +24,14 @@ export default function Keyboard(state: State) {
     let height = 0;
     const bottomAtom = atom.sortedAdjacentAtoms()[atom.outgoing.length - 1];
     if (bottomAtom) {
-      height = bottomAtom.y - atom.y + 40;
+      height = bottomAtom.y - atom.y + standardAtomOffset;
     }
 
-    const child = new Atom(atom.x + width + 40, atom.y + height);
+    const { x, y } = nearestGridPoint({
+      x: atom.x + width + standardAtomOffset,
+      y: atom.y + height,
+    });
+    const child = new Atom(x, y);
     state.addAtom(child);
 
     state.connectAtoms(atom, child);
@@ -42,10 +48,14 @@ export default function Keyboard(state: State) {
     let height = 0;
     const bottomAtom = parent.sortedAdjacentAtoms()[parent.outgoing.length - 1];
     if (bottomAtom) {
-      height = bottomAtom.y - parent.y + 40;
+      height = bottomAtom.y - parent.y + standardAtomOffset;
     }
 
-    const child = new Atom(parent.x + width + 40, parent.y + height);
+    const { x, y } = nearestGridPoint({
+      x: atom.x + width + standardAtomOffset,
+      y: atom.y + height,
+    });
+    const child = new Atom(x, y);
     state.addAtom(child);
 
     state.connectAtoms(parent, child);

@@ -5,6 +5,7 @@ import { Point, Line, distance } from "./geometry";
 import Atom from "./atom";
 import AtomShape from "./shapes/atom_shape";
 import LegendShape from "./shapes/legend_shape";
+import { nearestGridPoint, gridPoints } from "./grid";
 
 export default function Sketch(p: p5) {
   const HOLD_DURATION = 750;
@@ -22,13 +23,6 @@ export default function Sketch(p: p5) {
 
   function findMouseOverAtom(atoms: Atom[], mouse: Point) {
     return atoms.find(atom => AtomShape.within(mouse, atom));
-  }
-
-  const snapToGrid = (mouse: Point): Point => {
-    const gridSize = 20;
-    const x = Math.round(mouse.x / gridSize) * gridSize;
-    const y = Math.round(mouse.y / gridSize) * gridSize;
-    return { x, y };
   }
 
   function inputEvent() {
@@ -60,7 +54,7 @@ export default function Sketch(p: p5) {
       case "finishDrag":
         const draggingAtom = State.findDraggingAtom();
 
-        const { x, y } = snapToGrid(currentPoint);
+        const { x, y } = nearestGridPoint(currentPoint);
         draggingAtom.x = x;
         draggingAtom.y = y;
         draggingAtom.dragging = false;
@@ -68,7 +62,7 @@ export default function Sketch(p: p5) {
         break;
 
       case "create":
-        const pointOnGrid = snapToGrid(currentPoint);
+        const pointOnGrid = nearestGridPoint(currentPoint);
         const atom = new Atom(pointOnGrid.x, pointOnGrid.y);
         State.addAtom(atom);
         State.selectAtom(atom);
@@ -159,20 +153,13 @@ export default function Sketch(p: p5) {
   }
 
   function drawBackground(s: p5, bg: p5.Graphics, color: p5.Color) {
-    bg.background(color);
+    const renderPoint = ({x, y}: Point) => bg.point(x, y);
 
+    bg.background(color);
     bg.stroke(210);
     bg.strokeWeight(3);
 
-    const spaceBetweenDots = 20;
-    const maxColumns = s.windowWidth / 10;
-    const maxRows = s.windowHeight / 10;
-
-    for(let c = 0; c < maxColumns; c++) {
-      for(let r = 0; r < maxRows; r++) {
-        bg.point(spaceBetweenDots * c, spaceBetweenDots * r);
-      }
-    }
+    gridPoints(s.windowWidth, s.windowHeight).forEach(renderPoint);
 
     return bg;
   }
