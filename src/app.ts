@@ -45,10 +45,7 @@ State.subscribe(() => {
   document.title = `${State.file().name} - Kosmos`;
 });
 
-Mousetrap.bind("command+e", () => {
-  const atom = State.findSelectedAtom();
-  if (atom) State.evalAtom(atom);
-});
+Mousetrap.bind("command+e", () => State.evalSelectedAtom());
 Mousetrap.bind("command+backspace", (event) => {
   const atom = State.findSelectedAtom();
   if (!atom) return;

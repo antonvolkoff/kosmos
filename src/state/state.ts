@@ -19,7 +19,7 @@ export interface State {
   deleteAtom(atom: Atom): void;
   connectAtoms(source: Atom, target: Atom): void;
 
-  evalAtom(atom: Atom): void;
+  evalSelectedAtom(): void;
 
   selectAtom(atom: Atom);
   unselectAtom(atom: Atom);
@@ -97,7 +97,10 @@ function addAtom(atom: Atom): void {
   atoms.push(atom);
 }
 
-function evalAtom(atom: Atom): void {
+function evalSelectedAtom(): void {
+  const atom = findSelectedAtom();
+  if (!atom) return;
+
   executor(ClojurePacker.pack([atom])).then(addTranscriptEntry);
 }
 
@@ -174,7 +177,7 @@ export default {
   hasFile,
   addAtom,
   deleteAtom,
-  evalAtom,
+  evalSelectedAtom,
   selectAtom,
   unselectAtom,
   connectAtoms,

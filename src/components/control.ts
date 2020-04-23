@@ -18,7 +18,7 @@ export default function Control({ state }: Props) {
 
   const onEvalClick = (event) => {
     event.preventDefault();
-    state.evalAtom(selectedAtom);
+    state.evalSelectedAtom();
   }
 
   const onDeleteClick = (event) => {
