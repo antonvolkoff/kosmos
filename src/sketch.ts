@@ -17,6 +17,10 @@ export default function Sketch(p: p5) {
   let showFPS = false;
   let lines: Line[] = [];
 
+  let offsetX = 0;
+  let offsetY = 0;
+  let offsetUpdated = false;
+
   const backgroundColor = p.color("#FDFDFD");
   let valueInput: p5.Element = undefined;
   let bg: p5.Graphics = null;
@@ -159,7 +163,7 @@ export default function Sketch(p: p5) {
     bg.stroke(210);
     bg.strokeWeight(3);
 
-    gridPoints(s.windowWidth, s.windowHeight).forEach(renderPoint);
+    gridPoints(bg.width, bg.height).forEach(renderPoint);
 
     return bg;
   }
@@ -177,7 +181,7 @@ export default function Sketch(p: p5) {
 
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
-    bg = p.createGraphics(p.windowWidth, p.windowHeight);
+    bg = p.createGraphics(1000, 1000);
     bg = drawBackground(p, bg, backgroundColor);
 
     valueInput = p.createInput();
@@ -196,13 +200,23 @@ export default function Sketch(p: p5) {
   };
 
   p.draw = () => {
+    p.translate(offsetX, offsetY);
+
     if (p.mouseIsPressed === true && !State.findDraggingAtom()) {
       lines.push({ x1: p.mouseX, y1: p.mouseY, x2: p.pmouseX, y2: p.pmouseY });
     } else {
       if (!keepDrawings) lines = [];
     }
 
-    p.image(bg, 0, 0, p.windowWidth, p.windowHeight);
+    p.image(bg, 0 - bg.width + 20, 0, bg.width, bg.height);
+    p.image(bg, 0 - bg.width + 20, - bg.height + 20, bg.width, bg.height);
+    p.image(bg, 0, 0 - bg.height + 20, bg.width, bg.height);
+    p.image(bg, 0 + bg.width - 20, 0 - bg.height + 20, bg.width, bg.height);
+    p.image(bg, 0, 0, bg.width, bg.height);
+    p.image(bg, 0 + bg.width - 20, 0, bg.width, bg.height);
+    p.image(bg, 0 + bg.width - 20, 0 + bg.height - 20, bg.width, bg.height);
+    p.image(bg, 0, 0 + bg.height - 20, bg.width, bg.height);
+    p.image(bg, 0 - bg.width + 20, 0 + bg.height - 20, bg.width, bg.height);
 
     p.push();
     p.stroke(150);
@@ -276,6 +290,11 @@ export default function Sketch(p: p5) {
   }
 
   p.mouseMoved = () => {
+  }
+
+  p.mouseWheel = (event: WheelEvent) => {
+    offsetX += -event.deltaX;
+    offsetY += -event.deltaY;
   }
 
   p.mouseDragged = () => {
