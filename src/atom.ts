@@ -37,3 +37,32 @@ export default class Atom {
     return Date.now().toString();
   }
 };
+
+export const firstChild = (atom: Atom) => atom.sortedAdjacentAtoms()[0];
+export const lastChild = (atom: Atom): Atom | undefined => {
+  return atom.sortedAdjacentAtoms()[atom.outgoing.length - 1];
+}
+
+export const findParent = (atom: Atom): Atom | undefined => atom.incoming[0];
+
+export const hasChildren = (atom: Atom): boolean => {
+  return atom ? atom.outgoing.length > 0 : false;
+};
+
+export const lastNestedChild = (atom: Atom): Atom | undefined => {
+  const child = lastChild(atom);
+  return hasChildren(child) ? lastNestedChild(child) : child;
+}
+
+export const parentChildren = (atom: Atom): Atom[] => findParent(atom).sortedAdjacentAtoms();
+
+export const nextSibling = (atom: Atom): Atom | undefined => {
+  const idx = parentChildren(atom).findIndex(sibling => sibling.id == atom.id);
+  return parentChildren(atom)[idx + 1];
+}
+
+export const previousSibling = (atom: Atom): Atom | undefined => {
+  const idx = parentChildren(atom).findIndex(sibling => sibling.id == atom.id);
+  return parentChildren(atom)[idx - 1];
+}
+
