@@ -120,6 +120,8 @@ function unselectAtom(atom: Atom): void {
 }
 
 function deleteAtom(atom: Atom): void {
+  const parent = atom.parent();
+
   atom.incoming.forEach(source => {
     deleteAtomFromArray(source.outgoing, atom);
   });
@@ -129,6 +131,7 @@ function deleteAtom(atom: Atom): void {
   });
 
   deleteAtomFromArray(atoms, atom);
+  if (parent) selectAtom(parent);
   notify();
 }
 

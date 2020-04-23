@@ -51,11 +51,7 @@ Mousetrap.bind("command+backspace", (event) => {
   if (!atom) return;
 
   event.preventDefault();
-
-  const parent = atom.parent();
   State.deleteAtom(atom);
-
-  if (parent) State.selectAtom(parent);
 });
 Mousetrap.bind("tab", (event) => {
   const atom = State.findSelectedAtom();
