@@ -6,6 +6,7 @@ import Atom from "./atom";
 import AtomShape from "./shapes/atom_shape";
 import LegendShape from "./shapes/legend_shape";
 import { nearestGridPoint, gridPoints } from "./grid";
+import * as ViewField from "./view_field";
 
 export default function Sketch(p: p5) {
   const HOLD_DURATION = 750;
@@ -17,9 +18,7 @@ export default function Sketch(p: p5) {
   let showFPS = false;
   let lines: Line[] = [];
 
-  let offsetX = 0;
-  let offsetY = 0;
-  let offsetUpdated = false;
+  let viewField: ViewField.ViewField;
 
   const backgroundColor = p.color("#FDFDFD");
   let valueInput: p5.Element = undefined;
@@ -180,6 +179,8 @@ export default function Sketch(p: p5) {
   }
 
   p.setup = () => {
+    viewField = ViewField.init(p.windowWidth, p.windowHeight);
+
     p.createCanvas(p.windowWidth, p.windowHeight);
     bg = p.createGraphics(1000, 1000);
     bg = drawBackground(p, bg, backgroundColor);
@@ -200,7 +201,8 @@ export default function Sketch(p: p5) {
   };
 
   p.draw = () => {
-    p.translate(offsetX, offsetY);
+    const { x, y } = ViewField.translateTo(viewField);
+    p.translate(x, y);
 
     if (p.mouseIsPressed === true && !State.findDraggingAtom()) {
       lines.push({ x1: p.mouseX, y1: p.mouseY, x2: p.pmouseX, y2: p.pmouseY });
@@ -208,15 +210,10 @@ export default function Sketch(p: p5) {
       if (!keepDrawings) lines = [];
     }
 
-    p.image(bg, 0 - bg.width + 20, 0, bg.width, bg.height);
-    p.image(bg, 0 - bg.width + 20, - bg.height + 20, bg.width, bg.height);
-    p.image(bg, 0, 0 - bg.height + 20, bg.width, bg.height);
-    p.image(bg, 0 + bg.width - 20, 0 - bg.height + 20, bg.width, bg.height);
     p.image(bg, 0, 0, bg.width, bg.height);
-    p.image(bg, 0 + bg.width - 20, 0, bg.width, bg.height);
-    p.image(bg, 0 + bg.width - 20, 0 + bg.height - 20, bg.width, bg.height);
-    p.image(bg, 0, 0 + bg.height - 20, bg.width, bg.height);
-    p.image(bg, 0 - bg.width + 20, 0 + bg.height - 20, bg.width, bg.height);
+    p.image(bg, bg.width - 20, 0, bg.width, bg.height);
+    p.image(bg, bg.width - 20, bg.height - 20, bg.width, bg.height);
+    p.image(bg, 0, bg.height - 20, bg.width, bg.height);
 
     p.push();
     p.stroke(150);
@@ -238,8 +235,7 @@ export default function Sketch(p: p5) {
   };
 
   p.windowResized = () => {
-    bg = p.createGraphics(p.windowWidth, p.windowHeight);
-    bg = drawBackground(p, bg, backgroundColor);
+    viewField = ViewField.resize(viewField, p.windowWidth, p.windowHeight);
     p.resizeCanvas(p.windowWidth, p.windowHeight);
 
     valueInput.position(p.width - 200, 65);
@@ -293,8 +289,7 @@ export default function Sketch(p: p5) {
   }
 
   p.mouseWheel = (event: WheelEvent) => {
-    offsetX += -event.deltaX;
-    offsetY += -event.deltaY;
+    viewField = ViewField.move(viewField, event.deltaX, event.deltaY);
   }
 
   p.mouseDragged = () => {
