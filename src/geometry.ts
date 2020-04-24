@@ -12,6 +12,13 @@ export interface Line {
   y2: number;
 }
 
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export function atomToPoint(atom: Atom): Point {
   const { x, y } = atom;
   return { x, y };

@@ -5,7 +5,7 @@ import { Point, Line, distance } from "./geometry";
 import Atom from "./atom";
 import AtomShape from "./shapes/atom_shape";
 import LegendShape from "./shapes/legend_shape";
-import { nearestGridPoint, gridPoints } from "./grid";
+import { nearestGridPoint, gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
 
 export default function Sketch(p: p5) {
@@ -210,10 +210,8 @@ export default function Sketch(p: p5) {
       if (!keepDrawings) lines = [];
     }
 
-    p.image(bg, 0, 0, bg.width, bg.height);
-    p.image(bg, bg.width - 20, 0, bg.width, bg.height);
-    p.image(bg, bg.width - 20, bg.height - 20, bg.width, bg.height);
-    p.image(bg, 0, bg.height - 20, bg.width, bg.height);
+    const tiles = gridTiles(viewField, bg.width, bg.height);
+    tiles.forEach(({ x, y, width, height}) => p.image(bg, x, y, width, height));
 
     p.push();
     p.stroke(150);
