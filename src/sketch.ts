@@ -4,7 +4,7 @@ import State from "./state/state";
 import { Point, Line, distance } from "./geometry";
 import Atom from "./atom";
 import AtomShape from "./shapes/atom_shape";
-import LegendShape from "./shapes/legend_shape";
+import * as Legend from "./legend";
 import { nearestGridPoint, gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
 
@@ -180,15 +180,34 @@ export default function Sketch(p: p5) {
   }
 
   function drawFPS() {
+    if (!showFPS) return;
+
     const fps = p.frameRate();
+    const { x, y } = ViewField.toGlobalCoordinates(viewField, { x: 10, y: 20 });
 
     p.push();
     p.textSize(14);
     p.fill(0);
     p.stroke(0);
-    p.text("FPS: " + fps.toFixed(2), 10, 20);
+    p.text("FPS: " + fps.toFixed(2), x, y);
     p.pop();
   }
+
+  const drawLegend = () => {
+    const content = Legend.text();
+    const { x, y } =
+      ViewField.toGlobalCoordinates(viewField, { x: 20, y: p.height - 20 });
+
+    p.push();
+    {
+      p.fill(50);
+      p.strokeWeight(0);
+      p.textAlign(p.LEFT, p.CENTER);
+      p.textFont("monospace", 13);
+      p.text(content, x, y);
+    }
+    p.pop();
+  };
 
   p.setup = () => {
     viewField = ViewField.init(p.windowWidth, p.windowHeight);
@@ -237,13 +256,9 @@ export default function Sketch(p: p5) {
 
     drawEdges();
     drawAtoms();
-
-    // Hold animation
     drawHoldAnimation();
-
-    LegendShape.draw(p);
-
-    if (showFPS) drawFPS();
+    drawLegend();
+    drawFPS();
   };
 
   p.windowResized = () => {
