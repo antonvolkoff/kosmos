@@ -43,8 +43,20 @@ export default function Sketch(p: p5) {
     valueInput.value('');
   }
 
+  const mousePosition =
+    () : Point => {
+      const mouse = { x: p.mouseX, y: p.mouseY };
+      return ViewField.toGlobalCoordinates(viewField, mouse);
+    };
+
+  const previousMousePosition =
+    () : Point => {
+      const mouse = { x: p.pmouseX, y: p.pmouseY };
+      return ViewField.toGlobalCoordinates(viewField, mouse);
+    };
+
   function handleMouseEvent(name: string) {
-    const currentPoint: Point = { x: p.mouseX, y: p.mouseY };
+    const currentPoint = mousePosition();
     const startAtom = findMouseOverAtom(State.atoms(), startPoint);
     const currentAtom = findMouseOverAtom(State.atoms(), currentPoint);
 
@@ -120,7 +132,7 @@ export default function Sketch(p: p5) {
     if (!startPoint) return;
 
     const f = () => {
-      const currentPoint: Point = { x: p.mouseX, y: p.mouseY };
+      const currentPoint = mousePosition();
       const dist = distance(startPoint, currentPoint);
       if (dist >= HOLD_DIST_THRESHOLD) return;
 
@@ -205,7 +217,9 @@ export default function Sketch(p: p5) {
     p.translate(x, y);
 
     if (p.mouseIsPressed === true && !State.findDraggingAtom()) {
-      lines.push({ x1: p.mouseX, y1: p.mouseY, x2: p.pmouseX, y2: p.pmouseY });
+      const p1 = mousePosition();
+      const p2 = previousMousePosition();
+      lines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
     } else {
       if (!keepDrawings) lines = [];
     }
@@ -243,7 +257,7 @@ export default function Sketch(p: p5) {
     if ((event.srcElement as HTMLElement).tagName !== "CANVAS") return;
 
     timestamp = new Date().getTime();
-    startPoint = { x: p.mouseX, y: p.mouseY };
+    startPoint = mousePosition();
 
     const startAtom = findMouseOverAtom(State.atoms(), startPoint);
     if (startAtom && AtomShape.withinDragArea(startPoint, startAtom)) {
@@ -259,7 +273,7 @@ export default function Sketch(p: p5) {
     const isClickAndHold = mousePressedDuration > HOLD_DURATION;
 
     const startAtom = findMouseOverAtom(State.atoms(), startPoint);
-    const currentPoint: Point = { x: p.mouseX, y: p.mouseY };
+    const currentPoint = mousePosition();
     const currentAtom = findMouseOverAtom(State.atoms(), currentPoint);
     const dist = distance(startPoint, currentPoint);
     const selectedAtom = State.findSelectedAtom();
@@ -293,8 +307,9 @@ export default function Sketch(p: p5) {
   p.mouseDragged = () => {
     const draggingAtom = State.findDraggingAtom();
     if (draggingAtom) {
-      draggingAtom.x = p.mouseX;
-      draggingAtom.y = p.mouseY;
+      const { x, y } = mousePosition();
+      draggingAtom.x = x;
+      draggingAtom.y = y;
     }
   }
 

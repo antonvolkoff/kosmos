@@ -38,3 +38,8 @@ export const move =
 
 export const translateTo =
   (view: ViewField): Point => ({ x: -view.x, y: -view.y });
+
+export const toGlobalCoordinates =
+  (view: ViewField, point: Point): Point => {
+    return { x: point.x + view.x, y: point.y + view.y };
+  };
