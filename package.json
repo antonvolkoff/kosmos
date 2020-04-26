@@ -8,7 +8,9 @@
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "npm run build && electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "icons:build": "(cd assets; ./build_icons.sh)",
+    "icons:reset": "touch out/Kosmos-darwin-x64/Kosmos.app"
   },
   "devDependencies": {
     "@electron-forge/cli": "6.0.0-beta.50",
