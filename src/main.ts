@@ -38,7 +38,7 @@ app.on("activate", () => {
   }
 })
 
-const template: MenuItemConstructorOptions[] = [
+let template: MenuItemConstructorOptions[] = [
   // { role: 'appMenu' },
   {
     label: app.name,
@@ -95,46 +95,52 @@ const template: MenuItemConstructorOptions[] = [
       { role: "close" },
     ]
   },
-  // { role: 'editMenu' }
-  {
-    label: 'Edit',
-    submenu: [
-      { role: 'undo' },
-      { role: 'redo' },
-      { type: 'separator' },
-      { role: 'cut' },
-      { role: 'copy' },
-      { role: 'paste' },
-      { role: 'pasteAndMatchStyle' },
-      { role: 'delete' },
-      { role: 'selectAll' },
-      { type: 'separator' },
-    ]
-  },
-  // { role: 'viewMenu' }
-  {
-    label: 'View',
-    submenu: [
-      { role: 'reload' },
-      { role: 'forceReload' },
-      { role: 'toggleDevTools' },
-      { type: 'separator' },
-      { role: 'togglefullscreen' }
-    ]
-  },
-  // { role: 'windowMenu' }
-  {
-    label: 'Window',
-    submenu: [
-      { role: 'minimize' },
-      { role: 'zoom' },
-      { type: 'separator' },
-      { role: 'front' },
-      { type: 'separator' },
-      { role: 'window' }
-    ]
-  }
 ];
+
+const editMenu: MenuItemConstructorOptions = {
+  label: 'Edit',
+  submenu: [
+    { role: 'undo' },
+    { role: 'redo' },
+    { type: 'separator' },
+    { role: 'cut' },
+    { role: 'copy' },
+    { role: 'paste' },
+    { role: 'pasteAndMatchStyle' },
+    { role: 'delete' },
+    { role: 'selectAll' },
+    { type: 'separator' },
+  ]
+};
+
+const viewMenu: MenuItemConstructorOptions = {
+  label: 'View',
+  submenu: [
+    { role: 'reload' },
+    { role: 'forceReload' },
+    { role: 'toggleDevTools' },
+    { type: 'separator' },
+    { role: 'togglefullscreen' }
+  ]
+};
+
+const windowMenu: MenuItemConstructorOptions = {
+  label: 'Window',
+  submenu: [
+    { role: 'minimize' },
+    { role: 'zoom' },
+    { type: 'separator' },
+    { role: 'front' },
+    { type: 'separator' },
+    { role: 'window' }
+  ]
+};
+
+if (!app.isPackaged) {
+  template.push(editMenu);
+  template.push(viewMenu);
+  template.push(windowMenu);
+}
 
 const menu = Menu.buildFromTemplate(template);
 Menu.setApplicationMenu(menu);
