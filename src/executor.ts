@@ -18,16 +18,25 @@ const nReplPortFile = `${homedir()}/.nrepl-port`;
 const process = (nRepl: NRepl): NRepl => {
   switch (nRepl.state) {
     case "waiting-for-port":
-      const buffer = readFileSync(nReplPortFile);
-      nRepl.port = parseInt(buffer.toString());
-      nRepl.state = "connecting";
-      setTimeout(processRepl, 1000);
+      try {
+        const buffer = readFileSync(nReplPortFile);
+        nRepl.port = parseInt(buffer.toString());
+        nRepl.state = "connecting";
+        setTimeout(processRepl, 1000);
+      } catch(err) {
+        setTimeout(processRepl, 10000);
+      }
       break;
 
     case "connecting":
-      nRepl.client = repl.connect({ port: nRepl.port });
-      nRepl.state = "connected";
-      State.setConnectedToRepl(true);
+      try {
+        nRepl.client = repl.connect({ port: nRepl.port });
+        nRepl.state = "connected";
+        State.setConnectedToRepl(true);
+      } catch (error) {
+        console.log("Error:", error);
+      }
+
       setTimeout(processRepl, 1000);
       break;
 

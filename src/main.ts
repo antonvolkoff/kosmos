@@ -1,10 +1,6 @@
 import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
-import { ChildProcess } from "child_process";
-import * as NReplServer from "./nrepl_server";
-
 
 let win: BrowserWindow;
-let nReplProcess: ChildProcess;
 
 function createWindow () {
   // Create the browser window.
@@ -25,11 +21,6 @@ function createWindow () {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow();
-
-  nReplProcess = NReplServer.start();
-  nReplProcess.stdout.on("data", (data) => console.log(data.toString()));
-  nReplProcess.stderr.on("data", (data) => console.log(data.toString()));
-  nReplProcess.on("exit", (code) => console.log(code));
 });
 
 // Quit when all windows are closed.
@@ -37,7 +28,6 @@ app.on("window-all-closed", () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== "darwin") {
-    NReplServer.stop(nReplProcess);
     app.quit()
   }
 })
