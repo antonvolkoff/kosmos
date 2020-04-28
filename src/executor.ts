@@ -3,6 +3,8 @@ import * as repl from "nrepl-client";
 import { homedir } from "os";
 import { readFileSync } from "fs";
 
+import State from "./state/state";
+
 type NReplState = "waiting-for-port" | "connecting" | "connected";
 
 type NRepl = {
@@ -25,6 +27,7 @@ const process = (nRepl: NRepl): NRepl => {
     case "connecting":
       nRepl.client = repl.connect({ port: nRepl.port });
       nRepl.state = "connected";
+      State.setConnectedToRepl(true);
       setTimeout(processRepl, 1000);
       break;
 

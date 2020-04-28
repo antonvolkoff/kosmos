@@ -12,8 +12,11 @@ export interface State {
   file(): File.File;
   atoms(): Atom[];
   edges(): Line[];
+  connectedToRepl(): boolean;
 
   subscribe(handler: any): void;
+
+  setConnectedToRepl(connected: boolean): void;
 
   addAtom(atom: Atom): void;
   deleteAtom(atom: Atom): void;
@@ -42,6 +45,7 @@ let subscribers: any[] = [];
 let file = File.init();
 let atoms: Atom[] = [];
 let entries: string[] = [];
+let connectedToRepl = false;
 
 function notify(): void {
   subscribers.forEach(handler => handler());
@@ -64,6 +68,11 @@ function edges(): Line[] {
   })
 
   return lines;
+}
+
+function setConnectedToRepl(connected: boolean): void {
+  connectedToRepl = connected;
+  notify();
 }
 
 function newFile(): void {
@@ -172,6 +181,9 @@ export default {
   entries() {
     return entries;
   },
+  connectedToRepl() {
+    return connectedToRepl;
+  },
   edges,
   newFile,
   openFile,
@@ -189,4 +201,5 @@ export default {
   addTranscriptEntry,
   subscribe,
   exportAsClojure,
+  setConnectedToRepl,
 } as State;

@@ -4,6 +4,7 @@ import { html } from "htm/react";
 import { State } from "../state/state";
 import PlayIcon from "./play_icon";
 import TrashIcon from "./trash_icon";
+import CastIcon from "./cast_icon";
 
 interface Props {
   state: State;
@@ -11,9 +12,11 @@ interface Props {
 
 export default function Control({ state }: Props) {
   const [selectedAtom, setSelectedAtom] = useState(undefined);
+  const [connectedToRepl, setConnectedToRepl] = useState(false);
 
   state.subscribe(() => {
     setSelectedAtom(state.findSelectedAtom());
+    setConnectedToRepl(state.connectedToRepl());
   });
 
   const onEvalClick = (event) => {
@@ -33,6 +36,10 @@ export default function Control({ state }: Props) {
       </button>
       <button className="control-button" disabled=${!selectedAtom} onClick=${onDeleteClick}>
         <${TrashIcon} />
+      </button>
+      <div className="control-separator"></div>
+      <button className="control-status" disabled=${!connectedToRepl} title="Connection to REPL">
+        <${CastIcon} />
       </button>
     </div>
   `;

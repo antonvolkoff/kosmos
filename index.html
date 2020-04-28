@@ -86,6 +86,8 @@
       }
 
       .control-panel {
+        display: flex;
+        /* align-items: center; */
         min-width: 50px;
         background-color: #fff;
         border: 1px solid #D0D0D0;
@@ -108,8 +110,32 @@
         cursor: pointer;
       }
 
+      .control-button:disabled {
+        color: #9a9a9a;
+      }
+
       .control-button:active {
         color: #D0D0D0;
+      }
+
+      .control-status {
+        border: none;
+        outline: none;
+      }
+
+      .control-status:disabled {
+        color: #9a9a9a;
+      }
+
+      .control-status:active {
+        color: #D0D0D0;
+      }
+
+      .control-separator {
+        display: block;
+        border-left: 1px solid rgba(0, 0, 0, 0.2);
+        margin: 0 .5rem;
+        width: 1px;
       }
     </style>
   </head>
