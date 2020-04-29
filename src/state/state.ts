@@ -22,6 +22,8 @@ export interface State {
   deleteAtom(atom: Atom): void;
   connectAtoms(source: Atom, target: Atom): void;
 
+  moveAtom(atom: Atom, x: number, y: number): void;
+
   evalSelectedAtom(): void;
 
   selectAtom(atom: Atom);
@@ -113,6 +115,16 @@ function evalSelectedAtom(): void {
   executor(ClojurePacker.pack([atom])).then(addTranscriptEntry);
 }
 
+function moveAtom(atom: Atom, x: number, y: number): void {
+  const deltaX = x - atom.x;
+  const deltaY = y - atom.y;
+  atom.x = x;
+  atom.y = y;
+  atom.outgoing.forEach(child => {
+    moveAtom(child, child.x + deltaX, child.y + deltaY);
+  });
+}
+
 function selectAtom(atom: Atom): void {
   const selectedAtom = findSelectedAtom();
   if (selectedAtom) {
@@ -202,4 +214,5 @@ export default {
   subscribe,
   exportAsClojure,
   setConnectedToRepl,
+  moveAtom,
 } as State;

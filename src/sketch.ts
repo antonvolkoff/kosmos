@@ -70,8 +70,7 @@ export default function Sketch(p: p5) {
         const draggingAtom = State.findDraggingAtom();
 
         const { x, y } = nearestGridPoint(currentPoint);
-        draggingAtom.x = x;
-        draggingAtom.y = y;
+        State.moveAtom(draggingAtom, x, y);
         draggingAtom.dragging = false;
         focusInput(draggingAtom);
         break;
@@ -323,8 +322,7 @@ export default function Sketch(p: p5) {
     const draggingAtom = State.findDraggingAtom();
     if (draggingAtom) {
       const { x, y } = mousePosition();
-      draggingAtom.x = x;
-      draggingAtom.y = y;
+      State.moveAtom(draggingAtom, x, y);
     }
   }
 
