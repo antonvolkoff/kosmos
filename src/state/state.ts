@@ -98,6 +98,7 @@ function saveFile(): void {
 function saveAsFile(path: string): void {
   file = File.setPath(file, path);
   saveFile();
+  notify();
 }
 
 function hasFile(): boolean {
