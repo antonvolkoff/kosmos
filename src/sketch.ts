@@ -31,16 +31,21 @@ export default function Sketch(p: p5) {
   function inputEvent() {
     const atom = State.findSelectedAtom();
     atom.value = this.value();
+    valueInput.style(`width: ${atom.value.length * 8.6}px`);
   }
 
   function focusInput(atom: Atom) {
+    valueInput.show();
     valueInput.elt.focus();
     valueInput.value(atom.value);
+    valueInput.position(atom.x + 16, atom.y - 9);
+    valueInput.style(`width: ${atom.value.length * 8.6}px`);
   }
 
   function blurInput() {
     valueInput.elt.blur();
     valueInput.value('');
+    valueInput.hide();
   }
 
   const mousePosition =
@@ -219,7 +224,7 @@ export default function Sketch(p: p5) {
 
     valueInput = p.createInput();
     valueInput.position(p.width - 200, 65);
-    valueInput.class("mousetrap");
+    valueInput.class("mousetrap atom-input");
     (valueInput as any).input(inputEvent);
 
     State.subscribe(() => {

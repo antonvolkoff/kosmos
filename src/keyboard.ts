@@ -55,10 +55,11 @@ export default function Keyboard(state: State) {
     const atom = state.findSelectedAtom();
     if (atom) state.unselectAtom(atom);
   };
-  const moveToParent = () => {
+  const moveToParent = (event) => {
     const atom = state.findSelectedAtom();
     if (!atom || atom.incoming.length == 0) return;
 
+    event.preventDefault();
     const parent = findParent(atom);
     if (parent) state.selectAtom(parent);
   };
