@@ -200,7 +200,7 @@ export default function Sketch(p: p5) {
   const drawLegend = () => {
     const content = Legend.text();
     const { x, y } =
-      ViewField.toGlobalCoordinates(viewField, { x: 20, y: p.height - 20 });
+      ViewField.toGlobalCoordinates(viewField, { x: 20, y: p.height - 30 });
 
     p.push();
     {
