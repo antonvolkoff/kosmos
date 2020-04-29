@@ -209,6 +209,8 @@ export default function Sketch(p: p5) {
   };
 
   p.setup = () => {
+    p.pixelDensity(2);
+
     viewField = ViewField.init(p.windowWidth, p.windowHeight);
 
     p.createCanvas(p.windowWidth, p.windowHeight);
