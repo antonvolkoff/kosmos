@@ -28,7 +28,9 @@ export default function Sketch(p: p5) {
     return atoms.find(atom => AtomShape.within(mouse, atom));
   }
 
-  const placeInput = (x: number, y: number) => valueInput.position(x + 16, y - 9);
+  const placeInput = (x: number, y: number) => {
+    valueInput.position(x + 16, y - 9);
+  }
 
   function inputEvent() {
     const atom = State.findSelectedAtom();
@@ -243,6 +245,11 @@ export default function Sketch(p: p5) {
     const { x, y } = ViewField.translateTo(viewField);
     p.translate(x, y);
 
+    const selectedAtom = State.findSelectedAtom();
+    if (selectedAtom) {
+      placeInput(selectedAtom.x + x, selectedAtom.y + y);
+    }
+
     if (p.mouseIsPressed === true && !State.findDraggingAtom()) {
       const p1 = mousePosition();
       const p2 = previousMousePosition();
@@ -332,7 +339,6 @@ export default function Sketch(p: p5) {
     if (draggingAtom) {
       const { x, y } = mousePosition();
       State.moveAtom(draggingAtom, x, y);
-      placeInput(x, y);
     }
   }
 
