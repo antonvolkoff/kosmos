@@ -55,12 +55,20 @@ export default class Transcript extends Component<TranscriptProps, TranscriptSta
       </div>
     `;
   }
-  // ssss
+
+  convertToMultiline(text: string) {
+    return text.split("\n").map(line => html`<div>${line}</div>`);
+  }
+
   renderEntries() {
+    const entryPart = (text: string, className: string) => {
+      return text.length > 0 ? html`<div className="${className}">${this.convertToMultiline(text)}</div>` : "";
+    }
+
     return this.state.entries.map(result => {
-      const stdout = result.stdout.length > 0 ? html`<div className="entry-stdout">${result.stdout}</div>` : "";
-      const value = result.value.length > 0 ? html`<div className="entry-value">${result.value}</div>` : "";
-      const stderr = result.stderr.length > 0 ? html`<div className="entry-error">${result.stderr}</div>` : "";
+      const stdout = entryPart(result.stdout, "entry-stdout");
+      const value = entryPart(result.value, "entry-value");
+      const stderr = entryPart(result.stderr, "entry-error");
 
       return html`
         <div className="transcript-list-item">
