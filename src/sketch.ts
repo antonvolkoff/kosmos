@@ -28,18 +28,20 @@ export default function Sketch(p: p5) {
     return atoms.find(atom => AtomShape.within(mouse, atom));
   }
 
+  const placeInput = (x: number, y: number) => valueInput.position(x + 16, y - 9);
+
   function inputEvent() {
     const atom = State.findSelectedAtom();
     atom.value = this.value();
-    valueInput.style(`width: ${atom.value.length * 8.6}px`);
+    valueInput.style(`width: ${atom.value.length * 8.6 + 8.6}px`);
   }
 
   function focusInput(atom: Atom) {
     valueInput.show();
     valueInput.elt.focus();
     valueInput.value(atom.value);
-    valueInput.position(atom.x + 16, atom.y - 9);
-    valueInput.style(`width: ${atom.value.length * 8.6}px`);
+    placeInput(atom.x, atom.y);
+    valueInput.style(`width: ${atom.value.length * 8.6 + 8.6}px`);
   }
 
   function blurInput() {
@@ -330,6 +332,7 @@ export default function Sketch(p: p5) {
     if (draggingAtom) {
       const { x, y } = mousePosition();
       State.moveAtom(draggingAtom, x, y);
+      placeInput(x, y);
     }
   }
 
