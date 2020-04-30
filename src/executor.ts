@@ -13,6 +13,12 @@ type NRepl = {
   client: any;
 };
 
+export interface EvalResult {
+  stdout: string;
+  stderr: string;
+  value: string;
+}
+
 const nReplPortFile = `${homedir()}/.nrepl-port`;
 
 const process = (nRepl: NRepl): NRepl => {
@@ -57,8 +63,21 @@ const processRepl = () => process(nRepl);
 
 setTimeout(processRepl, 1000);
 
-export default async function executor(code: string): Promise<string> {
+const reduceValue =
+  (aggregate, msg) => msg.value ? aggregate + msg.value : aggregate;
+
+const reduceOutput =
+  (aggregate, msg) => msg.out ? aggregate + msg.out : aggregate;
+
+const reduceError =
+  (aggregate, msg) => msg.err ? aggregate + msg.err : aggregate;
+
+export async function execute(code: string): Promise<EvalResult> {
   const evalPromise = promisify(nRepl.client.eval);
   const result = await evalPromise(code);
-  return result[0].out || result[0].value;
+  return {
+    value: result.reduce(reduceValue, ""),
+    stdout: result.reduce(reduceOutput, ""),
+    stderr: result.reduce(reduceError, ""),
+  };
 };

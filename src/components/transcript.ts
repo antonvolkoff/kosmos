@@ -1,18 +1,21 @@
 import { Component, createRef } from "react";
 import { html } from "htm/react";
 import { State } from "../state/state";
+import { EvalResult } from "../executor";
 
 type TranscriptProps = {
   state: State;
 };
 
 type TranscriptState = {
-  entries: string[];
-  lastEntry: string;
+  entries: EvalResult[];
+  lastEntry: EvalResult;
 };
 
-const last = (results: string[]): string => {
-  return results[results.length - 1] || "";
+const emptyResult: EvalResult = { stderr: "", stdout: "", value: "" };
+
+const last = (results: EvalResult[]): EvalResult => {
+  return results[results.length - 1] || emptyResult;
 };
 
 const propsToState = (props: TranscriptProps): TranscriptState => {
@@ -52,10 +55,20 @@ export default class Transcript extends Component<TranscriptProps, TranscriptSta
       </div>
     `;
   }
-
+  // ssss
   renderEntries() {
     return this.state.entries.map(result => {
-      return html`<div className="transcript-list-item">${result}</div>`;
+      const stdout = result.stdout.length > 0 ? html`<div className="entry-stdout">${result.stdout}</div>` : "";
+      const value = result.value.length > 0 ? html`<div className="entry-value">${result.value}</div>` : "";
+      const stderr = result.stderr.length > 0 ? html`<div className="entry-error">${result.stderr}</div>` : "";
+
+      return html`
+        <div className="transcript-list-item">
+          ${stderr}
+          ${stdout}
+          ${value}
+        </div>
+      `;
     });
   }
 

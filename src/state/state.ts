@@ -3,12 +3,12 @@ import * as fs from "fs";
 import Atom from "../atom";
 import * as JsonPacker from "../packers/json_packer";
 import * as ClojurePacker  from "../packers/clojure_packer";
-import executor from "../executor";
+import * as Executor from "../executor";
 import * as File from "./file";
 import { Line } from "../geometry";
 
 export interface State {
-  entries(): string[];
+  entries(): Executor.EvalResult[];
   file(): File.File;
   atoms(): Atom[];
   edges(): Line[];
@@ -32,7 +32,7 @@ export interface State {
   findSelectedAtom(): Atom | undefined;
   findDraggingAtom(): Atom | undefined;
 
-  addTranscriptEntry(entry: string): void;
+  addTranscriptEntry(entry: Executor.EvalResult): void;
 
   newFile(): void;
   openFile(path: string): void;
@@ -46,7 +46,7 @@ export interface State {
 let subscribers: any[] = [];
 let file = File.init();
 let atoms: Atom[] = [];
-let entries: string[] = [];
+let entries: Executor.EvalResult[] = [];
 let connectedToRepl = false;
 
 function notify(): void {
@@ -113,7 +113,7 @@ function evalSelectedAtom(): void {
   const atom = findSelectedAtom();
   if (!atom) return;
 
-  executor(ClojurePacker.pack([atom])).then(addTranscriptEntry);
+  Executor.execute(ClojurePacker.pack([atom])).then(addTranscriptEntry);
 }
 
 function moveAtom(atom: Atom, x: number, y: number): void {
@@ -170,7 +170,7 @@ function findDraggingAtom(): Atom | undefined {
   return atoms.find(atom => atom.dragging);
 }
 
-function addTranscriptEntry(entry: string): void {
+function addTranscriptEntry(entry: Executor.EvalResult): void {
   entries.push(entry);
   notify();
 }
