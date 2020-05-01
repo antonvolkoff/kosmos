@@ -284,7 +284,8 @@ export default function Sketch(p: p5) {
   };
 
   p.mousePressed = (event: MouseEvent) => {
-    if ((event.srcElement as HTMLElement).tagName !== "CANVAS") return;
+    const tagName = (event.srcElement as HTMLElement).tagName;
+    if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
     timestamp = new Date().getTime();
     startPoint = mousePosition();
@@ -296,7 +297,8 @@ export default function Sketch(p: p5) {
   }
 
   p.mouseReleased = (event: MouseEvent) => {
-    if ((event.srcElement as HTMLElement).tagName !== "CANVAS") return;
+    const tagName = (event.srcElement as HTMLElement).tagName;
+    if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
     const now = new Date().getTime();
     const mousePressedDuration = now - timestamp;
