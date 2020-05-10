@@ -1,9 +1,9 @@
 import * as p5 from "p5";
 
-import State from "./state/state";
+import State from "../state";
 import { Point, Line, distance } from "./geometry";
 import Atom from "./atom";
-import AtomShape from "./shapes/atom_shape";
+import AtomShape from "./atom_shape";
 import * as Legend from "./legend";
 import { nearestGridPoint, gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";

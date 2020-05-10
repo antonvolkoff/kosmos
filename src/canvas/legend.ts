@@ -1,4 +1,4 @@
-import State from "./state/state";
+import State from "../state";
 
 const UnselectedText = "Press & Hold to create an atom";
 const SelectedText = `

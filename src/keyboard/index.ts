@@ -1,9 +1,9 @@
 import * as Mousetrap from "mousetrap";
-import { State } from "./state/state";
-import AtomShape from "./shapes/atom_shape";
-import Atom from "./atom";
-import { lastNestedChild, findParent, firstChild, nextSibling, previousSibling } from "./atom";
-import { nearestGridPoint } from "./grid";
+import { State } from "../state";
+import AtomShape from "../canvas/atom_shape";
+import Atom from "../canvas/atom";
+import { lastNestedChild, findParent, firstChild, nextSibling, previousSibling } from "../canvas/atom";
+import { nearestGridPoint } from "../canvas/grid";
 
 export default function Keyboard(state: State) {
   const standardAtomOffset = 40;

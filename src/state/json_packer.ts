@@ -1,4 +1,4 @@
-import Atom from "../atom";
+import Atom from "../canvas/atom";
 
 type PackNode = {
   x: number;

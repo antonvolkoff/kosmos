@@ -1,5 +1,3 @@
-import Atom from "./atom";
-
 export interface Point {
   x: number;
   y: number;
@@ -18,11 +16,6 @@ export interface Rect {
   width: number;
   height: number;
 }
-
-export function atomToPoint(atom: Atom): Point {
-  const { x, y } = atom;
-  return { x, y };
-};
 
 export function buildLineFromAtoms(p1: Point, p2: Point): Line {
   return { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };

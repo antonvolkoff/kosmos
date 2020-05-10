@@ -3,7 +3,7 @@ import * as repl from "nrepl-client";
 import { homedir } from "os";
 import { readFileSync } from "fs";
 
-import State from "./state/state";
+import State from "../state";
 
 type NReplState = "waiting-for-port" | "connecting" | "connected";
 

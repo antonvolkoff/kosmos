@@ -1,11 +1,11 @@
 import * as fs from "fs";
 
-import Atom from "../atom";
-import * as JsonPacker from "../packers/json_packer";
-import * as ClojurePacker  from "../packers/clojure_packer";
-import * as Executor from "../executor";
-import * as File from "./file";
-import { Line } from "../geometry";
+import Atom from "./canvas/atom";
+import * as JsonPacker from "./state/json_packer";
+import * as ClojurePacker  from "./state/clojure_packer";
+import * as Executor from "./state/executor";
+import * as File from "./state/file";
+import { Line } from "./canvas/geometry";
 
 export interface State {
   entries(): Executor.EvalResult[];

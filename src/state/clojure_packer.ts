@@ -1,4 +1,4 @@
-import Atom from "../atom";
+import Atom from "../canvas/atom";
 
 function translate(atom: Atom): string {
   // Integer

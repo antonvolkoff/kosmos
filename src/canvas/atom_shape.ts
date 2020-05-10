@@ -1,6 +1,6 @@
 import * as p5 from "p5";
-import Atom from "../atom";
-import { Point } from "../geometry";
+import Atom from "./atom";
+import { Point } from "./geometry";
 
 export const ATOM_SIZE = 40;
 export const BORDER_RADIUS = 40;
