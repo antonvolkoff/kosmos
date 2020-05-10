@@ -1,4 +1,4 @@
-import State from "../state";
+import { State } from "../state";
 
 const UnselectedText = "Press & Hold to create an atom";
 const SelectedText = `
@@ -7,7 +7,7 @@ Press Tab to create a child atom; Press Enter to create a sibling atom
 `;
 
 export const text =
-  () => {
-    if (State.findSelectedAtom()) return SelectedText;
+  (state: State) => {
+    if (state.findSelectedAtom()) return SelectedText;
     return UnselectedText;
   };
