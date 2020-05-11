@@ -23,7 +23,7 @@ const blur = () => {
 
 const handleInput = (state: State) => {
   const atom = state.findSelectedAtom();
-  atom.value = element.value().toString();
+  state.changeAtomValue(atom, element.value().toString());
   setValue(atom.value);
 };
 
