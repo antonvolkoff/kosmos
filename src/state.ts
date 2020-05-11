@@ -6,6 +6,8 @@ import * as ClojurePacker  from "./state/clojure_packer";
 import * as Executor from "./state/executor";
 import * as File from "./state/file";
 import { Line, Point } from "./canvas/geometry";
+import AtomShape from "./canvas/atom_shape";
+import { nearestGridPoint } from "./canvas/grid";
 
 export interface State {
   entries(): Executor.EvalResult[];
@@ -44,6 +46,8 @@ export interface State {
 
   setCanvasTranslate(point: Point);
   canvasTranslate(): Point;
+
+  changeAtomValue(atom: Atom, value: string);
 };
 
 let subscribers: any[] = [];
@@ -192,6 +196,23 @@ function setCanvasTranslate(point: Point): void {
   canvasTranslatePoint = point;
 }
 
+const adjustDistance = (atom: Atom) => {
+  const standardAtomOffset = 40;
+  const width = AtomShape.width(atom) + standardAtomOffset;
+
+  atom.outgoing.forEach(childAtom => {
+    const { x, y } = nearestGridPoint({ x: atom.x + width, y: childAtom.y });
+    childAtom.x = x;
+    childAtom.y = y;
+    adjustDistance(childAtom);
+  });
+}
+
+function changeAtomValue(atom: Atom, value: string): void {
+  atom.value = value;
+  adjustDistance(atom);
+}
+
 export default {
   file() {
     return file;
@@ -228,4 +249,5 @@ export default {
   setConnectedToRepl,
   moveAtom,
   setCanvasTranslate,
+  changeAtomValue,
 } as State;
