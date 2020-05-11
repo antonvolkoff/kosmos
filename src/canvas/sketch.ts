@@ -7,6 +7,7 @@ import AtomShape from "./atom_shape";
 import * as Legend from "./legend";
 import { nearestGridPoint, gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
+import * as ValueInput from "./value_input";
 
 export default function Sketch(state: State) {
   return (p: p5) => {
@@ -22,35 +23,10 @@ export default function Sketch(state: State) {
     let viewField: ViewField.ViewField;
 
     const backgroundColor = p.color("#FDFDFD");
-    let valueInput: p5.Element = undefined;
     let bg: p5.Graphics = null;
 
     function findMouseOverAtom(atoms: Atom[], mouse: Point) {
       return atoms.find(atom => AtomShape.within(mouse, atom));
-    }
-
-    const placeInput = (x: number, y: number) => {
-      valueInput.position(x + 16, y - 9);
-    }
-
-    function inputEvent() {
-      const atom = state.findSelectedAtom();
-      atom.value = this.value();
-      valueInput.style(`width: ${atom.value.length * 8.6 + 8.6}px`);
-    }
-
-    function focusInput(atom: Atom) {
-      valueInput.show();
-      valueInput.elt.focus();
-      valueInput.value(atom.value);
-      placeInput(atom.x, atom.y);
-      valueInput.style(`width: ${atom.value.length * 8.6 + 8.6}px`);
-    }
-
-    function blurInput() {
-      valueInput.elt.blur();
-      valueInput.value('');
-      valueInput.hide();
     }
 
     const mousePosition =
@@ -82,7 +58,6 @@ export default function Sketch(state: State) {
           const { x, y } = nearestGridPoint(currentPoint);
           state.moveAtom(draggingAtom, x, y);
           draggingAtom.dragging = false;
-          focusInput(draggingAtom);
           break;
 
         case "create":
@@ -220,6 +195,7 @@ export default function Sketch(state: State) {
 
     p.setup = () => {
       p.pixelDensity(2);
+      p.frameRate(30);
 
       viewField = ViewField.init(p.windowWidth, p.windowHeight);
 
@@ -227,29 +203,14 @@ export default function Sketch(state: State) {
       bg = p.createGraphics(1000, 1000);
       bg = drawBackground(p, bg, backgroundColor);
 
-      valueInput = p.createInput();
-      valueInput.position(p.width - 200, 65);
-      valueInput.class("mousetrap atom-input");
-      (valueInput as any).input(inputEvent);
-
-      state.subscribe(() => {
-        const atom = state.findSelectedAtom();
-        if (atom) {
-          focusInput(atom);
-        } else {
-          blurInput();
-        }
-      })
+      ValueInput.setup(p, state);
     };
 
     p.draw = () => {
-      const { x, y } = ViewField.translateTo(viewField);
+      const { x, y } = state.canvasTranslate();
       p.translate(x, y);
 
-      const selectedAtom = state.findSelectedAtom();
-      if (selectedAtom) {
-        placeInput(selectedAtom.x + x, selectedAtom.y + y);
-      }
+      ValueInput.update(p, state);
 
       if (p.mouseIsPressed === true && !state.findDraggingAtom()) {
         const p1 = mousePosition();
@@ -280,8 +241,6 @@ export default function Sketch(state: State) {
     p.windowResized = () => {
       viewField = ViewField.resize(viewField, p.windowWidth, p.windowHeight);
       p.resizeCanvas(p.windowWidth, p.windowHeight);
-
-      valueInput.position(p.width - 200, 65);
     };
 
     p.mousePressed = (event: MouseEvent) => {
@@ -335,6 +294,7 @@ export default function Sketch(state: State) {
 
     p.mouseWheel = (event: WheelEvent) => {
       viewField = ViewField.move(viewField, event.deltaX, event.deltaY);
+      state.setCanvasTranslate(ViewField.translateTo(viewField));
     }
 
     p.mouseDragged = () => {

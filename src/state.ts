@@ -5,7 +5,7 @@ import * as JsonPacker from "./state/json_packer";
 import * as ClojurePacker  from "./state/clojure_packer";
 import * as Executor from "./state/executor";
 import * as File from "./state/file";
-import { Line } from "./canvas/geometry";
+import { Line, Point } from "./canvas/geometry";
 
 export interface State {
   entries(): Executor.EvalResult[];
@@ -41,6 +41,9 @@ export interface State {
   hasFile(): boolean;
 
   exportAsClojure(path: string): void;
+
+  setCanvasTranslate(point: Point);
+  canvasTranslate(): Point;
 };
 
 let subscribers: any[] = [];
@@ -48,6 +51,7 @@ let file = File.init();
 let atoms: Atom[] = [];
 let entries: Executor.EvalResult[] = [];
 let connectedToRepl = false;
+let canvasTranslatePoint: Point = { x: 0, y: 0 };
 
 function notify(): void {
   subscribers.forEach(handler => handler());
@@ -184,6 +188,10 @@ function subscribe(handler: any): void {
   subscribers.push(handler);
 }
 
+function setCanvasTranslate(point: Point): void {
+  canvasTranslatePoint = point;
+}
+
 export default {
   file() {
     return file;
@@ -196,6 +204,9 @@ export default {
   },
   connectedToRepl() {
     return connectedToRepl;
+  },
+  canvasTranslate() {
+    return canvasTranslatePoint;
   },
   edges,
   newFile,
@@ -216,4 +227,5 @@ export default {
   exportAsClojure,
   setConnectedToRepl,
   moveAtom,
+  setCanvasTranslate,
 } as State;
