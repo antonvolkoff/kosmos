@@ -1,40 +1,42 @@
 import { useState } from "react";
 import { html } from "htm/react";
 
-import { State } from "../state";
+import { deleteAtom, evalSelectedAtom } from "../store";
 import PlayIcon from "./play_icon";
 import TrashIcon from "./trash_icon";
 import CastIcon from "./cast_icon";
+import { Store } from "redux";
 
 interface Props {
-  state: State;
+  store: Store;
 }
 
-export default function Control({ state }: Props) {
-  const [selectedAtom, setSelectedAtom] = useState(undefined);
+export default function Control({ store }: Props) {
+  const [selectedAtomId, setSelectedAtomId] = useState(null);
   const [connectedToRepl, setConnectedToRepl] = useState(false);
 
-  state.subscribe(() => {
-    setSelectedAtom(state.findSelectedAtom());
-    setConnectedToRepl(state.connectedToRepl());
+  store.subscribe(() => {
+    const data = store.getState();
+    setSelectedAtomId(data.selectedAtomId);
+    setConnectedToRepl(data.connectedToRepl);
   });
 
   const onEvalClick = (event) => {
     event.preventDefault();
-    state.evalSelectedAtom();
+    store.dispatch(evalSelectedAtom());
   }
 
   const onDeleteClick = (event) => {
     event.preventDefault();
-    state.deleteAtom(selectedAtom);
+    store.dispatch(deleteAtom(selectedAtomId));
   }
 
   return html`
     <div className="control-panel at-top">
-      <button className="control-button" disabled=${!selectedAtom} onClick=${onEvalClick}>
+      <button className="control-button" disabled=${!selectedAtomId} onClick=${onEvalClick}>
         <${PlayIcon} />
       </button>
-      <button className="control-button" disabled=${!selectedAtom} onClick=${onDeleteClick}>
+      <button className="control-button" disabled=${!selectedAtomId} onClick=${onDeleteClick}>
         <${TrashIcon} />
       </button>
       <div className="control-separator"></div>

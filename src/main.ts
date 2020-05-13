@@ -1,4 +1,5 @@
 import { app, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
+import installExtension, { REDUX_DEVTOOLS } from 'electron-devtools-installer';
 
 let win: BrowserWindow;
 
@@ -19,9 +20,11 @@ function createWindow () {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  createWindow();
-});
+app.whenReady()
+  .then(() => { return installExtension(REDUX_DEVTOOLS) })
+  .then((name) => console.log(`Added Extension:  ${name}`))
+  .then(() => { createWindow(); })
+  .catch((err) => console.log('An error occurred: ', err));
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {

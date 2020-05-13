@@ -35,7 +35,7 @@ export function pack(items: Atom[]): string {
   return JSON.stringify(result);
 };
 
-export function unpack(data: string): Atom[] {
+export function unpack(data: string): [any, any] {
   const { graph }: PackObject = JSON.parse(data);
 
   let atomsById: { [id:string]: Atom } = {};
@@ -52,5 +52,9 @@ export function unpack(data: string): Atom[] {
     targetAtom.incoming.push(sourceAtom);
   });
 
-  return Object.values(atomsById);
+  const edges = graph.edges.map(({ source, target}) => {
+    return { sourceId: source, targetId: target };
+  });
+
+  return [atomsById, edges];
 };

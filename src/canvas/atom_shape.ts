@@ -17,13 +17,13 @@ export default {
     return width;
   },
 
-  draw(s: p5, atom: Atom) {
+  draw(s: p5, atom: Atom, selected: boolean) {
     s.push();
 
     s.fill(s.color('#ffffff'));
     s.stroke(s.color('#999999'));
     s.strokeWeight(1.5);
-    if (atom.selected) {
+    if (selected) {
       s.stroke(s.color('#1DA159'));
       s.strokeWeight(2);
     }

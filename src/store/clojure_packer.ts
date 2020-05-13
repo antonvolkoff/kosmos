@@ -1,4 +1,5 @@
 import Atom from "../canvas/atom";
+import { sortedAdjacentAtoms } from "../canvas/atom";
 
 function translate(atom: Atom): string {
   // Integer
@@ -13,7 +14,7 @@ function translate(atom: Atom): string {
   if (atom.outgoing.length == 0)
     return atom.value;
 
-  const childValues = atom.sortedAdjacentAtoms().map(translate);
+  const childValues = sortedAdjacentAtoms(atom).map(translate);
 
   return `(${[atom.value, ...childValues].join(" ")})`;
 }

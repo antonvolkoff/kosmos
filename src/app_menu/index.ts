@@ -1,38 +1,44 @@
 import { remote, ipcRenderer } from "electron";
+import { Store } from "redux";
+import { createNewFile, openFile, saveFile, saveFileAs, exportToFile } from "../store";
 const { dialog } = remote;
 
-import { State } from "../state";
-
-export default function AppMenu(state: State) {
+export default function AppMenu(store: Store) {
   ipcRenderer.on('click-new', () => {
-    state.newFile();
+    store.dispatch(createNewFile());
   });
 
   ipcRenderer.on('click-open', () => {
     dialog.showOpenDialog({}).then(result => {
-      state.openFile(result.filePaths[0]);
+      const path = result.filePaths[0];
+      store.dispatch(openFile(path));
     });
   });
 
   ipcRenderer.on('click-save', () => {
-    if (state.hasFile()) {
-      state.saveFile();
+    const hasFile = store.getState().hasFile;
+
+    if (hasFile) {
+      store.dispatch(saveFile());
     } else {
       dialog.showSaveDialog({}).then(result => {
-        state.saveAsFile(result.filePath);
+        const path = result.filePath;
+        store.dispatch(saveFileAs(path));
       });
     }
   });
 
   ipcRenderer.on('click-save-as', () => {
     dialog.showSaveDialog({}).then(result => {
-      state.saveAsFile(result.filePath);
+      const path = result.filePath;
+      store.dispatch(saveFileAs(path));
     });
   });
 
   ipcRenderer.on("click-export", () => {
     dialog.showSaveDialog({}).then(result => {
-      state.exportAsClojure(result.filePath);
+      const path = result.filePath;
+      store.dispatch(exportToFile(path));
     });
   });
 }

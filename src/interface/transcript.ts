@@ -1,10 +1,10 @@
 import { Component, createRef } from "react";
 import { html } from "htm/react";
-import { State } from "../state";
-import { EvalResult } from "../state/executor";
+import { EvalResult } from "../store/executor";
+import { Store } from "redux";
 
 type TranscriptProps = {
-  state: State;
+  store: Store;
 };
 
 type TranscriptState = {
@@ -19,7 +19,8 @@ const last = (results: EvalResult[]): EvalResult => {
 };
 
 const propsToState = (props: TranscriptProps): TranscriptState => {
-  return { entries: props.state.entries(), lastEntry: last(props.state.entries()) };
+  const entries = props.store.getState().entries;
+  return { entries, lastEntry: last(entries) };
 };
 
 export default class Transcript extends Component<TranscriptProps, TranscriptState> {
@@ -31,7 +32,7 @@ export default class Transcript extends Component<TranscriptProps, TranscriptSta
   }
 
   componentDidMount() {
-    this.props.state.subscribe(() => {
+    this.props.store.subscribe(() => {
       this.setState(propsToState(this.props));
     });
     this.scrollToBottom()

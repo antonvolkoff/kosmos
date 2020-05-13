@@ -28,11 +28,14 @@
   },
   "dependencies": {
     "htm": "^3.0.3",
+    "immer": "^6.0.5",
     "mousetrap": "^1.6.5",
     "nrepl-client": "0.3.0",
     "p5": "1.0.0",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "redux": "^4.0.5",
+    "redux-devtools-extension": "^2.13.8"
   },
   "config": {
     "forge": {

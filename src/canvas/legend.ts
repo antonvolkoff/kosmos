@@ -1,4 +1,4 @@
-import { State } from "../state";
+import { Store } from "redux";
 
 const UnselectedText = "Press & Hold to create an atom";
 const SelectedText = `
@@ -7,7 +7,7 @@ Press Tab to create a child atom; Press Enter to create a sibling atom
 `;
 
 export const text =
-  (state: State) => {
-    if (state.findSelectedAtom()) return SelectedText;
+  (store: Store) => {
+    if (store.getState().selectedAtomId) return SelectedText;
     return UnselectedText;
   };

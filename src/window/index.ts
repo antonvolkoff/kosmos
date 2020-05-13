@@ -1,7 +1,9 @@
-import { State } from "../state";
+import { Store } from "redux";
 
-export default function Window(state: State) {
-  state.subscribe(() => {
-    document.title = `${state.file().name} - Kosmos`;
+export default function Window(store: Store) {
+  store.subscribe(() => {
+    const state = store.getState();
+    const title = `${state.file.filename} - Kosmos`;
+    document.title = title;
   });
 }
