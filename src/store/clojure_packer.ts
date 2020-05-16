@@ -1,5 +1,4 @@
-import Atom from "../canvas/atom";
-import { sortedAdjacentAtoms } from "../canvas/atom";
+import { Atom, sortedAdjacentAtoms } from "./atom";
 
 function translate(atom: Atom): string {
   // Integer

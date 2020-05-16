@@ -1,5 +1,5 @@
 import * as p5 from "p5";
-import Atom from "./atom";
+import { Atom } from "../store/atom";
 import { Point } from "./geometry";
 
 export const ATOM_SIZE = 40;

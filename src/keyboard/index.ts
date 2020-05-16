@@ -2,8 +2,7 @@ import * as Mousetrap from "mousetrap";
 import { selectAtom, unselectAtom as unselectAtomAction, deleteAtom as deleteAtomAction, addAtom, connectAtoms } from "../store";
 import { selectedAtomSelector, evalSelectedAtom } from "../store";
 import AtomShape from "../canvas/atom_shape";
-import Atom from "../canvas/atom";
-import { lastNestedChild, findParent, firstChild, nextSibling, previousSibling } from "../canvas/atom";
+import { createAtom, lastNestedChild, findParent, firstChild, nextSibling, previousSibling } from "../store/atom";
 import { nearestGridPoint } from "../canvas/grid";
 import { Store } from "redux";
 
@@ -32,7 +31,7 @@ export default function Keyboard(store: Store) {
     const height = bottomAtom ? bottomAtom.y - atom.y + standardAtomOffset : 0;
 
     const { x, y } = nearestGridPoint({ x: atom.x + width, y: atom.y + height });
-    const child = new Atom(x, y);
+    const child = createAtom(x, y);
     store.dispatch(addAtom(child));
 
     store.dispatch(connectAtoms(atom.id, child.id));
@@ -50,7 +49,7 @@ export default function Keyboard(store: Store) {
     const height = bottomAtom ? standardAtomOffset : 0;
 
     const { x, y } = nearestGridPoint({ x: atom.x, y: bottomAtom.y + height, });
-    const child = new Atom(x, y);
+    const child = createAtom(x, y);
     store.dispatch(addAtom(child));
 
     store.dispatch(connectAtoms(parent.id, child.id));

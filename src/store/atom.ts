@@ -1,33 +1,23 @@
-export default class Atom {
-  public id: string;
-  public x: number;
-  public y: number;
-  public selected: boolean;
-  public value: string;
-  public outgoing: Atom[];
-  public incoming: Atom[];
-  public dragging: boolean;
+export interface Atom {
+  id: string;
+  x: number;
+  y: number;
+  value: string;
+  outgoing: Atom[];
+  incoming: Atom[];
+}
 
-  constructor(x: number, y: number, id: string = undefined, value = '') {
-    this.id = id ? id : this.generateID();
-    this.x = x;
-    this.y = y;
-    this.value = value;
+const generateId = (): string => Date.now().toString();
 
-    this.selected = false;
-    this.dragging = false;
-
-    this.outgoing = [];
-    this.incoming = [];
-  }
-
-  parent(): Atom | undefined {
-    return this.incoming[0];
-  }
-
-  private generateID(): string {
-    return Date.now().toString();
-  }
+export const createAtom = (x = 0, y = 0): Atom => {
+  return {
+    id: generateId(),
+    x,
+    y,
+    value: "",
+    outgoing: [],
+    incoming: [],
+  };
 };
 
 const score = ({ x, y }) => x * y;

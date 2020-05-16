@@ -1,4 +1,4 @@
-import Atom from "../canvas/atom";
+import { Atom, createAtom } from "./atom";
 
 type PackNode = {
   x: number;
@@ -42,7 +42,10 @@ export function unpack(data: string): [any, any] {
 
   Object.keys(graph.nodes).forEach(id => {
     const { x, y, value } = graph.nodes[id];
-    atomsById[id] = new Atom(x, y, id, value);
+    let atom = createAtom(x, y);
+    atom.id = id;
+    atom.value = value;
+    atomsById[id] = atom;
   });
 
   graph.edges.forEach(({ source, target}) => {

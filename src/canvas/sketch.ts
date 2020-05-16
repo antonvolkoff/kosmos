@@ -1,7 +1,7 @@
 import * as p5 from "p5";
 
 import { Point, Line, distance } from "./geometry";
-import Atom from "./atom";
+import { createAtom, Atom } from "../store/atom";
 import AtomShape from "./atom_shape";
 import * as Legend from "./legend";
 import { nearestGridPoint, gridPoints, gridTiles } from "./grid";
@@ -64,7 +64,7 @@ export default function Sketch(store: Store) {
 
         case "create":
           const pointOnGrid = nearestGridPoint(currentPoint);
-          const atom = new Atom(pointOnGrid.x, pointOnGrid.y);
+          const atom = createAtom(pointOnGrid.x, pointOnGrid.y);
 
           store.dispatch(addAtom(atom));
           store.dispatch(selectAtom(atom.id));

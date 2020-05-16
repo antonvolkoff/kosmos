@@ -4,7 +4,7 @@ import { devToolsEnhancer } from "redux-devtools-extension";
 import * as pathUtil from "path";
 import * as fs from "fs";
 
-import Atom from "../canvas/atom";
+import { Atom } from "./atom";
 import AtomShape from "../canvas/atom_shape";
 import { nearestGridPoint } from "../canvas/grid";
 import { Line } from "../canvas/geometry";
