@@ -1,4 +1,5 @@
 import * as p5 from "p5";
+import { Store } from "redux";
 
 import { Point, Line, distance } from "./geometry";
 import { createAtom, Atom } from "../store/atom";
@@ -9,7 +10,7 @@ import * as ViewField from "./view_field";
 import * as ValueInput from "./value_input";
 import { selectAtom, unselectAtom, addAtom, connectAtoms, finishDrag, moveAtom, startDrag } from "../store";
 import { edgesSelector, atomsSelector, selectedAtomSelector, draggingAtomSelector, moveCanvas } from "../store";
-import { Store } from "redux";
+import { actions } from "../store";
 
 export default function Sketch(store: Store) {
   return (p: p5) => {
@@ -249,6 +250,8 @@ export default function Sketch(store: Store) {
       const tagName = (event.srcElement as HTMLElement).tagName;
       if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
+      store.dispatch(actions.canvasMousePressed(p.mouseX, p.mouseY));
+
       timestamp = new Date().getTime();
       startPoint = mousePosition();
 
@@ -261,6 +264,8 @@ export default function Sketch(store: Store) {
     p.mouseReleased = (event: MouseEvent) => {
       const tagName = (event.srcElement as HTMLElement).tagName;
       if (tagName !== "CANVAS" && tagName !== "INPUT") return;
+
+      store.dispatch(actions.canvasMouseReleased(p.mouseX, p.mouseY));
 
       const now = new Date().getTime();
       const mousePressedDuration = now - timestamp;
@@ -289,6 +294,14 @@ export default function Sketch(store: Store) {
 
       startPoint = undefined;
       timestamp = undefined;
+    }
+
+    p.mouseClicked = () => {
+      store.dispatch(actions.canvasClicked(p.mouseX, p.mouseY));
+    }
+
+    p.doubleClicked = () => {
+      store.dispatch(actions.canvasDoubleClicked(p.mouseX, p.mouseY));
     }
 
     p.mouseMoved = () => {

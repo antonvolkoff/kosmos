@@ -13,6 +13,9 @@ import * as JsonPacker from "./json_packer";
 import * as Executor from "./executor";
 import * as ClojurePacker  from "./clojure_packer";
 
+import * as actions from "./actions";
+export { actions };
+
 export interface ApplicationState {
   atoms: { [id: string]: Atom };
   edges: { sourceId: string, targetId: string }[];
