@@ -1,6 +1,6 @@
 import { Component, createRef } from "react";
 import { html } from "htm/react";
-import { EvalResult } from "../store/executor";
+import { EvalResult } from "../repl";
 import { Store } from "redux";
 
 type TranscriptProps = {

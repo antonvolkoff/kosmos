@@ -10,7 +10,7 @@ import AtomShape from "../canvas/atom_shape";
 import { nearestGridPoint } from "../canvas/grid";
 import { Line } from "../canvas/geometry";
 import * as JsonPacker from "./json_packer";
-import * as Executor from "./executor";
+import * as Executor from "../repl";
 import * as ClojurePacker  from "./clojure_packer";
 
 import * as actions from "./actions";
