@@ -1,3 +1,4 @@
+import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
 import { createStore, Reducer } from "redux";
 import produce from "immer";
 import { devToolsEnhancer } from "redux-devtools-extension";
@@ -147,14 +148,6 @@ const reducer = createReducer(initialState, {
     const rawJson = JsonPacker.pack(state);
     fs.writeFileSync(state.file.path, rawJson);
   },
-  "eval-selected-atom": (state) => {
-    const atom = state.atoms[state.selectedAtomId];
-    const nodes = [atom].map(atom => valueGraphSelector(state, atom.id));
-
-    Executor.execute(ClojurePacker.pack(nodes)).then(result => {
-      store.dispatch({ type: "add-evaluation-entry", payload: result });
-    });
-  },
   "add-evaluation-entry": (state, action) => {
     state.entries.push(action.payload);
   },
@@ -171,7 +164,25 @@ const reducer = createReducer(initialState, {
   },
 });
 
-export const store = createStore(reducer, devToolsEnhancer({}));
+const evaluateMiddleware = ({ dispatch, getState }) => next => action => {
+  next(action);
+
+  if (action.type == "eval-selected-atom") {
+    const state = getState();
+    const node = valueGraphSelector(state, state.selectedAtomId);
+
+    Executor.execute(ClojurePacker.pack([node])).then(result => {
+      dispatch({ type: "add-evaluation-entry", payload: result });
+    });
+  }
+};
+
+export const createApplicationStore = () => {
+  return configureStore({
+    reducer: reducer,
+    middleware: [...getDefaultMiddleware(), evaluateMiddleware],
+  });
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
