@@ -12,6 +12,12 @@ import * as JsonPacker from "./json_packer";
 import * as Executor from "./executor";
 import * as ClojurePacker  from "./clojure_packer";
 
+export interface ApplicationState {
+  atoms: { [id: string]: Atom };
+  edges: { sourceId: string, targetId: string }[];
+  [key: string]: any;
+}
+
 const initialState = {
   atoms: {},
   edges: [],
@@ -49,11 +55,6 @@ const reducer = createReducer(initialState, {
 
     delete state.atoms[atomId];
 
-    Object.values(state.atoms).forEach((atom: Atom) => {
-      atom.outgoing = atom.outgoing.filter(outgoingAtom => outgoingAtom.id != atomId);
-      atom.incoming = atom.incoming.filter(incomingAtom => incomingAtom.id != atomId);
-    });
-
     state.edges = state.edges.filter(({ sourceId, targetId }) => {
       const isSource = sourceId == atomId;
       const isTarget = targetId == atomId;
@@ -69,12 +70,6 @@ const reducer = createReducer(initialState, {
   "connect-atoms": (state, action) => {
     const { sourceId, targetId } = action.payload;
     state.edges.push({ sourceId, targetId });
-
-    const sourceAtom = state.atoms[sourceId];
-    const targetAtom = state.atoms[targetId];
-
-    sourceAtom.outgoing.push(targetAtom);
-    targetAtom.incoming.push(sourceAtom);
   },
   "start-drag": (state, action) => {
     state.draggingAtomId = action.payload.atomId;
@@ -89,8 +84,7 @@ const reducer = createReducer(initialState, {
       moveAtom.x += deltaX;
       moveAtom.y += deltaY;
 
-      moveAtom
-        .outgoing
+      childrenSelector(state, moveAtom.id)
         .map(({ id }) => id)
         .forEach(id => doMove(id, deltaX, deltaY));
     }
@@ -107,7 +101,7 @@ const reducer = createReducer(initialState, {
       const standardAtomOffset = 40;
       const width = AtomShape.width(atom) + standardAtomOffset;
 
-      atom.outgoing.forEach(childAtom => {
+      childrenSelector(state, atom.id).forEach(childAtom => {
         const { x, y } = nearestGridPoint({ x: atom.x + width, y: childAtom.y });
         childAtom.x = x;
         childAtom.y = y;
@@ -142,7 +136,7 @@ const reducer = createReducer(initialState, {
     state.hasFile = true;
   },
   "save-file": (state) => {
-    const rawJson = JsonPacker.pack(Object.values(state.atoms));
+    const rawJson = JsonPacker.pack(state);
     fs.writeFileSync(state.file.path, rawJson);
   },
   "save-file-as": (state, action) => {
@@ -150,13 +144,14 @@ const reducer = createReducer(initialState, {
     state.file.path = path;
     state.file.filename = pathUtil.parse(path).base;
 
-    const rawJson = JsonPacker.pack(Object.values(state.atoms));
+    const rawJson = JsonPacker.pack(state);
     fs.writeFileSync(state.file.path, rawJson);
   },
   "eval-selected-atom": (state) => {
     const atom = state.atoms[state.selectedAtomId];
+    const nodes = [atom].map(atom => valueGraphSelector(state, atom.id));
 
-    Executor.execute(ClojurePacker.pack([atom])).then(result => {
+    Executor.execute(ClojurePacker.pack(nodes)).then(result => {
       store.dispatch({ type: "add-evaluation-entry", payload: result });
     });
   },
@@ -165,7 +160,10 @@ const reducer = createReducer(initialState, {
   },
   "export-to-file": (state, action) => {
     const { path } = action.payload;
-    const data = ClojurePacker.pack(Object.values(state.atoms));
+    const data = ClojurePacker.pack(
+      topLevelAtoms(state).map(atom => valueGraphSelector(state, atom.id))
+    );
+
     fs.writeFileSync(path, data);
   },
   "move-canvas": (state, action) => {
@@ -176,6 +174,53 @@ const reducer = createReducer(initialState, {
 export const store = createStore(reducer, devToolsEnhancer({}));
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const score = ({ x, y }) => x * y;
+
+const sortByScore = (a: Atom, b: Atom) => score(a) - score(b);
+
+export const childrenSelector = (state: ApplicationState, atomId: string): Atom[] => {
+  return state.edges
+    .filter(({ sourceId }) => sourceId == atomId)
+    .map(({ targetId }) => state.atoms[targetId])
+    .sort(sortByScore);
+}
+
+export const deepChildrenSelector =
+  (state: ApplicationState, atomId: string): Atom[] => {
+    let children = []
+
+    childrenSelector(state, atomId).forEach(child => {
+      children.push(child);
+      children = children.concat(deepChildrenSelector(state, child.id));
+    })
+    return children.sort(sortByScore);
+  };
+
+export const parentSelector = (state: ApplicationState, atomId: string): Atom | null => {
+  const parentAtomId = state.edges.find(({ targetId }) => targetId == atomId).sourceId;
+  return state.atoms[parentAtomId];
+};
+
+export const topLevelAtoms = (state: ApplicationState): Atom[] => {
+  return Object.keys(state.atoms)
+    .filter(atomId => parentSelector(state, atomId) == null)
+    .map(atomId => state.atoms[atomId]);
+};
+
+export interface ValueNode {
+  value: string;
+  children: ValueNode[];
+}
+
+export const valueGraphSelector =
+  (state: ApplicationState, atomId: string): ValueNode => {
+    const { id, value } = state.atoms[atomId];
+    const children = childrenSelector(state, id).map(atom => {
+      return valueGraphSelector(state, atom.id)
+    });
+    return { value, children };
+  };
 
 export const selectedAtomSelector = (store) => {
   const state = store.getState();

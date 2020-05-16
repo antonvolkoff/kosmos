@@ -1,12 +1,15 @@
 import * as Mousetrap from "mousetrap";
-import { selectAtom, unselectAtom as unselectAtomAction, deleteAtom as deleteAtomAction, addAtom, connectAtoms } from "../store";
-import { selectedAtomSelector, evalSelectedAtom } from "../store";
+import { selectAtom, unselectAtom as unselectAtomAction, deleteAtom as deleteAtomAction, addAtom, connectAtoms, childrenSelector } from "../store";
+import { selectedAtomSelector, evalSelectedAtom, parentSelector, deepChildrenSelector } from "../store";
 import AtomShape from "../canvas/atom_shape";
-import { createAtom, lastNestedChild, findParent, firstChild, nextSibling, previousSibling } from "../store/atom";
+import { createAtom } from "../store/atom";
 import { nearestGridPoint } from "../canvas/grid";
 import { Store } from "redux";
 
 export default function Keyboard(store: Store) {
+  let state = store.getState();
+  store.subscribe(() => state = store.getState());
+
   const standardAtomOffset = 40;
   const evaluateAtom = () => store.dispatch(evalSelectedAtom());
   const deleteAtom = (event) => {
@@ -15,7 +18,7 @@ export default function Keyboard(store: Store) {
 
     event.preventDefault();
 
-    const parent = findParent(store.getState().atoms[atomId]);
+    const parent = parentSelector(state, atomId);
     store.dispatch(deleteAtomAction(atomId));
     if (parent) store.dispatch(selectAtom(parent.id));
   };
@@ -25,7 +28,8 @@ export default function Keyboard(store: Store) {
 
     event.preventDefault();
 
-    const bottomAtom = lastNestedChild(atom);
+    const children = deepChildrenSelector(state, atom.id);
+    const bottomAtom = children[children.length - 1];
 
     const width = AtomShape.width(atom) + standardAtomOffset;
     const height = bottomAtom ? bottomAtom.y - atom.y + standardAtomOffset : 0;
@@ -43,8 +47,9 @@ export default function Keyboard(store: Store) {
 
     event.preventDefault();
 
-    const parent = findParent(atom);
-    const bottomAtom = lastNestedChild(parent);
+    const parent = parentSelector(state, atom.id);
+    const children = deepChildrenSelector(state, parent.id);
+    const bottomAtom = children[children.length - 1];
 
     const height = bottomAtom ? standardAtomOffset : 0;
 
@@ -60,31 +65,41 @@ export default function Keyboard(store: Store) {
   };
   const moveToParent = (event) => {
     const atom = selectedAtomSelector(store);
-    if (!atom || atom.incoming.length == 0) return;
+    if (!atom) return;
 
     event.preventDefault();
-    const parent = findParent(atom);
+    const parent = parentSelector(state, atom.id);
     if (parent) store.dispatch(selectAtom(parent.id));
   };
   const moveToChild = () => {
     const atom = selectedAtomSelector(store);
-    if (!atom || atom.outgoing.length == 0) return;
+    if (!atom) return;
 
-    const child = firstChild(atom);
+    const child = childrenSelector(state, atom.id)[0];
     if (child) store.dispatch(selectAtom(child.id));
   };
   const moveToNextSibling = () => {
     const atom = selectedAtomSelector(store);
-    if (!atom || atom.incoming.length == 0) return;
+    if (!atom) return;
 
-    const gotoAtom = nextSibling(atom);
+    const parent = parentSelector(state, atom.id);
+    if (!parent) return;
+
+    const children = childrenSelector(state, parent.id);
+    const myIndex = children.findIndex(sibling => sibling.id == atom.id)
+    const gotoAtom = children[myIndex + 1];
     if (gotoAtom) store.dispatch(selectAtom(gotoAtom.id));
   };
   const moveToPreviousSibling = () => {
     const atom = selectedAtomSelector(store);
-    if (!atom || atom.incoming.length == 0) return;
+    if (!atom) return;
 
-    const gotoAtom = previousSibling(atom);
+    const parent = parentSelector(state, atom.id);
+    if (!parent) return;
+
+    const children = childrenSelector(state, parent.id);
+    const myIndex = children.findIndex(sibling => sibling.id == atom.id)
+    const gotoAtom = children[myIndex - 1];
     if (gotoAtom) store.dispatch(selectAtom(gotoAtom.id));
   };
 

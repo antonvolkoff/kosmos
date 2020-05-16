@@ -1,32 +1,26 @@
-import { Atom, sortedAdjacentAtoms } from "./atom";
+import { Atom } from "./atom";
+import { ApplicationState, topLevelAtoms, valueGraphSelector, ValueNode } from "./index";
 
-function translate(atom: Atom): string {
+function translate(node: ValueNode): string {
   // Integer
-  if (atom.value.match(/^[0-9]*$/))
-    return atom.value;
+  if (node.value.match(/^[0-9]*$/))
+    return node.value;
 
   // String
-  if (atom.value.match(/^"(?:\\.|[^\\"])*"$/))
-    return atom.value;
+  if (node.value.match(/^"(?:\\.|[^\\"])*"$/))
+    return node.value;
 
   // Ref
-  if (atom.outgoing.length == 0)
-    return atom.value;
+  if (node.children.length == 0)
+    return node.value;
 
-  const childValues = sortedAdjacentAtoms(atom).map(translate);
+  const childValues = node.children.map(translate);
 
-  return `(${[atom.value, ...childValues].join(" ")})`;
+  return `(${[node.value, ...childValues].join(" ")})`;
 }
 
-export function pack(atoms: Atom[]): string {
-  let topLevelAtoms: Atom[] = [];
-  if (atoms.length == 1) {
-    topLevelAtoms = atoms;
-  } else {
-    topLevelAtoms = atoms.filter(atom => atom.incoming.length == 0);
-  }
-
-  return topLevelAtoms.map(translate).join("\n") + "\n";
+export function pack(nodes: ValueNode[]): string {
+  return nodes.map(translate).join("\n") + "\n";
 }
 
 export function unpack(data: string): Atom[] {

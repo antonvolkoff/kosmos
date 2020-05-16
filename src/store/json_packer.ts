@@ -1,4 +1,5 @@
 import { Atom, createAtom } from "./atom";
+import { ApplicationState } from ".";
 
 type PackNode = {
   x: number;
@@ -20,16 +21,17 @@ type PackObject = {
   };
 };
 
-export function pack(items: Atom[]): string {
+export function pack(state: ApplicationState): string {
   let result: PackObject = { graph: { nodes: {}, edges: [] } };
   let nodes = result.graph.nodes;
   let edges = result.graph.edges;
 
-  items.forEach(item => {
+  Object.values(state.atoms).forEach(item => {
     nodes[item.id] = { x: item.x, y: item.y, value: item.value };
-    item.outgoing.forEach(child => {
-      edges.push({ source: item.id, target: child.id });
-    });
+  });
+
+  state.edges.forEach(edge => {
+    edges.push({ source: edge.sourceId, target: edge.targetId });
   });
 
   return JSON.stringify(result);
@@ -46,13 +48,6 @@ export function unpack(data: string): [any, any] {
     atom.id = id;
     atom.value = value;
     atomsById[id] = atom;
-  });
-
-  graph.edges.forEach(({ source, target}) => {
-    const sourceAtom = atomsById[source];
-    const targetAtom = atomsById[target];
-    sourceAtom.outgoing.push(targetAtom);
-    targetAtom.incoming.push(sourceAtom);
   });
 
   const edges = graph.edges.map(({ source, target}) => {
