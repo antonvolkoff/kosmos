@@ -3,9 +3,8 @@ import { selectedAtomSelector, setAtomValue } from "../store";
 import { Store } from "redux";
 
 let element: p5.Element;
-let dragging = false;
 
-const setPosition = (x: number, y: number) => element.position(x + 16, y - 9);
+const setPosition = (x: number, y: number) => element.position(x + 2, y - 9);
 
 const setValue = (value: string) => {
   element.value(value);

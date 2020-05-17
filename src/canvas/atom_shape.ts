@@ -3,15 +3,15 @@ import { Atom } from "../store/atom";
 import { Point } from "./geometry";
 
 export const ATOM_SIZE = 40;
-export const BORDER_RADIUS = 40;
+export const BORDER_RADIUS = 6;
 export const BASE_WIDTH = 60;
 export const FONT_WIDTH = 8.6;
 
 export default {
   width(atom: Atom) {
     let width = BASE_WIDTH;
-    if (atom.value.length > 1) {
-      width += (atom.value.length - 1) * FONT_WIDTH;
+    if (atom.value.length > 2) {
+      width += (atom.value.length - 3) * FONT_WIDTH;
     }
 
     return width;
@@ -23,18 +23,28 @@ export default {
     s.fill(s.color('#ffffff'));
     s.stroke(s.color('#999999'));
     s.strokeWeight(1.5);
-    if (selected) {
-      s.stroke(s.color('#1DA159'));
-      s.strokeWeight(2);
-    }
 
     const width = this.width(atom);
-    const height = 34;
+    const height = 28;
     const x = atom.x - 20;
     const y = atom.y - (height / 2);
 
+    if (selected) {
+      s.stroke(s.color('#79B8FF'));
+    }
+
     s.rect(x, y, width, height, BORDER_RADIUS);
-    s.circle(atom.x, atom.y, 16);
+
+    if (selected) {
+      s.circle(atom.x - 12, atom.y - 7, 2);
+      s.circle(atom.x - 7, atom.y - 7, 2);
+
+      s.circle(atom.x - 12, atom.y, 2);
+      s.circle(atom.x - 7, atom.y, 2);
+
+      s.circle(atom.x - 12, atom.y + 7, 2);
+      s.circle(atom.x - 7, atom.y + 7, 2);
+    }
 
     s.push();
     {
@@ -42,7 +52,7 @@ export default {
       s.strokeWeight(0);
       s.textAlign(s.LEFT, s.CENTER);
       s.textFont("monospace", 14);
-      s.text(atom.value, atom.x + 16, atom.y);
+      s.text(atom.value, atom.x + 2, atom.y);
     }
     s.pop();
 
@@ -66,10 +76,10 @@ export default {
   },
 
   withinDragArea(mouse: Point, atom: Atom): boolean {
-    const leftBoundary = atom.x - 8;
-    const rightBoundary = atom.x + 8;
-    const topBoundary = atom.y + 8;
-    const bottomBoundary = atom.y - 8;
+    const leftBoundary = atom.x - 16;
+    const rightBoundary = atom.x;
+    const topBoundary = atom.y + 16;
+    const bottomBoundary = atom.y - 16;
 
     return (
       mouse.x > leftBoundary &&
