@@ -252,13 +252,13 @@ export default function Sketch(store: Store) {
 
       store.dispatch(actions.canvasMousePressed(p.mouseX, p.mouseY));
 
-      timestamp = new Date().getTime();
-      startPoint = mousePosition();
+      // timestamp = new Date().getTime();
+      // startPoint = mousePosition();
 
-      const startAtom = findMouseOverAtom(atomsSelector(store), startPoint);
-      if (startAtom && AtomShape.withinDragArea(startPoint, startAtom)) {
-        handleMouseEvent("startDrag");
-      }
+      // const startAtom = findMouseOverAtom(atomsSelector(store), startPoint);
+      // if (startAtom && AtomShape.withinDragArea(startPoint, startAtom)) {
+      //   handleMouseEvent("startDrag");
+      // }
     }
 
     p.mouseReleased = (event: MouseEvent) => {
@@ -267,33 +267,33 @@ export default function Sketch(store: Store) {
 
       store.dispatch(actions.canvasMouseReleased(p.mouseX, p.mouseY));
 
-      const now = new Date().getTime();
-      const mousePressedDuration = now - timestamp;
-      const isClickAndHold = mousePressedDuration > HOLD_DURATION;
+      // const now = new Date().getTime();
+      // const mousePressedDuration = now - timestamp;
+      // const isClickAndHold = mousePressedDuration > HOLD_DURATION;
 
-      const startAtom = findMouseOverAtom(atomsSelector(store), startPoint);
-      const currentPoint = mousePosition();
-      const currentAtom = findMouseOverAtom(atomsSelector(store), currentPoint);
-      const dist = distance(startPoint, currentPoint);
-      const selectedAtom = selectedAtomSelector(store);
-      const draggingAtom = draggingAtomSelector(store);
+      // const startAtom = findMouseOverAtom(atomsSelector(store), startPoint);
+      // const currentPoint = mousePosition();
+      // const currentAtom = findMouseOverAtom(atomsSelector(store), currentPoint);
+      // const dist = distance(startPoint, currentPoint);
+      // const selectedAtom = selectedAtomSelector(store);
+      // const draggingAtom = draggingAtomSelector(store);
 
-      if (draggingAtom) {
-        handleMouseEvent("finishDrag");
-      } else if (startAtom && currentAtom && startAtom != currentAtom) {
-        handleMouseEvent("connect");
-      } else if (isClickAndHold && !startAtom && !currentAtom && dist <= HOLD_DIST_THRESHOLD) {
-        handleMouseEvent("create");
-      } else if (!isClickAndHold && currentAtom && currentAtom.id != draggingAtom?.id) {
-        handleMouseEvent("select");
-      } else if (!isClickAndHold && !currentAtom && selectedAtom) {
-        handleMouseEvent("unselect");
-      } else {
-        handleMouseEvent("draw");
-      }
+      // if (draggingAtom) {
+      //   handleMouseEvent("finishDrag");
+      // } else if (startAtom && currentAtom && startAtom != currentAtom) {
+      //   handleMouseEvent("connect");
+      // } else if (isClickAndHold && !startAtom && !currentAtom && dist <= HOLD_DIST_THRESHOLD) {
+      //   handleMouseEvent("create");
+      // } else if (!isClickAndHold && currentAtom && currentAtom.id != draggingAtom?.id) {
+      //   handleMouseEvent("select");
+      // } else if (!isClickAndHold && !currentAtom && selectedAtom) {
+      //   handleMouseEvent("unselect");
+      // } else {
+      //   handleMouseEvent("draw");
+      // }
 
-      startPoint = undefined;
-      timestamp = undefined;
+      // startPoint = undefined;
+      // timestamp = undefined;
     }
 
     p.mouseClicked = () => {

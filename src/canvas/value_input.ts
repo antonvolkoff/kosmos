@@ -1,5 +1,5 @@
 import * as p5 from "p5";
-import { selectedAtomSelector, setAtomValue } from "../store";
+import { selectedAtomSelector, setAtomValue, ApplicationState } from "../store";
 import { Store } from "redux";
 
 let element: p5.Element;
@@ -29,8 +29,9 @@ const handleInput = (store: Store) => {
 };
 
 const handleStateChange = (store: Store) => {
-  const atom = selectedAtomSelector(store);
-  if (atom) {
+  const state: ApplicationState = store.getState();
+  if (state.selectedAtomId && state.mode == "edit") {
+    const atom = selectedAtomSelector(store);
     focus();
     setValue(atom.value);
     setPosition(atom.x, atom.y);

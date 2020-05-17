@@ -13,3 +13,6 @@ export const canvasMousePressed =
 
 export const canvasMouseReleased =
   createAction("canvas/mouseReleased", prepareCoords);
+
+export const changeMode =
+  createAction("mode/change", (mode: string) => ({ payload: { mode } }));

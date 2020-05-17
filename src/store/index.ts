@@ -5,7 +5,7 @@ import { devToolsEnhancer } from "redux-devtools-extension";
 import * as pathUtil from "path";
 import * as fs from "fs";
 
-import { Atom } from "./atom";
+import { Atom, createAtom } from "./atom";
 import AtomShape from "../canvas/atom_shape";
 import { nearestGridPoint } from "../canvas/grid";
 import { Line } from "../canvas/geometry";
@@ -16,9 +16,66 @@ import * as ClojurePacker  from "./clojure_packer";
 import * as actions from "./actions";
 export { actions };
 
+export const selectAtom =
+  (atomId: string) => ({ type: "select-atom", payload: { atomId } });
+
+export const unselectAtom =
+  () => ({ type: "unselect-atom" });
+
+export const addAtom =
+  (atom) => ({ type: "add-atom", payload: atom });
+
+export const deleteAtom =
+  (atomId) => ({ type: "delete-atom", payload: { atomId } });
+
+export const connectedToRepl =
+  () => ({ type: "connected-to-repl" });
+
+export const connectAtoms =
+  (sourceId, targetId) => ({ type: "connect-atoms", payload: { sourceId, targetId } });
+
+export const startDrag =
+  (atomId) => ({ type: "start-drag", payload: { atomId } });
+
+export const finishDrag =
+  () => ({ type: "finish-drag" });
+
+export const moveAtom =
+  (atomId, x, y) => ({ type: "move-atom", payload: { atomId, x, y } });
+
+export const setAtomValue =
+  (atomId: string, value: string) => {
+    return { type: "set-atom-value", payload: { atomId, value } };
+  }
+
+export const createNewFile =
+  () => ({ type: "create-new-file" });
+
+export const openFile =
+  (path: string) => ({ type: "open-file", payload: { path } });
+
+export const saveFile =
+  () => ({ type: "save-file" });
+
+export const saveFileAs =
+  (path: string) => ({ type: "save-file-as", payload: { path } });
+
+export const evalSelectedAtom =
+  () => ({ type: "eval-selected-atom" });
+
+export const exportToFile =
+  (path: string) => ({ type: "export-to-file", payload: { path } });
+
+export const moveCanvas =
+  (x: number, y: number) => ({ type: "move-canvas", payload: { x, y } });
+
+////////////////////////////////////////////////////////////////////////////////
+
 export interface ApplicationState {
   atoms: { [id: string]: Atom };
   edges: { sourceId: string, targetId: string }[];
+  mode: string;
+  selectedAtomId: string;
   [key: string]: any;
 }
 
@@ -31,7 +88,8 @@ const initialState = {
   entries: [],
   canvasTranslate: { x: 0, y: 0 },
   hasFile: false,
-  file: { filename: "Untitled", path: "", }
+  file: { filename: "Untitled", path: "" },
+  mode: "idle",
 };
 
 const createReducer = (initialState, actions): Reducer => {
@@ -165,6 +223,9 @@ const reducer = createReducer(initialState, {
   "move-canvas": (state, action) => {
     state.canvasTranslate = action.payload;
   },
+  [actions.changeMode.type]: (state, action) => {
+    state.mode = action.payload.mode;
+  },
 });
 
 const evaluateMiddleware = ({ dispatch, getState }) => next => action => {
@@ -180,10 +241,44 @@ const evaluateMiddleware = ({ dispatch, getState }) => next => action => {
   }
 };
 
+const mouseMiddleware = ({ dispatch, getState }) => next => action => {
+  next(action);
+
+  const state: ApplicationState = getState();
+  const overAtom = () => {
+    return Object.values(state.atoms).find((atom) => AtomShape.within(action.payload, atom));
+  };
+
+  if (action.type == actions.canvasDoubleClicked.type) {
+    const atom = overAtom();
+    if (atom && state.selectedAtomId == atom.id && state.mode == "ready") {
+      dispatch(actions.changeMode("edit"));
+    } else {
+      const { x, y } = action.payload;
+      const newAtom = createAtom(x, y);
+
+      dispatch(addAtom(newAtom));
+      dispatch(selectAtom(newAtom.id));
+      dispatch(actions.changeMode("ready"));
+    }
+  }
+
+  if (action.type == actions.canvasClicked.type) {
+    const atom = overAtom();
+    if (atom) {
+      dispatch(selectAtom(atom.id));
+      dispatch(actions.changeMode("ready"));
+    } else {
+      dispatch(unselectAtom());
+      dispatch(actions.changeMode("idle"));
+    }
+  }
+};
+
 export const createApplicationStore = () => {
-  return configureStore({
+  return configureStore<ApplicationState, any, any>({
     reducer: reducer,
-    middleware: [...getDefaultMiddleware(), evaluateMiddleware],
+    middleware: [...getDefaultMiddleware(), evaluateMiddleware, mouseMiddleware],
   });
 };
 
@@ -259,57 +354,3 @@ export const atomsSelector = (store): Atom[] => {
   return Object.values(store.getState().atoms);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-
-export const selectAtom =
-  (atomId: string) => ({ type: "select-atom", payload: { atomId } });
-
-export const unselectAtom =
-  () => ({ type: "unselect-atom" });
-
-export const addAtom =
-  (atom) => ({ type: "add-atom", payload: atom });
-
-export const deleteAtom =
-  (atomId) => ({ type: "delete-atom", payload: { atomId } });
-
-export const connectedToRepl =
-  () => ({ type: "connected-to-repl" });
-
-export const connectAtoms =
-  (sourceId, targetId) => ({ type: "connect-atoms", payload: { sourceId, targetId } });
-
-export const startDrag =
-  (atomId) => ({ type: "start-drag", payload: { atomId } });
-
-export const finishDrag =
-  () => ({ type: "finish-drag" });
-
-export const moveAtom =
-  (atomId, x, y) => ({ type: "move-atom", payload: { atomId, x, y } });
-
-export const setAtomValue =
-  (atomId: string, value: string) => {
-    return { type: "set-atom-value", payload: { atomId, value } };
-  }
-
-export const createNewFile =
-  () => ({ type: "create-new-file" });
-
-export const openFile =
-  (path: string) => ({ type: "open-file", payload: { path } });
-
-export const saveFile =
-  () => ({ type: "save-file" });
-
-export const saveFileAs =
-  (path: string) => ({ type: "save-file-as", payload: { path } });
-
-export const evalSelectedAtom =
-  () => ({ type: "eval-selected-atom" });
-
-export const exportToFile =
-  (path: string) => ({ type: "export-to-file", payload: { path } });
-
-export const moveCanvas =
-  (x: number, y: number) => ({ type: "move-canvas", payload: { x, y } });
