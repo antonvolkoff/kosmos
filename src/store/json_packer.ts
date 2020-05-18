@@ -1,5 +1,5 @@
 import { Atom, createAtom } from "./atom";
-import { ApplicationState } from ".";
+import { DefaultState } from ".";
 
 type PackNode = {
   x: number;
@@ -21,16 +21,16 @@ type PackObject = {
   };
 };
 
-export function pack(state: ApplicationState): string {
+export function pack(state: DefaultState): string {
   let result: PackObject = { graph: { nodes: {}, edges: [] } };
   let nodes = result.graph.nodes;
   let edges = result.graph.edges;
 
-  Object.values(state.default.atoms).forEach(item => {
+  Object.values(state.atoms).forEach(item => {
     nodes[item.id] = { x: item.x, y: item.y, value: item.value };
   });
 
-  state.default.edges.forEach(edge => {
+  state.edges.forEach(edge => {
     edges.push({ source: edge.sourceId, target: edge.targetId });
   });
 

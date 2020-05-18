@@ -9,10 +9,16 @@ import { gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
 import * as ValueInput from "./value_input";
 import { moveAtom, ApplicationState } from "../store";
-import { edgesSelector, atomsSelector, moveCanvas } from "../store";
-import { actions } from "../store";
+import { edgesSelector, atomsSelector } from "../store";
+
+import { actions } from "../store/canvasReducer";
 
 export default function Sketch(store: Store<ApplicationState>) {
+  let state = store.getState().canvas;
+  store.subscribe(() => {
+    state = store.getState().canvas;
+  });
+
   return (p: p5) => {
     const HOLD_DURATION = 750;
     const HOLD_DIST_THRESHOLD = 20;
@@ -20,8 +26,6 @@ export default function Sketch(store: Store<ApplicationState>) {
     let timestamp: number = undefined;
     let startPoint: Point = undefined;
     let showFPS = false;
-
-    let viewField: ViewField.ViewField;
 
     const backgroundColor = p.color("#FDFDFD");
     let bg: p5.Graphics = null;
@@ -33,7 +37,7 @@ export default function Sketch(store: Store<ApplicationState>) {
     const mousePosition =
       () : Point => {
         const mouse = { x: p.mouseX, y: p.mouseY };
-        return ViewField.toGlobalCoordinates(viewField, mouse);
+        return ViewField.toGlobalCoordinates(state.viewField, mouse);
       };
 
     function drawEdges() {
@@ -114,7 +118,7 @@ export default function Sketch(store: Store<ApplicationState>) {
       if (!showFPS) return;
 
       const fps = p.frameRate();
-      const { x, y } = ViewField.toGlobalCoordinates(viewField, { x: 10, y: 20 });
+      const { x, y } = ViewField.toGlobalCoordinates(state.viewField, { x: 10, y: 20 });
 
       p.push();
       p.textSize(14);
@@ -127,7 +131,7 @@ export default function Sketch(store: Store<ApplicationState>) {
     const drawLegend = () => {
       const content = Legend.text(store);
       const { x, y } =
-        ViewField.toGlobalCoordinates(viewField, { x: 20, y: p.height - 30 });
+        ViewField.toGlobalCoordinates(state.viewField, { x: 20, y: p.height - 30 });
 
       p.push();
       {
@@ -145,7 +149,12 @@ export default function Sketch(store: Store<ApplicationState>) {
       p.frameRate(30);
       p.noLoop();
 
-      viewField = ViewField.init(p.windowWidth, p.windowHeight);
+      store.dispatch(
+        actions.changeWindowDimensions({
+          width: p.windowWidth,
+          height: p.windowHeight,
+        }),
+      );
 
       p.createCanvas(p.windowWidth, p.windowHeight);
       bg = p.createGraphics(1000, 1000);
@@ -155,12 +164,11 @@ export default function Sketch(store: Store<ApplicationState>) {
     };
 
     p.draw = () => {
-      const { x, y } = store.getState().default.canvasTranslate;
-      p.translate(x, y);
+      p.translate(state.translate.x, state.translate.y);
 
       ValueInput.update(p, store);
 
-      const tiles = gridTiles(viewField, bg.width, bg.height);
+      const tiles = gridTiles(state.viewField, bg.width, bg.height);
       tiles.forEach(({ x, y, width, height}) => p.image(bg, x, y, width, height));
 
       drawEdges();
@@ -171,7 +179,12 @@ export default function Sketch(store: Store<ApplicationState>) {
     };
 
     p.windowResized = () => {
-      viewField = ViewField.resize(viewField, p.windowWidth, p.windowHeight);
+      store.dispatch(
+        actions.changeWindowDimensions({
+          width: p.windowWidth,
+          height: p.windowHeight,
+        }),
+      );
       p.resizeCanvas(p.windowWidth, p.windowHeight);
     };
 
@@ -179,31 +192,31 @@ export default function Sketch(store: Store<ApplicationState>) {
       const tagName = (event.srcElement as HTMLElement).tagName;
       if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
-      store.dispatch(actions.canvasMousePressed(p.mouseX, p.mouseY));
+      store.dispatch(actions.mousePressed({ x: p.mouseX, y: p.mouseY }));
     }
 
     p.mouseReleased = (event: MouseEvent) => {
       const tagName = (event.srcElement as HTMLElement).tagName;
       if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
-      store.dispatch(actions.canvasMouseReleased(p.mouseX, p.mouseY));
+      store.dispatch(actions.mouseReleased({ x: p.mouseX, y: p.mouseY }));
     }
 
     p.mouseClicked = () => {
-      store.dispatch(actions.canvasClicked(p.mouseX, p.mouseY));
+      store.dispatch(actions.clicked({ x: p.mouseX, y: p.mouseY }));
     }
 
     p.doubleClicked = () => {
-      store.dispatch(actions.canvasDoubleClicked(p.mouseX, p.mouseY));
+      store.dispatch(actions.doubleClicked({ x: p.mouseX, y: p.mouseY }));
     }
 
     p.mouseMoved = () => {
     }
 
     p.mouseWheel = (event: WheelEvent) => {
-      viewField = ViewField.move(viewField, event.deltaX, event.deltaY);
-      const { x, y } = ViewField.translateTo(viewField);
-      store.dispatch(moveCanvas(x, y));
+      store.dispatch(
+        actions.moveCanvas({ deltaX: event.deltaX, deltaY: event.deltaY })
+      );
     }
 
     p.mouseDragged = () => {
