@@ -26,11 +26,11 @@ export function pack(state: ApplicationState): string {
   let nodes = result.graph.nodes;
   let edges = result.graph.edges;
 
-  Object.values(state.atoms).forEach(item => {
+  Object.values(state.default.atoms).forEach(item => {
     nodes[item.id] = { x: item.x, y: item.y, value: item.value };
   });
 
-  state.edges.forEach(edge => {
+  state.default.edges.forEach(edge => {
     edges.push({ source: edge.sourceId, target: edge.targetId });
   });
 

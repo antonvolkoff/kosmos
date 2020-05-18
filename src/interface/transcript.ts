@@ -2,9 +2,10 @@ import { Component, createRef } from "react";
 import { html } from "htm/react";
 import { EvalResult } from "../repl";
 import { Store } from "redux";
+import { ApplicationState } from "../store";
 
 type TranscriptProps = {
-  store: Store;
+  store: Store<ApplicationState>;
 };
 
 type TranscriptState = {
@@ -19,7 +20,7 @@ const last = (results: EvalResult[]): EvalResult => {
 };
 
 const propsToState = (props: TranscriptProps): TranscriptState => {
-  const entries = props.store.getState().entries;
+  const entries = props.store.getState().default.entries;
   return { entries, lastEntry: last(entries) };
 };
 

@@ -1,9 +1,9 @@
 import { remote, ipcRenderer } from "electron";
-import { Store } from "redux";
-import { createNewFile, openFile, saveFile, saveFileAs, exportToFile } from "../store";
+import { Store } from "@reduxjs/toolkit";
+import { createNewFile, openFile, saveFile, saveFileAs, exportToFile, ApplicationState } from "../store";
 const { dialog } = remote;
 
-export default function AppMenu(store: Store) {
+export default function AppMenu(store: Store<ApplicationState>) {
   ipcRenderer.on('click-new', () => {
     store.dispatch(createNewFile());
   });
@@ -16,7 +16,7 @@ export default function AppMenu(store: Store) {
   });
 
   ipcRenderer.on('click-save', () => {
-    const hasFile = store.getState().hasFile;
+    const hasFile = store.getState().default.hasFile;
 
     if (hasFile) {
       store.dispatch(saveFile());

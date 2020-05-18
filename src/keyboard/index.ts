@@ -8,18 +8,20 @@ import { Store } from "redux";
 
 export default function Keyboard(store: Store<ApplicationState>) {
   let state = store.getState();
-  let { selectedAtomId, mode } = state;
+  let { selectedAtomId, mode } = state.default;
+  let selectedAtom = selectedAtomSelector(store);
 
   store.subscribe(() => {
     state = store.getState();
-    selectedAtomId = state.selectedAtomId;
-    mode = state.mode;
+    selectedAtomId = state.default.selectedAtomId;
+    mode = state.default.mode;
+    selectedAtom = selectedAtomSelector(store);
   });
 
   const standardAtomOffset = 40;
   const evaluateAtom = () => store.dispatch(evalSelectedAtom());
   const deleteAtom = (event) => {
-    const atomId = store.getState().selectedAtomId;
+    const atomId = selectedAtomId;
     if (!atomId) return;
 
     event.preventDefault();
@@ -29,7 +31,7 @@ export default function Keyboard(store: Store<ApplicationState>) {
     if (parent) store.dispatch(selectAtom(parent.id));
   };
   const createChildAtom = (event) => {
-    const atom = selectedAtomSelector(store);
+    const atom = selectedAtom;
     if (!atom) return;
 
     event.preventDefault();
@@ -48,8 +50,8 @@ export default function Keyboard(store: Store<ApplicationState>) {
     store.dispatch(selectAtom(child.id));
   };
   const createSiblingAtom = (event) => {
-    const atom = selectedAtomSelector(store);
-    if (!atom && atom.incoming.length != 0) return;
+    const atom = selectedAtom;
+    if (!atom) return;
 
     event.preventDefault();
 
@@ -82,7 +84,7 @@ export default function Keyboard(store: Store<ApplicationState>) {
   };
 
   const moveToParent = (event) => {
-    const atom = selectedAtomSelector(store);
+    const atom = selectedAtom;
     if (!atom) return;
 
     event.preventDefault();
@@ -90,14 +92,14 @@ export default function Keyboard(store: Store<ApplicationState>) {
     if (parent) store.dispatch(selectAtom(parent.id));
   };
   const moveToChild = () => {
-    const atom = selectedAtomSelector(store);
+    const atom = selectedAtom;
     if (!atom) return;
 
     const child = childrenSelector(state, atom.id)[0];
     if (child) store.dispatch(selectAtom(child.id));
   };
   const moveToNextSibling = () => {
-    const atom = selectedAtomSelector(store);
+    const atom = selectedAtom
     if (!atom) return;
 
     const parent = parentSelector(state, atom.id);
@@ -109,7 +111,7 @@ export default function Keyboard(store: Store<ApplicationState>) {
     if (gotoAtom) store.dispatch(selectAtom(gotoAtom.id));
   };
   const moveToPreviousSibling = () => {
-    const atom = selectedAtomSelector(store);
+    const atom = selectedAtom;
     if (!atom) return;
 
     const parent = parentSelector(state, atom.id);

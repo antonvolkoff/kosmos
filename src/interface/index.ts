@@ -4,8 +4,9 @@ import { html } from "htm/react";
 import Transcript from "./transcript";
 import Control from "./control";
 import { Store } from "redux";
+import { ApplicationState } from "../store";
 
-export default function Interface(store: Store) {
+export default function Interface(store: Store<ApplicationState>) {
   const transcriptPlaceholder = document.getElementById("transcript");
   const controlPlaceholder = document.getElementById("control");
 

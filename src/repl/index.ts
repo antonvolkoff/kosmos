@@ -3,7 +3,7 @@ import * as repl from "nrepl-client";
 import { homedir } from "os";
 import { readFileSync } from "fs";
 
-import { connectedToRepl } from "../store";
+import { connectedToRepl, ApplicationState } from "../store";
 import { Store } from 'redux';
 
 type NReplState = "waiting-for-port" | "connecting" | "connected";
@@ -28,7 +28,7 @@ let nRepl: NRepl = {
   client: undefined,
 };
 
-export default function Repl(store: Store) {
+export default function Repl(store: Store<ApplicationState>) {
   const process = (nRepl: NRepl): NRepl => {
     switch (nRepl.state) {
       case "waiting-for-port":

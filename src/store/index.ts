@@ -1,4 +1,4 @@
-import { configureStore, getDefaultMiddleware, Store, createReducer } from "@reduxjs/toolkit";
+import { configureStore, getDefaultMiddleware, Store, createReducer, combineReducers } from "@reduxjs/toolkit";
 import * as pathUtil from "path";
 import * as fs from "fs";
 
@@ -71,27 +71,31 @@ export const moveCanvas =
 type Mode = "idle" | "ready" | "enter" | "edit";
 
 export interface ApplicationState {
-  atoms: { [id: string]: Atom };
-  edges: { sourceId: string, targetId: string }[];
-  mode: Mode;
-  selectedAtomId: string;
-  [key: string]: any;
+  default: {
+    atoms: { [id: string]: Atom };
+    edges: { sourceId: string, targetId: string }[];
+    mode: Mode;
+    selectedAtomId: string;
+    [key: string]: any;
+  },
 }
 
 const initialState: ApplicationState = {
-  atoms: {},
-  edges: [],
-  connectedToRepl: false,
-  selectedAtomId: null,
-  draggingAtomId: null,
-  entries: [],
-  canvasTranslate: { x: 0, y: 0 },
-  hasFile: false,
-  file: { filename: "Untitled", path: "" },
-  mode: "idle",
+  default: {
+    atoms: {},
+    edges: [],
+    connectedToRepl: false,
+    selectedAtomId: null,
+    draggingAtomId: null,
+    entries: [],
+    canvasTranslate: { x: 0, y: 0 },
+    hasFile: false,
+    file: { filename: "Untitled", path: "" },
+    mode: "idle",
+  },
 };
 
-const reducer = createReducer(initialState, {
+const defaultReducer = createReducer(initialState.default, {
   "setSelectedAtomId": (state, action) => {
     state.selectedAtomId = action.payload.atomId;
   },
@@ -133,7 +137,7 @@ const reducer = createReducer(initialState, {
       moveAtom.x += deltaX;
       moveAtom.y += deltaY;
 
-      childrenSelector(state, moveAtom.id)
+      childrenSelector({ default: state }, moveAtom.id)
         .map(({ id }) => id)
         .forEach(id => doMove(id, deltaX, deltaY));
     }
@@ -150,7 +154,7 @@ const reducer = createReducer(initialState, {
       const standardAtomOffset = 40;
       const width = AtomShape.width(atom) + standardAtomOffset;
 
-      childrenSelector(state, atom.id).forEach(childAtom => {
+      childrenSelector({ default: state }, atom.id).forEach(childAtom => {
         const { x, y } = nearestGridPoint({ x: atom.x + width, y: childAtom.y });
         childAtom.x = x;
         childAtom.y = y;
@@ -185,7 +189,7 @@ const reducer = createReducer(initialState, {
     state.hasFile = true;
   },
   "save-file": (state) => {
-    const rawJson = JsonPacker.pack(state);
+    const rawJson = JsonPacker.pack({ default: state });
     fs.writeFileSync(state.file.path, rawJson);
   },
   "save-file-as": (state, action) => {
@@ -193,7 +197,7 @@ const reducer = createReducer(initialState, {
     state.file.path = path;
     state.file.filename = pathUtil.parse(path).base;
 
-    const rawJson = JsonPacker.pack(state);
+    const rawJson = JsonPacker.pack({ default: state });
     fs.writeFileSync(state.file.path, rawJson);
   },
   "add-evaluation-entry": (state, action) => {
@@ -202,7 +206,7 @@ const reducer = createReducer(initialState, {
   "export-to-file": (state, action) => {
     const { path } = action.payload;
     const data = ClojurePacker.pack(
-      topLevelAtoms(state).map(atom => valueGraphSelector(state, atom.id))
+      topLevelAtoms({ default: state }).map(atom => valueGraphSelector({ default: state }, atom.id))
     );
 
     fs.writeFileSync(path, data);
@@ -214,6 +218,11 @@ const reducer = createReducer(initialState, {
     state.mode = action.payload.mode;
   },
 });
+
+const rootReducer = combineReducers({
+  default: defaultReducer,
+});
+
 
 const evaluateMiddleware = ({ dispatch, getState }) => next => action => {
   next(action);
@@ -233,12 +242,12 @@ const mouseMiddleware = ({ dispatch, getState }) => next => action => {
 
   const state: ApplicationState = getState();
   const overAtom = () => {
-    return Object.values(state.atoms).find((atom) => AtomShape.within(action.payload, atom));
+    return Object.values(state.default.atoms).find((atom) => AtomShape.within(action.payload, atom));
   };
 
   if (action.type == actions.canvasDoubleClicked.type) {
     const atom = overAtom();
-    if (atom && state.selectedAtomId == atom.id && state.mode == "ready") {
+    if (atom && state.default.selectedAtomId == atom.id && state.default.mode == "ready") {
       dispatch(actions.changeMode("edit"));
     } else {
       const { x, y } = action.payload;
@@ -268,7 +277,7 @@ export const createApplicationStore = (): Store<ApplicationState> => {
     evaluateMiddleware,
     mouseMiddleware,
   ];
-  return configureStore({ reducer, middleware });
+  return configureStore({ reducer: rootReducer, middleware });
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -278,9 +287,9 @@ const score = ({ x, y }) => x * y;
 const sortByScore = (a: Atom, b: Atom) => score(a) - score(b);
 
 export const childrenSelector = (state: ApplicationState, atomId: string): Atom[] => {
-  return state.edges
+  return state.default.edges
     .filter(({ sourceId }) => sourceId == atomId)
-    .map(({ targetId }) => state.atoms[targetId])
+    .map(({ targetId }) => state.default.atoms[targetId])
     .sort(sortByScore);
 }
 
@@ -296,14 +305,14 @@ export const deepChildrenSelector =
   };
 
 export const parentSelector = (state: ApplicationState, atomId: string): Atom | null => {
-  const parentAtomId = state.edges.find(({ targetId }) => targetId == atomId).sourceId;
-  return state.atoms[parentAtomId];
+  const parentAtomId = state.default.edges.find(({ targetId }) => targetId == atomId).sourceId;
+  return state.default.atoms[parentAtomId];
 };
 
 export const topLevelAtoms = (state: ApplicationState): Atom[] => {
-  return Object.keys(state.atoms)
+  return Object.keys(state.default.atoms)
     .filter(atomId => parentSelector(state, atomId) == null)
-    .map(atomId => state.atoms[atomId]);
+    .map(atomId => state.default.atoms[atomId]);
 };
 
 export interface ValueNode {
@@ -313,33 +322,33 @@ export interface ValueNode {
 
 export const valueGraphSelector =
   (state: ApplicationState, atomId: string): ValueNode => {
-    const { id, value } = state.atoms[atomId];
+    const { id, value } = state.default.atoms[atomId];
     const children = childrenSelector(state, id).map(atom => {
       return valueGraphSelector(state, atom.id)
     });
     return { value, children };
   };
 
-export const selectedAtomSelector = (store) => {
+export const selectedAtomSelector = (store: Store<ApplicationState>) => {
   const state = store.getState();
-  return state.atoms[state.selectedAtomId];
+  return state.default.atoms[state.default.selectedAtomId];
 };
 
-export const draggingAtomSelector = (store) => {
+export const draggingAtomSelector = (store: Store<ApplicationState>) => {
   const state = store.getState();
-  return state.atoms[state.draggingAtomId];
+  return state.default.atoms[state.default.draggingAtomId];
 };
 
-export const edgesSelector = (store): Line[] => {
+export const edgesSelector = (store: Store<ApplicationState>): Line[] => {
   const state = store.getState();
-  return state.edges.map(({ sourceId, targetId }) => {
-    const source = state.atoms[sourceId];
-    const target = state.atoms[targetId];
+  return state.default.edges.map(({ sourceId, targetId }) => {
+    const source = state.default.atoms[sourceId];
+    const target = state.default.atoms[targetId];
     return { x1: source.x, y1: source.y, x2: target.x, y2: target.y };
   });
 };
 
-export const atomsSelector = (store): Atom[] => {
-  return Object.values(store.getState().atoms);
+export const atomsSelector = (store: Store<ApplicationState>): Atom[] => {
+  return Object.values(store.getState().default.atoms);
 };
 

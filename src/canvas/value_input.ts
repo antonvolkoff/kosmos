@@ -21,16 +21,16 @@ const blur = () => {
   element.elt.blur();
 };
 
-const handleInput = (store: Store) => {
-  const atomId = store.getState().selectedAtomId;
+const handleInput = (store: Store<ApplicationState>) => {
+  const atomId = store.getState().default.selectedAtomId;
   const value = element.value().toString();
   store.dispatch(setAtomValue(atomId, value));
   setValue(value);
 };
 
-const handleStateChange = (store: Store) => {
-  const state: ApplicationState = store.getState();
-  if (state.selectedAtomId && state.mode == "edit") {
+const handleStateChange = (store: Store<ApplicationState>) => {
+  const state = store.getState();
+  if (state.default.selectedAtomId && state.default.mode == "edit") {
     const atom = selectedAtomSelector(store);
     focus();
     setValue(atom.value);
@@ -41,7 +41,7 @@ const handleStateChange = (store: Store) => {
   }
 };
 
-export const setup = (p: p5, store: Store) => {
+export const setup = (p: p5, store: Store<ApplicationState>) => {
   element = p.createInput();
   element.hide();
   element.class("mousetrap atom-input");

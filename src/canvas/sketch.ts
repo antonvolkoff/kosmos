@@ -8,18 +8,17 @@ import * as Legend from "./legend";
 import { gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
 import * as ValueInput from "./value_input";
-import { moveAtom } from "../store";
+import { moveAtom, ApplicationState } from "../store";
 import { edgesSelector, atomsSelector, moveCanvas } from "../store";
 import { actions } from "../store";
 
-export default function Sketch(store: Store) {
+export default function Sketch(store: Store<ApplicationState>) {
   return (p: p5) => {
     const HOLD_DURATION = 750;
     const HOLD_DIST_THRESHOLD = 20;
 
     let timestamp: number = undefined;
     let startPoint: Point = undefined;
-    let keepDrawings = false;
     let showFPS = false;
 
     let viewField: ViewField.ViewField;
@@ -53,7 +52,7 @@ export default function Sketch(store: Store) {
 
       const atoms: Atom[] = atomsSelector(store);
       atoms.forEach(atom => {
-        const selected = store.getState().selectedAtomId == atom.id;
+        const selected = store.getState().default.selectedAtomId == atom.id;
         AtomShape.draw(p, atom, selected);
       });
 
@@ -156,7 +155,7 @@ export default function Sketch(store: Store) {
     };
 
     p.draw = () => {
-      const { x, y } = store.getState().canvasTranslate;
+      const { x, y } = store.getState().default.canvasTranslate;
       p.translate(x, y);
 
       ValueInput.update(p, store);
@@ -208,22 +207,10 @@ export default function Sketch(store: Store) {
     }
 
     p.mouseDragged = () => {
-      const draggingAtomId = store.getState().draggingAtomId;
+      const draggingAtomId = store.getState().default.draggingAtomId;
       if (draggingAtomId) {
         const { x, y } = mousePosition();
         store.dispatch(moveAtom(draggingAtomId, x, y));
-      }
-    }
-
-    p.keyReleased = () => {
-      const atom = store.getState().selectedAtom;
-
-      if (p.key == "d" && !atom) {
-        keepDrawings = !keepDrawings;
-      }
-
-      if (p.key == "f" && !atom) {
-        showFPS = !showFPS;
       }
     }
   }
