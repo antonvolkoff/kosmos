@@ -199,6 +199,7 @@ export default function Sketch(store: Store) {
     p.setup = () => {
       p.pixelDensity(2);
       p.frameRate(30);
+      p.noLoop();
 
       viewField = ViewField.init(p.windowWidth, p.windowHeight);
 

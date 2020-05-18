@@ -3,5 +3,9 @@ import { Store } from "redux";
 import Sketch from "./sketch";
 
 export default function Canvas(store: Store) {
-  new p5(Sketch(store), document.getElementById("canvas"));
+  const sketch = new p5(Sketch(store), document.getElementById("canvas"));
+
+  store.subscribe(() => {
+    sketch.redraw();
+  });
 }
