@@ -1,14 +1,20 @@
 import * as Mousetrap from "mousetrap";
-import { selectAtom, unselectAtom as unselectAtomAction, deleteAtom as deleteAtomAction, addAtom, connectAtoms, childrenSelector } from "../store";
-import { selectedAtomSelector, evalSelectedAtom, parentSelector, deepChildrenSelector } from "../store";
+import { selectAtom, unselectAtom as unselectAtomAction, deleteAtom as deleteAtomAction, addAtom, connectAtoms, childrenSelector, ApplicationState } from "../store";
+import { selectedAtomSelector, evalSelectedAtom, parentSelector, deepChildrenSelector, actions } from "../store";
 import AtomShape from "../canvas/atom_shape";
 import { createAtom } from "../store/atom";
 import { nearestGridPoint } from "../canvas/grid";
 import { Store } from "redux";
 
-export default function Keyboard(store: Store) {
+export default function Keyboard(store: Store<ApplicationState>) {
   let state = store.getState();
-  store.subscribe(() => state = store.getState());
+  let { selectedAtomId, mode } = state;
+
+  store.subscribe(() => {
+    state = store.getState();
+    selectedAtomId = state.selectedAtomId;
+    mode = state.mode;
+  });
 
   const standardAtomOffset = 40;
   const evaluateAtom = () => store.dispatch(evalSelectedAtom());
@@ -60,9 +66,21 @@ export default function Keyboard(store: Store) {
     store.dispatch(connectAtoms(parent.id, child.id));
     store.dispatch(selectAtom(child.id));
   };
+
   const unselectAtom = () => {
-    if (store.getState().selectedAtomId) store.dispatch(unselectAtomAction());
+    if (!selectedAtomId) return;
+
+    switch (mode) {
+      case "edit":
+        store.dispatch(actions.changeMode("ready"));
+        break;
+      case "ready":
+        store.dispatch(unselectAtomAction());
+        store.dispatch(actions.changeMode("idle"));
+        break;
+    }
   };
+
   const moveToParent = (event) => {
     const atom = selectedAtomSelector(store);
     if (!atom) return;

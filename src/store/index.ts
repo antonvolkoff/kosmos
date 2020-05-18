@@ -1,7 +1,4 @@
-import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
-import { createStore, Reducer } from "redux";
-import produce from "immer";
-import { devToolsEnhancer } from "redux-devtools-extension";
+import { configureStore, getDefaultMiddleware, Store, createReducer } from "@reduxjs/toolkit";
 import * as pathUtil from "path";
 import * as fs from "fs";
 
@@ -17,10 +14,10 @@ import * as actions from "./actions";
 export { actions };
 
 export const selectAtom =
-  (atomId: string) => ({ type: "select-atom", payload: { atomId } });
+  (atomId: string) => ({ type: "setSelectedAtomId", payload: { atomId } });
 
 export const unselectAtom =
-  () => ({ type: "unselect-atom" });
+  () => ({ type: "setSelectedAtomId", payload: { atomId: null } });
 
 export const addAtom =
   (atom) => ({ type: "add-atom", payload: atom });
@@ -71,15 +68,17 @@ export const moveCanvas =
 
 ////////////////////////////////////////////////////////////////////////////////
 
+type Mode = "idle" | "ready" | "enter" | "edit";
+
 export interface ApplicationState {
   atoms: { [id: string]: Atom };
   edges: { sourceId: string, targetId: string }[];
-  mode: string;
+  mode: Mode;
   selectedAtomId: string;
   [key: string]: any;
 }
 
-const initialState = {
+const initialState: ApplicationState = {
   atoms: {},
   edges: [],
   connectedToRepl: false,
@@ -92,21 +91,9 @@ const initialState = {
   mode: "idle",
 };
 
-const createReducer = (initialState, actions): Reducer => {
-  return (state = initialState, action) => {
-    const handler = actions[action.type];
-    if (!handler) return state;
-
-    return produce(state, draftState => handler(draftState, action));
-  };
-};
-
 const reducer = createReducer(initialState, {
-  "select-atom": (state, action) => {
+  "setSelectedAtomId": (state, action) => {
     state.selectedAtomId = action.payload.atomId;
-  },
-  "unselect-atom": (state) => {
-    state.selectedAtomId = null;
   },
   "delete-atom": (state, action) => {
     const { atomId } = action.payload;
@@ -275,11 +262,13 @@ const mouseMiddleware = ({ dispatch, getState }) => next => action => {
   }
 };
 
-export const createApplicationStore = () => {
-  return configureStore<ApplicationState, any, any>({
-    reducer: reducer,
-    middleware: [...getDefaultMiddleware(), evaluateMiddleware, mouseMiddleware],
-  });
+export const createApplicationStore = (): Store<ApplicationState> => {
+  const middleware = [
+    ...getDefaultMiddleware(),
+    evaluateMiddleware,
+    mouseMiddleware,
+  ];
+  return configureStore({ reducer, middleware });
 };
 
 ////////////////////////////////////////////////////////////////////////////////

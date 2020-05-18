@@ -1,15 +1,15 @@
 import * as p5 from "p5";
 import { Store } from "redux";
 
-import { Point, Line, distance } from "./geometry";
-import { createAtom, Atom } from "../store/atom";
+import { Point, distance } from "./geometry";
+import { Atom } from "../store/atom";
 import AtomShape from "./atom_shape";
 import * as Legend from "./legend";
-import { nearestGridPoint, gridPoints, gridTiles } from "./grid";
+import { gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
 import * as ValueInput from "./value_input";
-import { selectAtom, unselectAtom, addAtom, connectAtoms, finishDrag, moveAtom, startDrag } from "../store";
-import { edgesSelector, atomsSelector, selectedAtomSelector, draggingAtomSelector, moveCanvas } from "../store";
+import { moveAtom } from "../store";
+import { edgesSelector, atomsSelector, moveCanvas } from "../store";
 import { actions } from "../store";
 
 export default function Sketch(store: Store) {
@@ -21,7 +21,6 @@ export default function Sketch(store: Store) {
     let startPoint: Point = undefined;
     let keepDrawings = false;
     let showFPS = false;
-    let lines: Line[] = [];
 
     let viewField: ViewField.ViewField;
 
@@ -37,60 +36,6 @@ export default function Sketch(store: Store) {
         const mouse = { x: p.mouseX, y: p.mouseY };
         return ViewField.toGlobalCoordinates(viewField, mouse);
       };
-
-    const previousMousePosition =
-      () : Point => {
-        const mouse = { x: p.pmouseX, y: p.pmouseY };
-        return ViewField.toGlobalCoordinates(viewField, mouse);
-      };
-
-    function handleMouseEvent(name: string) {
-      const currentPoint = mousePosition();
-      const startAtom = findMouseOverAtom(atomsSelector(store), startPoint);
-      const currentAtom = findMouseOverAtom(atomsSelector(store), currentPoint);
-
-      switch (name) {
-        case "startDrag":
-          store.dispatch(selectAtom(startAtom.id));
-          store.dispatch(startDrag(startAtom.id));
-          break;
-
-        case "finishDrag":
-          const draggingAtomId = store.getState().draggingAtomId;
-
-          const { x, y } = nearestGridPoint(currentPoint);
-          store.dispatch(moveAtom(draggingAtomId, x, y));
-          store.dispatch(finishDrag());
-          break;
-
-        case "create":
-          const pointOnGrid = nearestGridPoint(currentPoint);
-          const atom = createAtom(pointOnGrid.x, pointOnGrid.y);
-
-          store.dispatch(addAtom(atom));
-          store.dispatch(selectAtom(atom.id));
-          break;
-
-        case "select":
-          store.dispatch(selectAtom(currentAtom.id));
-          break;
-
-        case "unselect":
-          store.dispatch(unselectAtom());
-          break;
-
-        case "connect":
-          store.dispatch(connectAtoms(startAtom.id, currentAtom.id));
-          break;
-
-        case "draw":
-          // Do nothing
-          break;
-
-        default:
-          break;
-      }
-    }
 
     function drawEdges() {
       p.push();
@@ -216,24 +161,8 @@ export default function Sketch(store: Store) {
 
       ValueInput.update(p, store);
 
-      if (p.mouseIsPressed === true && !store.getState().draggingAtom) {
-        const p1 = mousePosition();
-        const p2 = previousMousePosition();
-        lines.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
-      } else {
-        if (!keepDrawings) lines = [];
-      }
-
       const tiles = gridTiles(viewField, bg.width, bg.height);
       tiles.forEach(({ x, y, width, height}) => p.image(bg, x, y, width, height));
-
-      p.push();
-      p.stroke(150);
-      p.strokeWeight(2);
-      lines.forEach(l => {
-        p.line(l.x1, l.y1, l.x2, l.y2);
-      });
-      p.pop();
 
       drawEdges();
       drawAtoms();
@@ -252,14 +181,6 @@ export default function Sketch(store: Store) {
       if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
       store.dispatch(actions.canvasMousePressed(p.mouseX, p.mouseY));
-
-      // timestamp = new Date().getTime();
-      // startPoint = mousePosition();
-
-      // const startAtom = findMouseOverAtom(atomsSelector(store), startPoint);
-      // if (startAtom && AtomShape.withinDragArea(startPoint, startAtom)) {
-      //   handleMouseEvent("startDrag");
-      // }
     }
 
     p.mouseReleased = (event: MouseEvent) => {
@@ -267,34 +188,6 @@ export default function Sketch(store: Store) {
       if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
       store.dispatch(actions.canvasMouseReleased(p.mouseX, p.mouseY));
-
-      // const now = new Date().getTime();
-      // const mousePressedDuration = now - timestamp;
-      // const isClickAndHold = mousePressedDuration > HOLD_DURATION;
-
-      // const startAtom = findMouseOverAtom(atomsSelector(store), startPoint);
-      // const currentPoint = mousePosition();
-      // const currentAtom = findMouseOverAtom(atomsSelector(store), currentPoint);
-      // const dist = distance(startPoint, currentPoint);
-      // const selectedAtom = selectedAtomSelector(store);
-      // const draggingAtom = draggingAtomSelector(store);
-
-      // if (draggingAtom) {
-      //   handleMouseEvent("finishDrag");
-      // } else if (startAtom && currentAtom && startAtom != currentAtom) {
-      //   handleMouseEvent("connect");
-      // } else if (isClickAndHold && !startAtom && !currentAtom && dist <= HOLD_DIST_THRESHOLD) {
-      //   handleMouseEvent("create");
-      // } else if (!isClickAndHold && currentAtom && currentAtom.id != draggingAtom?.id) {
-      //   handleMouseEvent("select");
-      // } else if (!isClickAndHold && !currentAtom && selectedAtom) {
-      //   handleMouseEvent("unselect");
-      // } else {
-      //   handleMouseEvent("draw");
-      // }
-
-      // startPoint = undefined;
-      // timestamp = undefined;
     }
 
     p.mouseClicked = () => {
