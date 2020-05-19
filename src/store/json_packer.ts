@@ -1,5 +1,5 @@
 import { Atom, createAtom } from "./atom";
-import { DefaultState } from ".";
+import { DefaultState } from "./defaultReducer";
 
 type PackNode = {
   x: number;

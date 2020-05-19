@@ -3,7 +3,8 @@ import * as repl from "nrepl-client";
 import { homedir } from "os";
 import { readFileSync } from "fs";
 
-import { connectedToRepl, ApplicationState } from "../store";
+import { ApplicationState } from "../store";
+import { connectedToRepl } from "../store/defaultReducer";
 import { Store } from 'redux';
 
 type NReplState = "waiting-for-port" | "connecting" | "connected";

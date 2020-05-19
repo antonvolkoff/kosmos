@@ -1,5 +1,7 @@
 import * as p5 from "p5";
-import { selectedAtomSelector, setAtomValue, ApplicationState } from "../store";
+import { ApplicationState } from "../store";
+import { setAtomValue } from "../store/defaultReducer";
+import { getSelectedAtom, getMode } from "./selectors";
 import { Store } from "redux";
 
 let element: p5.Element;
@@ -22,18 +24,24 @@ const blur = () => {
 };
 
 const handleInput = (store: Store<ApplicationState>) => {
-  const atomId = store.getState().default.selectedAtomId;
+  const atom = getSelectedAtom(store.getState());
   const value = element.value().toString();
-  store.dispatch(setAtomValue(atomId, value));
+  store.dispatch(setAtomValue(atom.id, value));
   setValue(value);
 };
 
 const handleStateChange = (store: Store<ApplicationState>) => {
   const state = store.getState();
-  if (state.default.selectedAtomId && state.default.mode == "edit") {
-    const atom = selectedAtomSelector(store);
+  const atom = getSelectedAtom(state)
+  const mode = getMode(state);
+
+  if (atom && mode == "edit") {
     focus();
     setValue(atom.value);
+    setPosition(atom.x, atom.y);
+  } else if (atom && mode == "enter") {
+    focus();
+    setValue("");
     setPosition(atom.x, atom.y);
   } else {
     blur();

@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { html } from "htm/react";
+import { Store } from "redux";
 
-import { deleteAtom, evalSelectedAtom, ApplicationState } from "../store";
+import { ApplicationState } from "../store";
+import { deleteAtom, evalSelectedAtom } from "../store/defaultReducer";
+import { selectors } from "../canvas";
 import PlayIcon from "./play_icon";
 import TrashIcon from "./trash_icon";
 import CastIcon from "./cast_icon";
-import { Store } from "redux";
+
+const { getSelectedAtomId } = selectors;
 
 interface Props {
   store: Store<ApplicationState>;
@@ -16,9 +20,8 @@ export default function Control({ store }: Props) {
   const [connectedToRepl, setConnectedToRepl] = useState(false);
 
   store.subscribe(() => {
-    const data = store.getState();
-    setSelectedAtomId(data.default.selectedAtomId);
-    setConnectedToRepl(data.default.connectedToRepl);
+    setSelectedAtomId(getSelectedAtomId(store.getState()));
+    setConnectedToRepl(store.getState().default.connectedToRepl);
   });
 
   const onEvalClick = (event) => {

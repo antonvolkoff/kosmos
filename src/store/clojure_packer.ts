@@ -1,5 +1,5 @@
 import { Atom } from "./atom";
-import { ApplicationState, topLevelAtoms, valueGraphSelector, ValueNode } from "./index";
+import { ValueNode } from "./defaultReducer";
 
 function translate(node: ValueNode): string {
   // Integer

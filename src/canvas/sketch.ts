@@ -8,37 +8,48 @@ import * as Legend from "./legend";
 import { gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
 import * as ValueInput from "./value_input";
-import { moveAtom, ApplicationState } from "../store";
-import { edgesSelector, atomsSelector } from "../store";
+import { ApplicationState } from "../store";
 
-import { actions } from "../store/canvasReducer";
+import { actions, Click } from "./canvasReducer";
+import {
+  getDrawableAtoms,
+  getViewField,
+  getTranslateValue,
+  getDrawableEdges,
+  getDraftConnection,
+  getMode,
+} from "./selectors";
 
 export default function Sketch(store: Store<ApplicationState>) {
-  let state = store.getState().canvas;
-  store.subscribe(() => {
-    state = store.getState().canvas;
-  });
-
   return (p: p5) => {
-    const HOLD_DURATION = 750;
-    const HOLD_DIST_THRESHOLD = 20;
+    let state = store.getState();
+    let atoms = getDrawableAtoms(state);
+    let edges = getDrawableEdges(state);
+    let viewField = getViewField(state);
+    let translateValue = getTranslateValue(state);
+    let draftConnection = getDraftConnection(state);
+    let mode = getMode(state);
 
-    let timestamp: number = undefined;
-    let startPoint: Point = undefined;
-    let showFPS = false;
+    store.subscribe(() => {
+      state = store.getState();
+      atoms = getDrawableAtoms(state);
+      edges = getDrawableEdges(state);
+      viewField = getViewField(state);
+      translateValue = getTranslateValue(state);
+      draftConnection = getDraftConnection(state);
+      mode = getMode(state);
+      p.redraw();
+    });
 
     const backgroundColor = p.color("#FDFDFD");
     let bg: p5.Graphics = null;
 
-    function findMouseOverAtom(atoms: Atom[], mouse: Point) {
-      return atoms.find(atom => AtomShape.within(mouse, atom));
+    const createClickPayload = (): Click => {
+      const mouse = { x: p.mouseX, y: p.mouseY };
+      const atomId = null;
+      const dragArea = false;
+      return { mouse, atomId, dragArea };
     }
-
-    const mousePosition =
-      () : Point => {
-        const mouse = { x: p.mouseX, y: p.mouseY };
-        return ViewField.toGlobalCoordinates(state.viewField, mouse);
-      };
 
     function drawEdges() {
       p.push();
@@ -46,60 +57,15 @@ export default function Sketch(store: Store<ApplicationState>) {
       p.strokeWeight(1.5);
       p.stroke(150);
 
-      edgesSelector(store).forEach(e => p.line(e.x1, e.y1, e.x2, e.y2));
+      edges.forEach(e => p.line(e.x1, e.y1, e.x2, e.y2));
 
       p.pop();
     }
 
     function drawAtoms() {
       p.push();
-
-      const atoms: Atom[] = atomsSelector(store);
-      atoms.forEach(atom => {
-        const selected = store.getState().default.selectedAtomId == atom.id;
-        AtomShape.draw(p, atom, selected);
-      });
-
+      atoms.forEach(atom => AtomShape.draw(p, atom));
       p.pop();
-    }
-
-    function drawHoldAnimation() {
-      if (!startPoint) return;
-
-      const f = () => {
-        const currentPoint = mousePosition();
-        const dist = distance(startPoint, currentPoint);
-        if (dist >= HOLD_DIST_THRESHOLD) return;
-
-        const now = new Date().getTime();
-        const mousePressedDuration = now - timestamp;
-        if (mousePressedDuration < 250) return;
-
-        let angleRad =  p.TWO_PI;
-
-        const r = mousePressedDuration / HOLD_DURATION;
-        if (r < 1) {
-          angleRad = angleRad * r;
-        }
-
-        let radius = 20;
-        let { x, y } = startPoint;
-
-        const atom = findMouseOverAtom(atomsSelector(store), currentPoint);
-        if (atom) {
-          x = atom.x;
-          y = atom.y;
-        }
-
-        p.push();
-        p.stroke(0, 0, 0, 50);
-        p.noFill();
-        p.strokeCap(p.PROJECT);
-        p.strokeWeight(6);
-        p.arc(x, y, radius, radius, 0, angleRad);
-        p.pop();
-      }
-      f();
     }
 
     function drawBackground(s: p5, bg: p5.Graphics, color: p5.Color) {
@@ -114,24 +80,10 @@ export default function Sketch(store: Store<ApplicationState>) {
       return bg;
     }
 
-    function drawFPS() {
-      if (!showFPS) return;
-
-      const fps = p.frameRate();
-      const { x, y } = ViewField.toGlobalCoordinates(state.viewField, { x: 10, y: 20 });
-
-      p.push();
-      p.textSize(14);
-      p.fill(0);
-      p.stroke(0);
-      p.text("FPS: " + fps.toFixed(2), x, y);
-      p.pop();
-    }
-
     const drawLegend = () => {
       const content = Legend.text(store);
       const { x, y } =
-        ViewField.toGlobalCoordinates(state.viewField, { x: 20, y: p.height - 30 });
+        ViewField.toGlobalCoordinates(viewField, { x: 20, y: p.height - 30 });
 
       p.push();
       {
@@ -164,18 +116,25 @@ export default function Sketch(store: Store<ApplicationState>) {
     };
 
     p.draw = () => {
-      p.translate(state.translate.x, state.translate.y);
+      const { x, y } = translateValue;
+      p.translate(x, y);
 
       ValueInput.update(p, store);
 
-      const tiles = gridTiles(state.viewField, bg.width, bg.height);
+      const tiles = gridTiles(viewField, bg.width, bg.height);
       tiles.forEach(({ x, y, width, height}) => p.image(bg, x, y, width, height));
+
+      if (draftConnection) {
+        p.push();
+        const { x1, y1, x2, y2 } = draftConnection;
+        p.line(x1, y1, x2, y2);
+        p.pop();
+      }
+
 
       drawEdges();
       drawAtoms();
-      drawHoldAnimation();
       drawLegend();
-      drawFPS();
     };
 
     p.windowResized = () => {
@@ -192,25 +151,15 @@ export default function Sketch(store: Store<ApplicationState>) {
       const tagName = (event.srcElement as HTMLElement).tagName;
       if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
-      store.dispatch(actions.mousePressed({ x: p.mouseX, y: p.mouseY }));
-    }
-
-    p.mouseReleased = (event: MouseEvent) => {
-      const tagName = (event.srcElement as HTMLElement).tagName;
-      if (tagName !== "CANVAS" && tagName !== "INPUT") return;
-
-      store.dispatch(actions.mouseReleased({ x: p.mouseX, y: p.mouseY }));
+      store.dispatch(actions.mousePressed(createClickPayload()));
     }
 
     p.mouseClicked = () => {
-      store.dispatch(actions.clicked({ x: p.mouseX, y: p.mouseY }));
+      store.dispatch(actions.clicked(createClickPayload()));
     }
 
     p.doubleClicked = () => {
-      store.dispatch(actions.doubleClicked({ x: p.mouseX, y: p.mouseY }));
-    }
-
-    p.mouseMoved = () => {
+      store.dispatch(actions.doubleClicked(createClickPayload()));
     }
 
     p.mouseWheel = (event: WheelEvent) => {
@@ -220,11 +169,12 @@ export default function Sketch(store: Store<ApplicationState>) {
     }
 
     p.mouseDragged = () => {
-      const draggingAtomId = store.getState().default.draggingAtomId;
-      if (draggingAtomId) {
-        const { x, y } = mousePosition();
-        store.dispatch(moveAtom(draggingAtomId, x, y));
-      }
+      store.dispatch(actions.mouseDragged(createClickPayload()));
+    }
+
+    p.keyTyped = () => {
+      if (mode == "ready") store.dispatch(actions.typed());
+      return true;
     }
   }
 }

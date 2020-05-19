@@ -1,6 +1,9 @@
 import { remote, ipcRenderer } from "electron";
 import { Store } from "@reduxjs/toolkit";
-import { createNewFile, openFile, saveFile, saveFileAs, exportToFile, ApplicationState } from "../store";
+import { ApplicationState } from "../store";
+import {
+  createNewFile, openFile, saveFile, saveFileAs, exportToFile
+} from "../store/defaultReducer";
 const { dialog } = remote;
 
 export default function AppMenu(store: Store<ApplicationState>) {

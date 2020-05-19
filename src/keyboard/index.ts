@@ -1,136 +1,149 @@
 import * as Mousetrap from "mousetrap";
-import { selectAtom, unselectAtom as unselectAtomAction,
+import { ApplicationState } from "../store";
+import {
   deleteAtom as deleteAtomAction, addAtom, connectAtoms, childrenSelector,
-  ApplicationState } from "../store";
-import { selectedAtomSelector, evalSelectedAtom, parentSelector,
-  deepChildrenSelector, actions } from "../store";
+  evalSelectedAtom, parentSelector, deepChildrenSelector
+} from "../store/defaultReducer";
 import AtomShape from "../canvas/atom_shape";
 import { createAtom } from "../store/atom";
 import { nearestGridPoint } from "../canvas/grid";
+import { actions, selectors } from "../canvas";
 import { Store } from "redux";
+
+const { select, unselect, changeMode } = actions;
+const { getSelectedAtom, getMode } = selectors;
 
 export default function Keyboard(store: Store<ApplicationState>) {
   let state = store.getState();
-  let { selectedAtomId, mode } = state.default;
-  let selectedAtom = selectedAtomSelector(store);
+  let mode = getMode(store.getState());
+  let selectedAtom = getSelectedAtom(store.getState());
 
   store.subscribe(() => {
     state = store.getState();
-    selectedAtomId = state.default.selectedAtomId;
-    mode = state.default.mode;
-    selectedAtom = selectedAtomSelector(store);
+    mode = getMode(store.getState());
+    selectedAtom = getSelectedAtom(store.getState());
   });
 
   const standardAtomOffset = 40;
   const evaluateAtom = () => store.dispatch(evalSelectedAtom());
   const deleteAtom = (event) => {
-    const atomId = selectedAtomId;
-    if (!atomId) return;
+    if (!selectedAtom) return;
 
     event.preventDefault();
 
-    const parent = parentSelector(state.default, atomId);
-    store.dispatch(deleteAtomAction(atomId));
-    if (parent) store.dispatch(selectAtom(parent.id));
+    const parent = parentSelector(state.default, selectedAtom.id);
+    store.dispatch(deleteAtomAction(selectedAtom.id));
+    if (parent) store.dispatch(select(parent.id));
   };
   const createChildAtom = (event) => {
-    const atom = selectedAtom;
-    if (!atom) return;
+    if (!selectedAtom) return;
 
     event.preventDefault();
 
-    const children = deepChildrenSelector(state.default, atom.id);
+    const children = deepChildrenSelector(state.default, selectedAtom.id);
     const bottomAtom = children[children.length - 1];
 
-    const width = AtomShape.width(atom) + standardAtomOffset;
-    const height = bottomAtom ? bottomAtom.y - atom.y + standardAtomOffset : 0;
+    const width = AtomShape.width(selectedAtom) + standardAtomOffset;
+    const height = bottomAtom ? bottomAtom.y - selectedAtom.y + standardAtomOffset : 0;
 
-    const { x, y } = nearestGridPoint({ x: atom.x + width, y: atom.y + height });
+    const { x, y } = nearestGridPoint({ x: selectedAtom.x + width, y: selectedAtom.y + height });
     const child = createAtom(x, y);
     store.dispatch(addAtom(child));
 
-    store.dispatch(connectAtoms(atom.id, child.id));
-    store.dispatch(selectAtom(child.id));
+    store.dispatch(connectAtoms(selectedAtom.id, child.id));
+    store.dispatch(select(child.id));
   };
-  const createSiblingAtom = (event) => {
-    const atom = selectedAtom;
-    if (!atom) return;
+  const handleCmdEnter = (event) => {
+    if (!selectedAtom) return;
 
     event.preventDefault();
 
-    const parent = parentSelector(state.default, atom.id);
+    const parent = parentSelector(state.default, selectedAtom.id);
     const children = deepChildrenSelector(state.default, parent.id);
     const bottomAtom = children[children.length - 1];
 
     const height = bottomAtom ? standardAtomOffset : 0;
 
-    const { x, y } = nearestGridPoint({ x: atom.x, y: bottomAtom.y + height, });
+    const { x, y } = nearestGridPoint({ x: selectedAtom.x, y: bottomAtom.y + height });
     const child = createAtom(x, y);
     store.dispatch(addAtom(child));
 
     store.dispatch(connectAtoms(parent.id, child.id));
-    store.dispatch(selectAtom(child.id));
+    store.dispatch(select(child.id));
   };
 
-  const unselectAtom = () => {
-    if (!selectedAtomId) return;
+  const handleEsc = () => {
+    if (!selectedAtom) return;
 
     switch (mode) {
       case "edit":
-        store.dispatch(actions.changeMode("ready"));
+        store.dispatch(changeMode("ready"));
+        break;
+      case "enter":
+        store.dispatch(changeMode("ready"));
         break;
       case "ready":
-        store.dispatch(unselectAtomAction());
-        store.dispatch(actions.changeMode("idle"));
+        store.dispatch(unselect());
+        break;
+    }
+  };
+
+  const handleEnter = () => {
+    if (!selectedAtom) return;
+
+    switch (mode) {
+      case "edit":
+        break;
+      case "enter":
+        break;
+      case "ready":
+        store.dispatch(changeMode("edit"));
         break;
     }
   };
 
   const moveToParent = (event) => {
-    const atom = selectedAtom;
-    if (!atom) return;
+    if (!selectedAtom) return;
 
     event.preventDefault();
-    const parent = parentSelector(state.default, atom.id);
-    if (parent) store.dispatch(selectAtom(parent.id));
+    const parent = parentSelector(state.default, selectedAtom.id);
+    if (parent) store.dispatch(select(parent.id));
   };
   const moveToChild = () => {
-    const atom = selectedAtom;
-    if (!atom) return;
+    if (!selectedAtom) return;
 
-    const child = childrenSelector(state.default, atom.id)[0];
-    if (child) store.dispatch(selectAtom(child.id));
+    const child = childrenSelector(state.default, selectedAtom.id)[0];
+    if (child) store.dispatch(select(child.id));
   };
   const moveToNextSibling = () => {
-    const atom = selectedAtom
-    if (!atom) return;
+    if (!selectedAtom) return;
 
-    const parent = parentSelector(state.default, atom.id);
+    const parent = parentSelector(state.default, selectedAtom.id);
     if (!parent) return;
 
     const children = childrenSelector(state.default, parent.id);
-    const myIndex = children.findIndex(sibling => sibling.id == atom.id)
+    const myIndex = children.findIndex(sibling => sibling.id == selectedAtom.id);
     const gotoAtom = children[myIndex + 1];
-    if (gotoAtom) store.dispatch(selectAtom(gotoAtom.id));
+    if (gotoAtom) store.dispatch(select(gotoAtom.id));
   };
   const moveToPreviousSibling = () => {
-    const atom = selectedAtom;
-    if (!atom) return;
+    if (!selectedAtom) return;
 
-    const parent = parentSelector(state.default, atom.id);
+    const parent = parentSelector(state.default, selectedAtom.id);
     if (!parent) return;
 
     const children = childrenSelector(state.default, parent.id);
-    const myIndex = children.findIndex(sibling => sibling.id == atom.id)
+    const myIndex = children.findIndex(sibling => sibling.id == selectedAtom.id);
     const gotoAtom = children[myIndex - 1];
-    if (gotoAtom) store.dispatch(selectAtom(gotoAtom.id));
+    if (gotoAtom) store.dispatch(select(gotoAtom.id));
   };
 
   Mousetrap.bind("command+e", evaluateAtom);
   Mousetrap.bind("command+backspace", deleteAtom);
   Mousetrap.bind("tab", createChildAtom);
-  Mousetrap.bind("enter", createSiblingAtom);
-  Mousetrap.bind("esc", unselectAtom);
+  Mousetrap.bind("command+enter", handleCmdEnter);
+  Mousetrap.bind("esc", handleEsc);
+  Mousetrap.bind("enter", handleEnter);
   Mousetrap.bind("option+left", moveToParent);
   Mousetrap.bind("option+right", moveToChild);
   Mousetrap.bind("option+down", moveToNextSibling);

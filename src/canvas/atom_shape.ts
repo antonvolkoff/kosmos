@@ -7,6 +7,13 @@ export const BORDER_RADIUS = 6;
 export const BASE_WIDTH = 60;
 export const FONT_WIDTH = 8.6;
 
+interface DrawableAtom {
+  x: number;
+  y: number;
+  value: string;
+  selected: boolean;
+}
+
 export default {
   width(atom: Atom) {
     let width = BASE_WIDTH;
@@ -17,7 +24,7 @@ export default {
     return width;
   },
 
-  draw(s: p5, atom: Atom, selected: boolean) {
+  draw(s: p5, atom: DrawableAtom) {
     s.push();
 
     s.fill(s.color('#ffffff'));
@@ -29,13 +36,13 @@ export default {
     const x = atom.x - 20;
     const y = atom.y - (height / 2);
 
-    if (selected) {
+    if (atom.selected) {
       s.stroke(s.color('#79B8FF'));
     }
 
     s.rect(x, y, width, height, BORDER_RADIUS);
 
-    if (selected) {
+    if (atom.selected) {
       s.circle(atom.x - 12, atom.y - 7, 2);
       s.circle(atom.x - 7, atom.y - 7, 2);
 

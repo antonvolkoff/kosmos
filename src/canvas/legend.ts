@@ -9,6 +9,6 @@ Press Tab to create a child atom; Press Enter to create a sibling atom
 
 export const text =
   (store: Store<ApplicationState>) => {
-    if (store.getState().default.selectedAtomId) return SelectedText;
+    if (store.getState().canvas.selectedAtomId) return SelectedText;
     return UnselectedText;
   };
