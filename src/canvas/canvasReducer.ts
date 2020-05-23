@@ -86,7 +86,13 @@ const canvasSlice = createSlice({
       state.pressedAtomId = action.payload.atomId;
       state.draftConnection.line.x1 = action.payload.mouse.x;
       state.draftConnection.line.y1 = action.payload.mouse.y;
-      if (action.payload.dragArea && state.mode == "ready") {
+
+      const isStartingToDrag =
+        action.payload.dragArea &&
+        action.payload.atomId == state.selectedAtomId &&
+        state.mode == "ready";
+
+      if (isStartingToDrag) {
         state.draggedAtomId = action.payload.atomId;
         state.clickOffset = action.payload.clickOffset || initialState.clickOffset;
       }
@@ -235,7 +241,8 @@ const connectAtomsMiddleware: Middleware = ({ getState, dispatch }) => {
   return next => action => {
     const shouldConnect = (
       canvasSlice.actions.clicked.match(action) &&
-      getDraftConnection(getState())
+      getDraftConnection(getState()) &&
+      action.payload.atomId
     );
 
     if (shouldConnect) {
