@@ -7,6 +7,10 @@ import {
   reducer as canvasReducer,
   middlewares as canvasMiddlewares,
 } from "../canvas";
+import {
+  reducer as interfaceReducer,
+  middlewares as interfaceMiddlewares,
+} from "../interface";
 import defaultReducer from "./defaultReducer";
 import { valueGraphSelector } from "./defaultReducer";
 
@@ -15,6 +19,7 @@ import { valueGraphSelector } from "./defaultReducer";
 const rootReducer = combineReducers({
   default: defaultReducer,
   canvas: canvasReducer,
+  interface: interfaceReducer,
 });
 
 const evaluateMiddleware = ({ dispatch, getState }) => next => action => {
@@ -34,6 +39,7 @@ const middleware = [
   ...getDefaultMiddleware(),
   evaluateMiddleware,
   ...canvasMiddlewares,
+  ...interfaceMiddlewares,
 ];
 
 export type ApplicationState = ReturnType<typeof rootReducer>;
