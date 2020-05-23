@@ -1,92 +1,54 @@
-import { Component, createRef } from "react";
+import { useState } from "react";
 import { html } from "htm/react";
 import { EvalResult } from "../repl";
 import { Store } from "redux";
 import { ApplicationState } from "../store";
+import { getEntries } from "../store/defaultReducer";
 
-type TranscriptProps = {
+interface Props {
   store: Store<ApplicationState>;
-};
+}
 
-type TranscriptState = {
-  entries: EvalResult[];
-  lastEntry: EvalResult;
-};
+function EntryItemPart({ value, className }) {
+  let multilineValue = value.split("\n").map(line => html`<div>${line}</div>`);
+  return html`<div className=${className}>${multilineValue}</div>`;
+}
 
-const emptyResult: EvalResult = { stderr: "", stdout: "", value: "" };
+function EntryItem({ stderr, stdout, value }: EvalResult) {
+  return html`
+    <div className="transcript-list-item">
+      <${EntryItemPart} value=${stdout} className="entry-stdout" />
+      <${EntryItemPart} value=${stderr} className="entry-error" />
+      <${EntryItemPart} value=${value} className="entry-value" />
+    </div>
+  `;
+}
 
-const last = (results: EvalResult[]): EvalResult => {
-  return results[results.length - 1] || emptyResult;
-};
-
-const propsToState = (props: TranscriptProps): TranscriptState => {
-  const entries = props.store.getState().default.entries;
-  return { entries, lastEntry: last(entries) };
-};
-
-export default class Transcript extends Component<TranscriptProps, TranscriptState> {
-  private lastEntryRef = createRef();
-
-  constructor(props: TranscriptProps) {
-    super(props);
-    this.state = propsToState(props);
-  }
-
-  componentDidMount() {
-    this.props.store.subscribe(() => {
-      this.setState(propsToState(this.props));
-    });
-    this.scrollToBottom()
-  }
-
-  componentDidUpdate() {
-    this.scrollToBottom()
-  }
-
-  scrollToBottom() {
-    (this.lastEntryRef.current as any).scrollIntoView({ behavior: 'smooth' });
-  }
-
-  render() {
+function EntriesList({ entries }: { entries: EvalResult[] }) {
+  const items = entries.map(({ stderr, stdout, value }) => {
     return html`
-      <div className="transcript-wrapper">
-        <div className="transcript-list">
-          ${this.renderEntries()}
-          ${this.renderLastEntry()}
+      <${EntryItem} stdout=${stdout} stderr=${stderr} value=${value} />
+    `;
+  });
+
+  return html`<div className="transcript-list">${items}</div>`;
+}
+
+export default function Transcript({ store }: Props) {
+  const [entries, setEntries] = useState([] as EvalResult[]);
+
+  store.subscribe(() => {
+    setEntries(getEntries(store.getState()));
+  });
+
+  return html`
+    <aside>
+      <nav>Transcript</nav>
+      <div className="transcript">
+        <div className="transcript-wrapper">
+          <${EntriesList} entries=${entries} />
         </div>
       </div>
-    `;
-  }
-
-  convertToMultiline(text: string) {
-    return text.split("\n").map(line => html`<div>${line}</div>`);
-  }
-
-  renderEntries() {
-    const entryPart = (text: string, className: string) => {
-      return text.length > 0 ? html`<div className="${className}">${this.convertToMultiline(text)}</div>` : "";
-    }
-
-    return this.state.entries.map(result => {
-      const stdout = entryPart(result.stdout, "entry-stdout");
-      const value = entryPart(result.value, "entry-value");
-      const stderr = entryPart(result.stderr, "entry-error");
-
-      return html`
-        <div className="transcript-list-item">
-          ${stderr}
-          ${stdout}
-          ${value}
-        </div>
-      `;
-    });
-  }
-
-  renderLastEntry() {
-    return html`
-      <div className="transcript-list-item has-no-border"
-          ref=${this.lastEntryRef}>
-      </div>
-    `;
-  }
+    </aside>
+  `;
 };

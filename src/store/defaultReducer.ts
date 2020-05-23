@@ -9,11 +9,13 @@ import AtomShape from "../canvas/atom_shape";
 import { Line } from "../canvas/geometry";
 import * as ClojurePacker from "./clojure_packer"
 import { ApplicationState } from ".";
+import { EvalResult } from "../repl";
 
 export interface DefaultState {
   atoms: { [id: string]: Atom };
   edges: { sourceId: string, targetId: string }[];
   hasFile: boolean;
+  entries: EvalResult[];
   [key: string]: any;
 }
 
@@ -239,5 +241,7 @@ export const valueGraphSelector =
   };
 
 export const getHasFile = (state: ApplicationState) => state.default.hasFile;
+
+export const getEntries = (state: ApplicationState) => state.default.entries;
 
 export default reducer;
