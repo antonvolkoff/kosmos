@@ -8,9 +8,11 @@ import AtomShape from "../canvas/atom_shape";
 import { createAtom } from "../store/atom";
 import { nearestGridPoint } from "../canvas/grid";
 import { actions, selectors } from "../canvas";
+import { actions as interfaceActions } from "../interface";
 import { Store } from "redux";
 
 const { select, unselect, changeMode } = actions;
+const { toggleTranscript } = interfaceActions;
 const { getSelectedAtom, getMode } = selectors;
 
 export default function Keyboard(store: Store<ApplicationState>) {
@@ -148,4 +150,8 @@ export default function Keyboard(store: Store<ApplicationState>) {
   Mousetrap.bind("option+right", moveToChild);
   Mousetrap.bind("option+down", moveToNextSibling);
   Mousetrap.bind("option+up", moveToPreviousSibling);
+
+  Mousetrap.bind("command+shift+t", () => {
+    store.dispatch(toggleTranscript());
+  });
 }

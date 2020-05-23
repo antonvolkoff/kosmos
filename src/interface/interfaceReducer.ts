@@ -14,12 +14,6 @@ const slice = createSlice({
   name: "interface",
   initialState,
   reducers: {
-    showTranscript(state) {
-      state.transcript.show = true;
-    },
-    hideTranscript(state) {
-      state.transcript.show = false;
-    },
     toggleTranscript(state) {
       state.transcript.show = !state.transcript.show;
     },

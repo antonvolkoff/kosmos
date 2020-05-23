@@ -4,6 +4,7 @@ import { EvalResult } from "../repl";
 import { Store } from "redux";
 import { ApplicationState } from "../store";
 import { getEntries } from "../store/defaultReducer";
+import { getTranscript } from "./selectors";
 
 interface Props {
   store: Store<ApplicationState>;
@@ -36,19 +37,25 @@ function EntriesList({ entries }: { entries: EvalResult[] }) {
 
 export default function Transcript({ store }: Props) {
   const [entries, setEntries] = useState([] as EvalResult[]);
+  const [show, setShow] = useState(false);
 
   store.subscribe(() => {
     setEntries(getEntries(store.getState()));
+    setShow(getTranscript(store.getState()).show);
   });
 
-  return html`
-    <aside>
-      <nav>Transcript</nav>
-      <div className="transcript">
-        <div className="transcript-wrapper">
-          <${EntriesList} entries=${entries} />
+  if (!show) {
+    return html`<div></div>`;
+  } else {
+    return html`
+      <aside>
+        <nav>Transcript</nav>
+        <div className="transcript">
+          <div className="transcript-wrapper">
+            <${EntriesList} entries=${entries} />
+          </div>
         </div>
-      </div>
-    </aside>
-  `;
+      </aside>
+    `;
+  }
 };

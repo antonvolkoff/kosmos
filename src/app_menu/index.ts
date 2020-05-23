@@ -4,7 +4,10 @@ import { ApplicationState } from "../store";
 import {
   createNewFile, openFile, saveFile, saveFileAs, exportToFile, getHasFile
 } from "../store/defaultReducer";
+import { actions } from "../interface";
+
 const { dialog } = remote;
+const { toggleTranscript } = actions;
 
 export default function AppMenu(store: Store<ApplicationState>) {
   let hasFile: boolean = false;
@@ -15,18 +18,18 @@ export default function AppMenu(store: Store<ApplicationState>) {
   updateLocalState();
   store.subscribe(updateLocalState);
 
-  ipcRenderer.on('click-new', () => {
+  ipcRenderer.on("click-new", () => {
     store.dispatch(createNewFile());
   });
 
-  ipcRenderer.on('click-open', () => {
+  ipcRenderer.on("click-open", () => {
     dialog.showOpenDialog({}).then(result => {
       const path = result.filePaths[0];
       store.dispatch(openFile(path));
     });
   });
 
-  ipcRenderer.on('click-save', () => {
+  ipcRenderer.on("click-save", () => {
     if (hasFile) {
       store.dispatch(saveFile());
     } else {
@@ -37,7 +40,7 @@ export default function AppMenu(store: Store<ApplicationState>) {
     }
   });
 
-  ipcRenderer.on('click-save-as', () => {
+  ipcRenderer.on("click-save-as", () => {
     dialog.showSaveDialog({}).then(result => {
       const path = result.filePath;
       store.dispatch(saveFileAs(path));
@@ -49,5 +52,9 @@ export default function AppMenu(store: Store<ApplicationState>) {
       const path = result.filePath;
       store.dispatch(exportToFile(path));
     });
+  });
+
+  ipcRenderer.on("click-transcript", () => {
+    store.dispatch(toggleTranscript());
   });
 }

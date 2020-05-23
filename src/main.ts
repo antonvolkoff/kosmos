@@ -119,13 +119,20 @@ const editMenu: MenuItemConstructorOptions = {
 };
 
 const viewMenu: MenuItemConstructorOptions = {
-  label: 'View',
+  label: "View",
   submenu: [
-    { role: 'reload' },
-    { role: 'forceReload' },
-    { role: 'toggleDevTools' },
-    { type: 'separator' },
-    { role: 'togglefullscreen' }
+    {
+      label: "Transcript",
+      click() {
+        win.webContents.send("click-transcript");
+      },
+    },
+    { type: "separator" },
+    { role: "reload" },
+    { role: "forceReload" },
+    { role: "toggleDevTools" },
+    { type: "separator" },
+    { role: "togglefullscreen" },
   ]
 };
 
@@ -141,9 +148,10 @@ const windowMenu: MenuItemConstructorOptions = {
   ]
 };
 
+template.push(viewMenu);
+
 if (!app.isPackaged) {
   template.push(editMenu);
-  template.push(viewMenu);
   template.push(windowMenu);
 }
 
