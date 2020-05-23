@@ -1,6 +1,8 @@
 import { PayloadAction, createSlice, Middleware } from "@reduxjs/toolkit";
 import * as ViewField from "./view_field";
-import { getSelectedAtomId, getViewField, getAtoms, getDraftConnection } from "./selectors";
+import {
+  getSelectedAtomId, getViewField, getAtoms, getDraftConnection
+} from "./selectors";
 import { addAtom, moveAtom, connectAtoms } from "../store/defaultReducer";
 import { createAtom } from "../store/atom";
 import { Point, Line } from "./geometry";
@@ -81,20 +83,20 @@ const canvasSlice = createSlice({
       state.draggedAtomId = null;
       state.pressedAtomId = null;
     },
-    mousePressed(state, action: PayloadAction<Click>) {
-      state.mouse = action.payload.mouse;
-      state.pressedAtomId = action.payload.atomId;
-      state.draftConnection.line.x1 = action.payload.mouse.x;
-      state.draftConnection.line.y1 = action.payload.mouse.y;
+    mousePressed(state, { payload }: PayloadAction<Click>) {
+      state.mouse = payload.mouse;
+      state.pressedAtomId = payload.atomId;
+      state.draftConnection.line.x1 = payload.mouse.x;
+      state.draftConnection.line.y1 = payload.mouse.y;
 
       const isStartingToDrag =
-        action.payload.dragArea &&
-        action.payload.atomId == state.selectedAtomId &&
+        payload.dragArea &&
+        payload.atomId == state.selectedAtomId &&
         state.mode == "ready";
 
       if (isStartingToDrag) {
-        state.draggedAtomId = action.payload.atomId;
-        state.clickOffset = action.payload.clickOffset || initialState.clickOffset;
+        state.draggedAtomId = payload.atomId;
+        state.clickOffset = payload.clickOffset || initialState.clickOffset;
       }
     },
     mouseDragged(state, action: PayloadAction<Click>) {
@@ -163,7 +165,8 @@ const detectMouseLocationMiddleware: Middleware = ({getState}) => {
     if (types.includes(action.type)) {
       const atoms = getAtoms(getState());
       const mouse = action.payload.mouse;
-      const atom = Object.values(atoms).find((atom) => AtomShape.within(mouse, atom));
+      const withinAtom = (atom) => AtomShape.within(mouse, atom);
+      const atom = Object.values(atoms).find(withinAtom);
       if (atom) {
         action.payload.atomId = atom.id;
         action.payload.dragArea = AtomShape.withinDragArea(mouse, atom);
@@ -182,18 +185,30 @@ const detectMouseLocationMiddleware: Middleware = ({getState}) => {
 };
 
 const doubleClickedMiddleware: Middleware = ({ getState, dispatch }) => {
+  const switchToEditMode = () =>
+    dispatch(canvasSlice.actions.changeMode("edit"));
+
+  const createNewAtom = (mouse: Point) => {
+    const { x, y } = nearestGridPoint(mouse);
+    const newAtom = createAtom(x, y);
+
+    dispatch(addAtom(newAtom));
+    dispatch(canvasSlice.actions.select(newAtom.id));
+  };
+
+  const clickedOnSelectedAtom = (clickedAtomId: string | null): boolean => {
+    const selectedAtomId = getSelectedAtomId(getState());
+    return !!clickedAtomId && clickedAtomId == selectedAtomId;
+  };
+
   return next => action => {
     next(action);
 
     if (canvasSlice.actions.doubleClicked.match(action)) {
-      if (action.payload.atomId && action.payload.atomId == getSelectedAtomId(getState())) {
-        dispatch(canvasSlice.actions.changeMode("edit"));
+      if (clickedOnSelectedAtom(action.payload.atomId)) {
+        switchToEditMode();
       } else {
-        const { x, y } = nearestGridPoint(action.payload.mouse);
-        const newAtom = createAtom(x, y);
-
-        dispatch(addAtom(newAtom));
-        dispatch(canvasSlice.actions.select(newAtom.id));
+        createNewAtom(action.payload.mouse);
       }
     }
   }
@@ -219,7 +234,10 @@ const moveDragAtomMiddleware: Middleware = ({ getState, dispatch }) => {
       const { draggedAtomId, mouse, clickOffset } = getState().canvas;
       if (draggedAtomId) {
         const { deltaX, deltaY } = clickOffset;
-        const { x, y } = nearestGridPoint({ x: mouse.x + deltaX, y: mouse.y + deltaY });
+        const { x, y } = nearestGridPoint({
+          x: mouse.x + deltaX,
+          y: mouse.y + deltaY,
+        });
         dispatch(moveAtom(draggedAtomId, x, y));
       }
     }
