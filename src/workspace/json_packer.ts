@@ -1,5 +1,4 @@
-import { Atom, createAtom } from "./atom";
-import { DefaultState } from "./defaultReducer";
+import { Atom, createAtom } from "../store/atom";
 
 type PackNode = {
   x: number;
@@ -21,12 +20,12 @@ type PackObject = {
   };
 };
 
-export function pack(state: DefaultState): string {
+export function pack(state): string {
   let result: PackObject = { graph: { nodes: {}, edges: [] } };
   let nodes = result.graph.nodes;
   let edges = result.graph.edges;
 
-  Object.values(state.atoms).forEach(item => {
+  Object.values(state.atoms).forEach((item: Atom) => {
     nodes[item.id] = { x: item.x, y: item.y, value: item.value };
   });
 

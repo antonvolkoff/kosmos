@@ -1,57 +1,39 @@
 import { remote, ipcRenderer } from "electron";
 import { Store } from "@reduxjs/toolkit";
 import { ApplicationState } from "../store";
-import {
-  createNewFile, openFile, saveFile, saveFileAs, exportToFile, getHasFile
-} from "../store/defaultReducer";
+import { exportToFile } from "../store/defaultReducer";
 import { actions } from "../interface";
+import { send, call } from "../core/actor";
 
 const { dialog } = remote;
 const { toggleTranscript } = actions;
 
 export default function AppMenu(store: Store<ApplicationState>) {
-  let hasFile: boolean = false;
+  ipcRenderer.on("click-new", () => send("workspace", "new"));
 
-  const updateLocalState = () => {
-    hasFile = getHasFile(store.getState());
-  };
-  updateLocalState();
-  store.subscribe(updateLocalState);
-
-  ipcRenderer.on("click-new", () => {
-    store.dispatch(createNewFile());
+  ipcRenderer.on("click-open", async () => {
+    const { filePaths } = await dialog.showOpenDialog({});
+    send("workspace", "open", filePaths[0]);
   });
 
-  ipcRenderer.on("click-open", () => {
-    dialog.showOpenDialog({}).then(result => {
-      const path = result.filePaths[0];
-      store.dispatch(openFile(path));
-    });
-  });
-
-  ipcRenderer.on("click-save", () => {
+  ipcRenderer.on("click-save", async () => {
+    const hasFile = call("workspace", "hasFile");
     if (hasFile) {
-      store.dispatch(saveFile());
+      send("workspace", "save");
     } else {
-      dialog.showSaveDialog({}).then(result => {
-        const path = result.filePath;
-        store.dispatch(saveFileAs(path));
-      });
+      const { filePath } = await dialog.showSaveDialog({});
+      send("workspace", "saveAs", filePath);
     }
   });
 
-  ipcRenderer.on("click-save-as", () => {
-    dialog.showSaveDialog({}).then(result => {
-      const path = result.filePath;
-      store.dispatch(saveFileAs(path));
-    });
+  ipcRenderer.on("click-save-as", async () => {
+    const { filePath } = await dialog.showSaveDialog({});
+    send("workspace", "saveAs", filePath);
   });
 
-  ipcRenderer.on("click-export", () => {
-    dialog.showSaveDialog({}).then(result => {
-      const path = result.filePath;
-      store.dispatch(exportToFile(path));
-    });
+  ipcRenderer.on("click-export", async () => {
+    const { filePath } = await dialog.showSaveDialog({});
+    store.dispatch(exportToFile(filePath));
   });
 
   ipcRenderer.on("click-transcript", () => {

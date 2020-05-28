@@ -3,7 +3,6 @@ import * as fs from "fs";
 
 import { createReducer, createAction } from "@reduxjs/toolkit";
 import { nearestGridPoint } from "../canvas/grid";
-import * as JsonPacker from "./json_packer";
 import { Atom } from "./atom";
 import AtomShape from "../canvas/atom_shape";
 import { Line } from "../canvas/geometry";
@@ -44,18 +43,6 @@ export const setAtomValue =
     return { type: "set-atom-value", payload: { atomId, value } };
   }
 
-export const createNewFile =
-  () => ({ type: "create-new-file" });
-
-export const openFile =
-  (path: string) => ({ type: "open-file", payload: { path } });
-
-export const saveFile =
-  () => ({ type: "save-file" });
-
-export const saveFileAs =
-  (path: string) => ({ type: "save-file-as", payload: { path } });
-
 export const evalSelectedAtom =
   () => ({ type: "eval-selected-atom" });
 
@@ -72,6 +59,10 @@ const initialState: DefaultState = {
 };
 
 const reducer = createReducer(initialState, {
+  "set-atoms-edges": (state, action) => {
+    state.atoms = action.payload.atoms;
+    state.edges = action.payload.edges;
+  },
   "delete-atom": (state, action) => {
     const { atomId } = action.payload;
 
@@ -135,37 +126,6 @@ const reducer = createReducer(initialState, {
     const atom = state.atoms[atomId];
     atom.value = value;
     adjustDistance(atom);
-  },
-  "create-new-file": (state) => {
-    state.atoms = {};
-    state.edges = [];
-    state.file.filename = 'Untitled';
-    state.hasFile = false;
-    state.canvasTranslate = { x: 0, y: 0 };
-  },
-  "open-file": (state, action) => {
-    const { path } = action.payload;
-    state.file.path = path;
-    state.file.filename = pathUtil.parse(path).base;
-
-    const rawJson = fs.readFileSync(path);
-    const [atoms, edges] = JsonPacker.unpack(rawJson.toString());
-    state.atoms = atoms;
-    state.edges = edges;
-
-    state.hasFile = true;
-  },
-  "save-file": (state) => {
-    const rawJson = JsonPacker.pack(state);
-    fs.writeFileSync(state.file.path, rawJson);
-  },
-  "save-file-as": (state, action) => {
-    const { path } = action.payload;
-    state.file.path = path;
-    state.file.filename = pathUtil.parse(path).base;
-
-    const rawJson = JsonPacker.pack(state);
-    fs.writeFileSync(state.file.path, rawJson);
   },
   "add-evaluation-entry": (state, action) => {
     state.entries.push(action.payload);
@@ -239,8 +199,6 @@ export const valueGraphSelector =
     });
     return { value, children };
   };
-
-export const getHasFile = (state: ApplicationState) => state.default.hasFile;
 
 export const getEntries = (state: ApplicationState) => state.default.entries;
 
