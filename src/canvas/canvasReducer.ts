@@ -266,7 +266,9 @@ const connectAtomsMiddleware: Middleware = ({ getState, dispatch }) => {
     if (shouldConnect) {
       const sourceId = getState().canvas.pressedAtomId;
       const targetId = action.payload.atomId;
-      dispatch(connectAtoms(sourceId, targetId));
+      if (sourceId != targetId) {
+        dispatch(connectAtoms(sourceId, targetId));
+      }
     }
 
     next(action);
