@@ -1,7 +1,8 @@
 import { parse } from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { start, send, call } from "../core/actor";
-import { unpack, pack } from "./json_packer";
+import { pack } from "./json_packer";
+import { unpack } from "./clojure_packer";
 
 const initialState = { path: "", filename: "" };
 

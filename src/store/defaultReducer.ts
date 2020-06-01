@@ -1,4 +1,3 @@
-import * as pathUtil from "path";
 import * as fs from "fs";
 
 import { createReducer, createAction } from "@reduxjs/toolkit";
@@ -6,7 +5,7 @@ import { nearestGridPoint } from "../canvas/grid";
 import { Atom } from "./atom";
 import AtomShape from "../canvas/atom_shape";
 import { Line } from "../canvas/geometry";
-import * as ClojurePacker from "./clojure_packer"
+import * as ClojurePacker from "../workspace/clojure_packer";
 import { ApplicationState } from ".";
 import { EvalResult } from "../repl";
 

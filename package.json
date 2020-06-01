@@ -33,6 +33,7 @@
     "@reduxjs/toolkit": "^1.3.6",
     "htm": "^3.0.3",
     "immer": "^6.0.5",
+    "jsedn": "^0.4.1",
     "mousetrap": "^1.6.5",
     "nrepl-client": "0.3.0",
     "p5": "1.0.0",
