@@ -1,8 +1,8 @@
 import { parse } from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { start, send, call } from "../core/actor";
-import { pack } from "./json_packer";
-import { unpack } from "./clojure_packer";
+import { unpack, pack } from "./clojure_packer";
+import { topLevelAtoms, valueGraphSelector } from "../store/defaultReducer";
 
 const initialState = { path: "", filename: "" };
 
@@ -31,7 +31,11 @@ const Workspace = {
   },
 
   save(state) {
-    writeFileSync(state.path, pack(getState()));
+    const defaultState = getState();
+    const nodes = topLevelAtoms(defaultState).map(atom => {
+      return valueGraphSelector(defaultState, atom.id);
+    });
+    writeFileSync(state.path, pack(nodes));
     return state;
   },
 

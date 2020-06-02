@@ -90,13 +90,6 @@ let template: MenuItemConstructorOptions[] = [
         },
       },
       { type: "separator" },
-      {
-        label: "Export",
-        click() {
-          win.webContents.send("click-export");
-        },
-      },
-      { type: "separator" },
       { role: "close" },
     ]
   },

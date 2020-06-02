@@ -45,9 +45,6 @@ export const setAtomValue =
 export const evalSelectedAtom =
   () => ({ type: "eval-selected-atom" });
 
-export const exportToFile =
-  (path: string) => ({ type: "export-to-file", payload: { path } });
-
 const initialState: DefaultState = {
   atoms: {},
   edges: [],
@@ -128,14 +125,6 @@ const reducer = createReducer(initialState, {
   },
   "add-evaluation-entry": (state, action) => {
     state.entries.push(action.payload);
-  },
-  "export-to-file": (state, action) => {
-    const { path } = action.payload;
-    const data = ClojurePacker.pack(
-      topLevelAtoms(state).map(atom => valueGraphSelector(state, atom.id))
-    );
-
-    fs.writeFileSync(path, data);
   },
 });
 

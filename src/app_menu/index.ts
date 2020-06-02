@@ -1,7 +1,6 @@
 import { remote, ipcRenderer } from "electron";
 import { Store } from "@reduxjs/toolkit";
 import { ApplicationState } from "../store";
-import { exportToFile } from "../store/defaultReducer";
 import { actions } from "../interface";
 import { send, call } from "../core/actor";
 
@@ -29,11 +28,6 @@ export default function AppMenu(store: Store<ApplicationState>) {
   ipcRenderer.on("click-save-as", async () => {
     const { filePath } = await dialog.showSaveDialog({});
     send("workspace", "saveAs", filePath);
-  });
-
-  ipcRenderer.on("click-export", async () => {
-    const { filePath } = await dialog.showSaveDialog({});
-    store.dispatch(exportToFile(filePath));
   });
 
   ipcRenderer.on("click-transcript", () => {
