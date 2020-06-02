@@ -1,18 +1,14 @@
-import * as fs from "fs";
-
-import { createReducer, createAction } from "@reduxjs/toolkit";
+import { createReducer } from "@reduxjs/toolkit";
 import { nearestGridPoint } from "../canvas/grid";
 import { Atom } from "./atom";
 import AtomShape from "../canvas/atom_shape";
 import { Line } from "../canvas/geometry";
-import * as ClojurePacker from "../workspace/clojure_packer";
 import { ApplicationState } from ".";
 import { EvalResult } from "../repl";
 
 export interface DefaultState {
   atoms: { [id: string]: Atom };
   edges: { sourceId: string, targetId: string }[];
-  hasFile: boolean;
   entries: EvalResult[];
   [key: string]: any;
 }
@@ -50,8 +46,6 @@ const initialState: DefaultState = {
   edges: [],
   connectedToRepl: false,
   entries: [],
-  hasFile: false,
-  file: { filename: "Untitled", path: "" },
 };
 
 const reducer = createReducer(initialState, {
