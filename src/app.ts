@@ -11,6 +11,9 @@ import { start } from "./core/actor";
 const store = createApplicationStore();
 
 const StoreBehavior = {
+  init() {
+    return null;
+  },
   dispatch: (state, action) => {
     store.dispatch(action);
     return state;

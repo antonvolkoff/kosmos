@@ -11,8 +11,12 @@ export default function AppMenu(store: Store<ApplicationState>) {
   ipcRenderer.on("click-new", () => send("workspace", "new"));
 
   ipcRenderer.on("click-open", async () => {
-    const { filePaths } = await dialog.showOpenDialog({});
-    send("workspace", "open", filePaths[0]);
+    try {
+      const { filePaths } = await dialog.showOpenDialog({});
+      send("workspace", "open", filePaths[0]);
+    } catch (error) {
+      console.log(error);
+    }
   });
 
   ipcRenderer.on("click-save", async () => {

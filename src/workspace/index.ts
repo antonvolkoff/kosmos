@@ -27,8 +27,17 @@ function changeWindowTitle(filename: string) {
   send("window", "changeTitle", `${filename} - Kosmos`);
 }
 
+function nodes() {
+  const defaultState = getState();
+  return topLevelAtoms(defaultState).map(atom => {
+    return valueGraphSelector(defaultState, atom.id);
+  });
+}
+
 const Workspace = {
-  init: () => initialState,
+  init() {
+    return initialState;
+  },
 
   new() {
     setState([], []);
@@ -37,11 +46,7 @@ const Workspace = {
   },
 
   save(state) {
-    const defaultState = getState();
-    const nodes = topLevelAtoms(defaultState).map(atom => {
-      return valueGraphSelector(defaultState, atom.id);
-    });
-    writeFileSync(state.path, pack(nodes));
+    writeFileSync(state.path, pack(nodes()));
     return state;
   },
 
@@ -51,7 +56,7 @@ const Workspace = {
     const filename = getFilename(path);
     changeWindowTitle(filename);
 
-    writeFileSync(path, pack(getState()));
+    writeFileSync(path, pack(nodes()));
     return { path, filename: filename };
   },
 

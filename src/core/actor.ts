@@ -29,7 +29,7 @@ export function start(behavior: Behavior, name: string = ""): Address {
   const actor = { ...defaultBehavior, ...behavior };
 
   behaviors[address] = actor;
-  states[address] = send(address, "init");
+  states[address] = behavior.init();
 
   return address;
 };

@@ -178,8 +178,6 @@ function assignPlace(graph: Graph): Graph {
     node.y = node.row * 40 + 100;
   });
 
-  console.log(graph);
-
   return graph;
 }
 
