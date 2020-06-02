@@ -1,10 +1,19 @@
-import { Store } from "@reduxjs/toolkit";
-import { ApplicationState } from "../store";
+import { start } from "../core/actor";
 
-export default function Window(store: Store<ApplicationState>) {
-  store.subscribe(() => {
-    const state = store.getState();
-    const title = `${state.default.file.filename} - Kosmos`;
-    document.title = title;
-  });
+interface WindowState {
+  title: string;
 }
+
+const Window = {
+  init(): WindowState {
+    document.title = "Kosmos";
+    return { title: "Kosmos" };
+  },
+
+  changeTitle(state, newTitle: string): WindowState {
+    document.title = newTitle;
+    return { title: newTitle };
+  },
+}
+
+start(Window, "window");

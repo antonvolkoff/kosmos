@@ -4,7 +4,7 @@ import { start, send, call } from "../core/actor";
 import { unpack, pack } from "./clojure_packer";
 import { topLevelAtoms, valueGraphSelector } from "../store/defaultReducer";
 
-const initialState = { path: "", filename: "" };
+const initialState = { path: "", filename: "Untitled" };
 
 function getState(): any {
   return call("store", "getState").default;
@@ -15,7 +15,7 @@ function setState(atoms: any[], edges: any[]) {
   send("store", "dispatch", action);
 }
 
-function filename(path: string) {
+function getFilename(path: string) {
   return parse(path).base;
 }
 
@@ -23,10 +23,16 @@ function validPath(path) {
   return typeof path == "string" && path != "";
 }
 
+function changeWindowTitle(filename: string) {
+  send("window", "changeTitle", `${filename} - Kosmos`);
+}
+
 const Workspace = {
   init: () => initialState,
+
   new() {
     setState([], []);
+    changeWindowTitle(initialState.filename);
     return initialState;
   },
 
@@ -42,8 +48,11 @@ const Workspace = {
   saveAs(state, path) {
     if (!validPath(path)) return state;
 
+    const filename = getFilename(path);
+    changeWindowTitle(filename);
+
     writeFileSync(path, pack(getState()));
-    return { path, filename: filename(path) };
+    return { path, filename: filename };
   },
 
   open(state, path) {
@@ -52,7 +61,10 @@ const Workspace = {
     const [atoms, edges] = unpack(readFileSync(path).toString());
     setState(atoms, edges);
 
-    return { path, filename: filename(path) };
+    const filename = getFilename(path);
+    changeWindowTitle(filename);
+
+    return { path, filename };
   },
 
   hasFile(state) {
