@@ -155,7 +155,8 @@ export const parentSelector = (state: DefaultState, atomId: string): Atom | null
 export const topLevelAtoms = (state: DefaultState): Atom[] => {
   return Object.keys(state.atoms)
     .filter(atomId => parentSelector(state, atomId) == null)
-    .map(atomId => state.atoms[atomId]);
+    .map(atomId => state.atoms[atomId])
+    .sort(sortByScore);
 };
 
 export const draggingAtomSelector = (state: DefaultState) => {
