@@ -43,3 +43,8 @@ export const toGlobalCoordinates =
   (view: ViewField, point: Point): Point => {
     return { x: point.x + view.x, y: point.y + view.y };
   };
+
+export const toLocalCoordinates =
+  (view: ViewField, point: Point): Point => {
+    return { x: point.x - view.x, y: point.y - view.y };
+  };

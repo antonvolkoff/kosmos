@@ -1,8 +1,7 @@
 import * as p5 from "p5";
 import { Store } from "redux";
 
-import { Point, distance } from "./geometry";
-import { Atom } from "../store/atom";
+import { Point } from "./geometry";
 import AtomShape from "./atom_shape";
 import * as Legend from "./legend";
 import { gridPoints, gridTiles } from "./grid";
