@@ -10,7 +10,10 @@ import { nearestGridPoint } from "../canvas/grid";
 import { actions, selectors } from "../canvas";
 import { actions as interfaceActions } from "../interface";
 import { Store } from "redux";
+import { send, call } from "../core/actor";
+import { remote } from "electron";
 
+const { dialog } = remote;
 const { select, unselect, changeMode } = actions;
 const { toggleTranscript } = interfaceActions;
 const { getSelectedAtom, getMode } = selectors;
@@ -140,6 +143,25 @@ export default function Keyboard(store: Store<ApplicationState>) {
     if (gotoAtom) store.dispatch(select(gotoAtom.id));
   };
 
+  const saveFile = async () => {
+    const hasFile = call("workspace", "hasFile");
+    if (hasFile) {
+      send("workspace", "save");
+    } else {
+      const { filePath } = await dialog.showSaveDialog({});
+      send("workspace", "saveAs", filePath);
+    }
+  };
+
+  const openFile = async () => {
+    try {
+      const { filePaths } = await dialog.showOpenDialog({});
+      send("workspace", "open", filePaths[0]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   Mousetrap.bind("command+e", evaluateAtom);
   Mousetrap.bind("command+backspace", deleteAtom);
   Mousetrap.bind("tab", createChildAtom);
@@ -150,6 +172,8 @@ export default function Keyboard(store: Store<ApplicationState>) {
   Mousetrap.bind("option+right", moveToChild);
   Mousetrap.bind("option+down", moveToNextSibling);
   Mousetrap.bind("option+up", moveToPreviousSibling);
+  Mousetrap.bind("command+s", saveFile);
+  Mousetrap.bind("command+o", openFile);
 
   Mousetrap.bind("command+shift+t", () => {
     store.dispatch(toggleTranscript());
