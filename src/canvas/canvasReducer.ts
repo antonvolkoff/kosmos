@@ -62,6 +62,16 @@ const canvasSlice = createSlice({
   name: "canvas",
   initialState,
   reducers: {
+    reset(state) {
+      state.selectedAtomId = null;
+      state.pressedAtomId = null;
+      state.draggedAtomId = null;
+      state.mode = "idle";
+      state.viewField.x = 0;
+      state.viewField.y = 0;
+      state.translate.x = 0;
+      state.translate.y = 0;
+    },
     changeWindowDimensions(state, action: PayloadAction<WindowDimensions>) {
       const { width, height } = action.payload;
       state.viewField = ViewField.resize(state.viewField, width, height);

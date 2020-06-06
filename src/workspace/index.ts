@@ -15,6 +15,10 @@ function setState(atoms: any[], edges: any[]) {
   send("store", "dispatch", action);
 }
 
+function resetCanvas() {
+  send("store", "dispatch", { type: "canvas/reset" });
+}
+
 function getFilename(path: string) {
   return parse(path).base;
 }
@@ -41,6 +45,7 @@ const Workspace = {
 
   new() {
     setState([], []);
+    resetCanvas();
     changeWindowTitle(initialState.filename);
     return initialState;
   },
@@ -64,6 +69,7 @@ const Workspace = {
     if (!validPath(path)) return state;
 
     const [atoms, edges] = unpack(readFileSync(path).toString());
+    resetCanvas();
     setState(atoms, edges);
 
     const filename = getFilename(path);
