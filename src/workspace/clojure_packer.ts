@@ -1,6 +1,12 @@
-import { parse, encodeJson } from "jsedn"
+import { parse } from "jsedn"
 import { ValueNode } from "../store/defaultReducer";
 import { createGraph, Graph } from "./graph";
+
+const spacesPerDepth = 2;
+
+const indent = (depth: number) => {
+  return Array(depth * spacesPerDepth).fill(" ").join("");
+};
 
 function translate(node: ValueNode): string {
   // Integer
@@ -21,12 +27,11 @@ function translate(node: ValueNode): string {
   }
 
   const childValues = node.children.map(translate);
-
-  return `(${[node.value, ...childValues].join(" ")})`;
+  return `\r\n${indent(node.depth)}(${[node.value, ...childValues].join(" ")})`;
 }
 
 export function pack(nodes: ValueNode[]): string {
-  return nodes.map(translate).join("\n") + "\n";
+  return [...nodes.map(translate), "\r\n"].join("");
 }
 
 function traverse(edn, graph = null, parentId = null): Graph {

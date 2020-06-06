@@ -15,6 +15,7 @@ export interface DefaultState {
 
 export interface ValueNode {
   value: string;
+  depth: number;
   children: ValueNode[];
 }
 
@@ -174,12 +175,12 @@ export const atomsSelector = (state: DefaultState): Atom[] => {
 };
 
 export const valueGraphSelector =
-  (state: DefaultState, atomId: string): ValueNode => {
+  (state: DefaultState, atomId: string, depth: number = 0): ValueNode => {
     const { id, value } = state.atoms[atomId];
     const children = childrenSelector(state, id).map(atom => {
-      return valueGraphSelector(state, atom.id)
+      return valueGraphSelector(state, atom.id, depth + 1);
     });
-    return { value, children };
+    return { value, depth, children };
   };
 
 export const getEntries = (state: ApplicationState) => state.default.entries;
