@@ -16,6 +16,7 @@ type NRepl = {
 };
 
 export interface EvalResult {
+  id: number;
   stdout: string;
   stderr: string;
   value: string;
@@ -80,6 +81,7 @@ export async function execute(code: string): Promise<EvalResult> {
   const evalPromise = promisify(nRepl.client.eval);
   const result = await evalPromise(code);
   return {
+    id: new Date().getTime(),
     value: result.reduce(reduceValue, ""),
     stdout: result.reduce(reduceOutput, ""),
     stderr: result.reduce(reduceError, ""),
