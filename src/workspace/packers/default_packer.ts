@@ -18,7 +18,11 @@ const DefaultPacker: Packer = {
   },
 
   unpack(data) {
-    return [{}, []];
+    const nodes = {
+      "1": { id: "1", x: 100, y: 100, value: data },
+    };
+    const edges = [];
+    return [nodes, edges];
   },
 };
 
