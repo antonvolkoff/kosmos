@@ -1,7 +1,7 @@
 import { parse } from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { start, send, call } from "../core/actor";
-import { unpack, pack } from "./clojure_packer";
+import { unpack, pack } from "./packers/clojure_packer";
 import { topLevelAtoms, valueGraphSelector } from "../store/defaultReducer";
 
 const initialState = { path: "", filename: "Untitled" };
