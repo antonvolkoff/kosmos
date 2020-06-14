@@ -24,7 +24,7 @@ function getFilename(path: string) {
 }
 
 function validPath(path) {
-  return typeof path == "string" && path != "";
+  return typeof path === "string" && path !== "";
 }
 
 function changeWindowTitle(filename: string) {
@@ -62,7 +62,7 @@ const Workspace = {
     changeWindowTitle(filename);
 
     writeFileSync(path, pack(nodes()));
-    return { path, filename: filename };
+    return { path, filename };
   },
 
   open(state, path) {
@@ -79,7 +79,7 @@ const Workspace = {
   },
 
   hasFile(state) {
-    const response = state.path != "";
+    const response = state.path !== "";
     return { state, response };
   },
 };

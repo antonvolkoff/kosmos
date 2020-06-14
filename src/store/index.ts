@@ -25,7 +25,7 @@ const rootReducer = combineReducers({
 const evaluateMiddleware = ({ dispatch, getState }) => next => action => {
   next(action);
 
-  if (action.type == "eval-selected-atom") {
+  if (action.type === "eval-selected-atom") {
     const state = getState();
     const node = valueGraphSelector(state.default, state.canvas.selectedAtomId);
 

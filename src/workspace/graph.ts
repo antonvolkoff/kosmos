@@ -13,15 +13,15 @@ export interface Graph {
 }
 
 export function createGraph(): Graph {
-  let id = -1;
+  let idIterator = -1;
 
   return {
     edges: {},
     nodes: {},
 
     addNode(value): string {
-      id += 1;
-      const key = id.toString();
+      idIterator += 1;
+      const key = idIterator.toString();
       this.nodes[key] = value;
       this.edges[key] = [];
       return key;
@@ -41,7 +41,7 @@ export function createGraph(): Graph {
     },
 
     deleteEdge(sourceId, targetId) {
-      this.edges[sourceId] = this.edges[sourceId].filter(id => id != targetId);
+      this.edges[sourceId] = this.edges[sourceId].filter(id => id !== targetId);
     },
 
     inNeighbors(id: string) {
@@ -56,7 +56,7 @@ export function createGraph(): Graph {
 
     rootNodes(): string[] {
       return Object.keys(this.nodes).filter(id => {
-        return this.inNeighbors(id).length == 0;
+        return this.inNeighbors(id).length === 0;
       });
     }
   }

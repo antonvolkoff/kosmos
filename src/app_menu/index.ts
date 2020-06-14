@@ -15,6 +15,7 @@ export default function AppMenu(store: Store<ApplicationState>) {
       const { filePaths } = await dialog.showOpenDialog({});
       send("workspace", "open", filePaths[0]);
     } catch (error) {
+      // tslint:disable-next-line:no-console
       console.log(error);
     }
   });
