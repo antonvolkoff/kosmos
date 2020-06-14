@@ -218,7 +218,7 @@ export function read(data: string): Graph {
 }
 
 const ClojurePacker: Packer = {
-  extensions: ["clj"],
+  extensions: [".clj"],
 
   pack(nodes) {
     return [...nodes.map(translate), "\r\n"].join("");

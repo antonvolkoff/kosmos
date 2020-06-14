@@ -1,7 +1,8 @@
 import { parse } from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { start, send, call } from "../core/actor";
-import { unpack, pack } from "./packers/clojure_packer";
+import Clojure from "./packers/clojure_packer";
+import Default from "./packers/default_packer";
 import { topLevelAtoms, valueGraphSelector } from "../store/defaultReducer";
 
 const initialState = { path: "", filename: "Untitled" };
@@ -23,6 +24,10 @@ function getFilename(path: string) {
   return parse(path).base;
 }
 
+function getExtension(path: string) {
+  return parse(path).ext;
+}
+
 function validPath(path) {
   return typeof path === "string" && path !== "";
 }
@@ -38,6 +43,22 @@ function nodes() {
   });
 }
 
+function pack(nodes: any[], ext: string): string {
+  if (Clojure.extensions.includes(ext)) {
+    return Clojure.pack(nodes);
+  }
+
+  return Default.pack(nodes);
+}
+
+function unpack(data: string, ext: string): [any, any] {
+  if (Clojure.extensions.includes(ext)) {
+    return Clojure.unpack(data);
+  }
+
+  return Default.unpack(data);
+}
+
 const Workspace = {
   init() {
     return initialState;
@@ -51,7 +72,7 @@ const Workspace = {
   },
 
   save(state) {
-    writeFileSync(state.path, pack(nodes()));
+    writeFileSync(state.path, pack(nodes(), getExtension(state.path)));
     return state;
   },
 
@@ -61,14 +82,15 @@ const Workspace = {
     const filename = getFilename(path);
     changeWindowTitle(filename);
 
-    writeFileSync(path, pack(nodes()));
+    writeFileSync(path, pack(nodes(), getExtension(path)));
     return { path, filename };
   },
 
   open(state, path) {
     if (!validPath(path)) return state;
 
-    const [atoms, edges] = unpack(readFileSync(path).toString());
+    const content = readFileSync(path).toString();
+    const [atoms, edges] = unpack(content, getExtension(path));
     resetCanvas();
     setState(atoms, edges);
 
