@@ -28,8 +28,9 @@ export const deleteAtom =
 export const connectedToRepl =
   () => ({ type: "connected-to-repl" });
 
-export const connectAtoms =
-  (sourceId, targetId) => ({ type: "connect-atoms", payload: { sourceId, targetId } });
+export const connectAtoms = (sourceId, targetId) => (
+  { type: "connect-atoms", payload: { sourceId, targetId } }
+);
 
 export const moveAtom =
   (atomId, x, y) => ({ type: "move-atom", payload: { atomId, x, y } });
@@ -60,8 +61,8 @@ const reducer = createReducer(initialState, {
     delete state.atoms[atomId];
 
     state.edges = state.edges.filter(({ sourceId, targetId }) => {
-      const isSource = sourceId == atomId;
-      const isTarget = targetId == atomId;
+      const isSource = sourceId === atomId;
+      const isTarget = targetId === atomId;
       return !isSource && !isTarget;
     });
   },

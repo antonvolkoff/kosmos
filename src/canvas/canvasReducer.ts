@@ -101,8 +101,8 @@ const canvasSlice = createSlice({
 
       const isStartingToDrag =
         payload.dragArea &&
-        payload.atomId == state.selectedAtomId &&
-        state.mode == "ready";
+        payload.atomId === state.selectedAtomId &&
+        state.mode === "ready";
 
       if (isStartingToDrag) {
         state.draggedAtomId = payload.atomId;
@@ -129,7 +129,7 @@ const canvasSlice = createSlice({
       state.mode = "idle";
     },
     typed(state, action: PayloadAction<void>) {
-      if (state.mode == "ready") {
+      if (state.mode === "ready") {
         state.mode = "enter";
       }
     },
@@ -175,7 +175,7 @@ const detectMouseLocationMiddleware: Middleware = ({getState}) => {
     if (types.includes(action.type)) {
       const atoms = getAtoms(getState());
       const mouse = action.payload.mouse;
-      const withinAtom = (atom) => AtomShape.within(mouse, atom);
+      const withinAtom = (candidate) => AtomShape.within(mouse, candidate);
       const atom = Object.values(atoms).find(withinAtom);
       if (atom) {
         action.payload.atomId = atom.id;
@@ -208,7 +208,7 @@ const doubleClickedMiddleware: Middleware = ({ getState, dispatch }) => {
 
   const clickedOnSelectedAtom = (clickedAtomId: string | null): boolean => {
     const selectedAtomId = getSelectedAtomId(getState());
-    return !!clickedAtomId && clickedAtomId == selectedAtomId;
+    return !!clickedAtomId && clickedAtomId === selectedAtomId;
   };
 
   return next => action => {
@@ -276,7 +276,7 @@ const connectAtomsMiddleware: Middleware = ({ getState, dispatch }) => {
     if (shouldConnect) {
       const sourceId = getState().canvas.pressedAtomId;
       const targetId = action.payload.atomId;
-      if (sourceId != targetId) {
+      if (sourceId !== targetId) {
         dispatch(connectAtoms(sourceId, targetId));
       }
     }
