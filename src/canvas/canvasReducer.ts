@@ -6,7 +6,7 @@ import {
 import { addAtom, moveAtom, connectAtoms } from "../store/defaultReducer";
 import { createAtom } from "../store/atom";
 import { Point, Line } from "./geometry";
-import AtomShape from "./atom_shape";
+import { buildNodeGeometry, within, withinDragArea } from "./node_geometry";
 import { nearestGridPoint } from "./grid";
 
 interface WindowDimensions {
@@ -175,11 +175,13 @@ const detectMouseLocationMiddleware: Middleware = ({getState}) => {
     if (types.includes(action.type)) {
       const atoms = getAtoms(getState());
       const mouse = action.payload.mouse;
-      const withinAtom = (candidate) => AtomShape.within(mouse, candidate);
+      const withinAtom = (candidate) => (
+        within(mouse, buildNodeGeometry(candidate))
+      );
       const atom = Object.values(atoms).find(withinAtom);
       if (atom) {
         action.payload.atomId = atom.id;
-        action.payload.dragArea = AtomShape.withinDragArea(mouse, atom);
+        action.payload.dragArea = withinDragArea(mouse, buildNodeGeometry(atom));
         action.payload.clickOffset = {
           deltaX: atom.x - mouse.x,
           deltaY: atom.y - mouse.y,
