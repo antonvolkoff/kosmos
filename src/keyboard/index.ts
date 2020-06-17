@@ -4,7 +4,7 @@ import {
   deleteAtom as deleteAtomAction, addAtom, connectAtoms, childrenSelector,
   evalSelectedAtom, parentSelector, deepChildrenSelector
 } from "../store/defaultReducer";
-import AtomShape from "../canvas/atom_shape";
+import { buildNodeGeometry } from "../canvas/node_geometry";
 import { createAtom } from "../store/atom";
 import { nearestGridPoint } from "../canvas/grid";
 import { actions, selectors } from "../canvas";
@@ -48,7 +48,7 @@ export default function Keyboard(store: Store<ApplicationState>) {
     const children = deepChildrenSelector(state.default, selectedAtom.id);
     const bottomAtom = children[children.length - 1];
 
-    const width = AtomShape.width(selectedAtom) + standardAtomOffset;
+    const width = buildNodeGeometry(selectedAtom).border.width + standardAtomOffset;
     const height = bottomAtom ? bottomAtom.y - selectedAtom.y + standardAtomOffset : 0;
 
     const { x, y } = nearestGridPoint({ x: selectedAtom.x + width, y: selectedAtom.y + height });

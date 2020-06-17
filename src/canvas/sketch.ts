@@ -2,7 +2,7 @@ import * as p5 from "p5";
 import { Store } from "redux";
 
 import { Point } from "./geometry";
-import AtomShape from "./atom_shape";
+import { buildNodeGeometry, drawNode } from "./node_geometry";
 import * as Legend from "./legend";
 import { gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
@@ -63,7 +63,9 @@ export default function Sketch(store: Store<ApplicationState>) {
 
     function drawAtoms() {
       p.push();
-      atoms.forEach(atom => AtomShape.draw(p, atom));
+      atoms.forEach(atom => {
+        drawNode(p, buildNodeGeometry(atom), atom.selected);
+      });
       p.pop();
     }
 

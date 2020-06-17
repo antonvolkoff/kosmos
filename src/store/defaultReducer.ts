@@ -1,7 +1,7 @@
 import { createReducer } from "@reduxjs/toolkit";
 import { nearestGridPoint } from "../canvas/grid";
 import { Atom } from "./atom";
-import AtomShape from "../canvas/atom_shape";
+import { buildNodeGeometry } from "../canvas/node_geometry";
 import { Line } from "../canvas/geometry";
 import { ApplicationState } from ".";
 import { EvalResult } from "../repl";
@@ -104,7 +104,7 @@ const reducer = createReducer(initialState, {
   "set-atom-value": (state, action) => {
     const adjustDistance = (atom: Atom) => {
       const standardAtomOffset = 40;
-      const width = AtomShape.width(atom) + standardAtomOffset;
+      const width = buildNodeGeometry(atom).border.width + standardAtomOffset;
 
       childrenSelector(state, atom.id).forEach(childAtom => {
         const { x, y } = nearestGridPoint({ x: atom.x + width, y: childAtom.y });

@@ -5,31 +5,39 @@ import { getSelectedAtom, getMode, getViewField } from "./selectors";
 import { Store } from "redux";
 import { toLocalCoordinates, ViewField } from "./view_field";
 
-let element: p5.Element;
+let element: HTMLTextAreaElement;
 
 const setPosition = (view: ViewField, x: number, y: number) => {
   const p = toLocalCoordinates(view, { x: x + 2, y: y - 9 });
-  element.position(p.x, p.y);
+  element.style.left = `${p.x}px`;
+  element.style.top = `${p.y}px`;
 }
 
+const maxLineLength = (lines: string[]): number => {
+  const lengths = lines.map((line) => line.length);
+  return Math.max(...lengths);
+};
+
 const setValue = (value: string) => {
-  element.value(value);
-  element.style(`width: ${value.length * 8.6 + 8.6}px`);
+  element.value = value;
+  const lines = value.split("\n");
+  element.rows = lines.length;
+  element.style.width = `${maxLineLength(lines) * 8.6 + 8.6}px`;
 };
 
 const focus = () => {
-  element.show();
-  element.elt.focus();
+  element.hidden = false;
+  element.focus();
 };
 
 const blur = () => {
-  element.hide();
-  element.elt.blur();
+  element.hidden = true;
+  element.blur();
 };
 
 const handleInput = (store: Store<ApplicationState>) => {
   const atom = getSelectedAtom(store.getState());
-  const value = element.value().toString();
+  const value = element.value;
   store.dispatch(setAtomValue(atom.id, value));
   setValue(value);
 };
@@ -55,11 +63,15 @@ const handleStateChange = (store: Store<ApplicationState>) => {
 };
 
 export const setup = (p: p5, store: Store<ApplicationState>) => {
-  element = p.createInput();
-  element.hide();
-  element.class("mousetrap atom-input");
+  element = document.createElement("textarea");
+  element.rows = 1;
+  element.hidden = true;
+  element.classList.add("mousetrap");
+  element.classList.add("node-input");
 
-  (element as any).input(() => handleInput(store));
+  document.body.appendChild(element);
+
+  element.oninput = () => handleInput(store);
   store.subscribe(() => handleStateChange(store));
 };
 
