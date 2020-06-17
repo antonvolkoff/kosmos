@@ -14,7 +14,7 @@ const DefaultPacker: Packer = {
   extensions: [],
 
   pack(nodes) {
-    return "";
+    return nodes.map((n) => n.value).join("\n");
   },
 
   unpack(data) {
