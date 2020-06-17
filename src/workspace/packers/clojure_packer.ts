@@ -1,6 +1,6 @@
 import { parse } from "jsedn"
-import { ValueNode } from "../store/defaultReducer";
-import { createGraph, Graph } from "./graph";
+import { Node, Packer } from "./default_packer";
+import { createGraph, Graph } from "../graph";
 
 const spacesPerDepth = 2;
 
@@ -8,7 +8,7 @@ const indent = (depth: number) => {
   return Array(depth * spacesPerDepth).fill(" ").join("");
 };
 
-function translate(node: ValueNode): string {
+function translate(node: Node): string {
   // Integer
   if (node.value.match(/^[0-9]*$/))
     return node.value;
@@ -28,10 +28,6 @@ function translate(node: ValueNode): string {
 
   const childValues = node.children.map(translate);
   return `\r\n${indent(node.depth)}(${[node.value, ...childValues].join(" ")})`;
-}
-
-export function pack(nodes: ValueNode[]): string {
-  return [...nodes.map(translate), "\r\n"].join("");
 }
 
 function traverse(edn, graph = null, parentId = null): Graph {
@@ -221,11 +217,22 @@ export function read(data: string): Graph {
   return traverse(ast);
 }
 
-export function unpack(data: string): [any, any] {
-  const ast = parse("#kosmos/root (" + data + ")");
-  const graph = traverse(ast);
-  const simpleGraph = foldLists(graph);
-  const nodes = assignPlace(convertNodeValues(simpleGraph)).nodes;
-  const edges = getEdgesList(simpleGraph);
-  return [nodes, edges];
-}
+const ClojurePacker: Packer = {
+  extensions: [".clj"],
+
+  pack(nodes) {
+    return [...nodes.map(translate), "\r\n"].join("");
+  },
+
+  unpack(data) {
+    const ast = parse("#kosmos/root (" + data + ")");
+    const graph = traverse(ast);
+    const simpleGraph = foldLists(graph);
+    const nodes = assignPlace(convertNodeValues(simpleGraph)).nodes;
+    const edges = getEdgesList(simpleGraph);
+    return [nodes, edges];
+  },
+};
+
+export const { extensions, pack, unpack } = ClojurePacker;
+export default ClojurePacker;

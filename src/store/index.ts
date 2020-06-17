@@ -2,7 +2,7 @@ import {
   configureStore, getDefaultMiddleware, Store, combineReducers,
 } from "@reduxjs/toolkit";
 import * as Executor from "../repl";
-import * as ClojurePacker  from "../workspace/clojure_packer";
+import * as ClojurePacker  from "../workspace/packers/clojure_packer";
 import {
   reducer as canvasReducer,
   middlewares as canvasMiddlewares,
