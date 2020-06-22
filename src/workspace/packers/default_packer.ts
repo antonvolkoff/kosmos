@@ -1,6 +1,6 @@
 export interface Node {
   value: string;
-  depth: number;
+  depth?: number;
   children: Node[];
 };
 

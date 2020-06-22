@@ -23,7 +23,7 @@ function translate(node: Node): string {
 
   if (node.value == "vector") {
     const childValues = node.children.map(translate);
-    return `[${childValues.join(" ")}]`
+    return `[${childValues.join(" ")}]`;
   }
 
   const childValues = node.children.map(translate);

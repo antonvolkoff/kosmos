@@ -1,6 +1,7 @@
 import { parse } from "path";
 import { readFileSync, writeFileSync } from "fs";
 import { start, send, call } from "../core/actor";
+import Dot from "./packers/dot_packer";
 import Clojure from "./packers/clojure_packer";
 import Default from "./packers/default_packer";
 import { topLevelAtoms, valueGraphSelector } from "../store/defaultReducer";
@@ -48,12 +49,20 @@ function pack(nodes: any[], ext: string): string {
     return Clojure.pack(nodes);
   }
 
+  if (Dot.extensions.includes(ext)) {
+    return Dot.pack(nodes);
+  }
+
   return Default.pack(nodes);
 }
 
 function unpack(data: string, ext: string): [any, any] {
   if (Clojure.extensions.includes(ext)) {
     return Clojure.unpack(data);
+  }
+
+  if (Dot.extensions.includes(ext)) {
+    return Dot.unpack(data);
   }
 
   return Default.unpack(data);
