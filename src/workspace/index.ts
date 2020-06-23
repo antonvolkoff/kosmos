@@ -81,6 +81,14 @@ function assignPlace(graph: Graph): Graph {
   return graph;
 }
 
+function injectIds(graph: Graph): Graph {
+  Object.keys(graph.nodes).forEach((id) => {
+    graph.nodes[id] = { ...graph.nodes[id], id };
+  });
+
+  return graph;
+}
+
 function getEdgesList(graph: Graph): any[] {
   let edges = [];
 
@@ -106,7 +114,7 @@ function unpack(data: string, ext: string): [any, any] {
     unpackFn = Default.unpack;
   }
 
-  const graph = assignPlace(unpackFn(data));
+  const graph = injectIds(assignPlace(unpackFn(data)));
   return [graph.nodes, getEdgesList(graph)];
 }
 

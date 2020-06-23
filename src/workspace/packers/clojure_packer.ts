@@ -150,9 +150,6 @@ function convertNodeValues(graph: Graph): Graph {
     graph.nodes[nodeId] = {
       ...graph.nodes[nodeId],
       value: toValue(graph.nodes[nodeId]),
-      x: 0,
-      y: 0,
-      id: nodeId,
     };
   });
   return graph;
@@ -189,9 +186,6 @@ const ClojurePacker: Packer = {
   unpack(data) {
     const ast = parse("#kosmos/root (" + data + ")");
     const graph = convertNodeValues(foldLists(traverse(ast)));
-
-    // const nodes = graph.nodes;
-    // const edges = getEdgesList(simpleGraph);
     return graph;
   },
 };
