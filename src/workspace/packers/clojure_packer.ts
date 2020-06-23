@@ -158,44 +158,6 @@ function convertNodeValues(graph: Graph): Graph {
   return graph;
 }
 
-function assignPlace(graph: Graph): Graph {
-  const walk = (ids: string[], row: number, col: number): number => {
-    for(let i = 0; i < ids.length; i++) {
-      const id = ids[i];
-      row = row + 1;
-      graph.nodes[id].col = col;
-      graph.nodes[id].row = row;
-
-      if (graph.outNeighbors(id).length > 0)
-        row = walk(graph.outNeighbors(id), row - 1, col + 1);
-    }
-    return row;
-  }
-
-  walk(graph.rootNodes(), 0, 0);
-
-  Object.values(graph.nodes).forEach((node: any) => {
-    node.x = node.col * 100 + 100;
-    node.y = node.row * 40 + 100;
-  });
-
-  return graph;
-}
-
-function getEdgesList(graph: Graph): any[] {
-  let edges = [];
-
-  Object.keys(graph.edges).forEach(sourceId => {
-    if (graph.edges[sourceId].length == 0)  return;
-
-    graph.edges[sourceId].forEach(targetId => {
-      edges.push({ sourceId, targetId })
-    })
-  });
-
-  return edges;
-}
-
 function foldLists(g: Graph): Graph {
   Object.keys(g.nodes).forEach(nodeId => {
     const node = g.nodes[nodeId];
@@ -226,11 +188,11 @@ const ClojurePacker: Packer = {
 
   unpack(data) {
     const ast = parse("#kosmos/root (" + data + ")");
-    const graph = traverse(ast);
-    const simpleGraph = foldLists(graph);
-    const nodes = assignPlace(convertNodeValues(simpleGraph)).nodes;
-    const edges = getEdgesList(simpleGraph);
-    return [nodes, edges];
+    const graph = convertNodeValues(foldLists(traverse(ast)));
+
+    // const nodes = graph.nodes;
+    // const edges = getEdgesList(simpleGraph);
+    return graph;
   },
 };
 

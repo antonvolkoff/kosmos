@@ -1,3 +1,5 @@
+import { Graph, createGraph } from "../graph";
+
 export interface Node {
   value: string;
   depth?: number;
@@ -5,7 +7,7 @@ export interface Node {
 };
 
 export interface Packer {
-  unpack(data: string): [any, any];
+  unpack(data: string): Graph;
   pack(nodes: Node[]): string;
   extensions: string[];
 };
@@ -18,11 +20,9 @@ const DefaultPacker: Packer = {
   },
 
   unpack(data) {
-    const nodes = {
-      "1": { id: "1", x: 100, y: 100, value: data },
-    };
-    const edges = [];
-    return [nodes, edges];
+    const graph = createGraph();
+    graph.addNode({ value: data });
+    return graph;
   },
 };
 

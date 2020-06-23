@@ -18,15 +18,18 @@ describe("extensions", () => {
 describe("unpack", () => {
   test("should be successful", () => {
     const dotFile = `digraph { 1 [label="One"]; 2; 1 -> 2 }`;
-    expect(unpack(dotFile)).toEqual([
-      {
-        "1": { id: "1", value: "One" },
-        "2": { id: "2", value: "2" },
-      },
-      [
-        { sourceId: "1", targetId: "2" },
-      ],
-    ]);
+
+    const graph = unpack(dotFile);
+
+    expect(graph.nodes).toEqual({
+      "1": { value: "One" },
+      "2": { value: "2" },
+    });
+
+    expect(graph.edges).toEqual({
+      "1": ["2"],
+      "2": [],
+    });
   });
 
   describe("pack", () => {

@@ -3,7 +3,7 @@ export interface Graph {
     [id: string]: string[];
   },
   nodes: {},
-  addNode(value: any): string;
+  addNode(value: any, key?: string): string;
   addEdge(source: string, target: string): void;
   deleteNode(id: string): void;
   deleteEdge(sourceId: string, targetId: string): void;
@@ -19,9 +19,12 @@ export function createGraph(): Graph {
     edges: {},
     nodes: {},
 
-    addNode(value): string {
-      idIterator += 1;
-      const key = idIterator.toString();
+    addNode(value, key = null): string {
+      if (key === null) {
+        idIterator += 1;
+        key = idIterator.toString();
+      }
+
       this.nodes[key] = value;
       this.edges[key] = [];
       return key;
