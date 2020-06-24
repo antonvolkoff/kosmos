@@ -151,6 +151,14 @@ export default function Sketch(store: Store<ApplicationState>) {
 
     p.mouseClicked = () => {
       store.dispatch(actions.clicked(createClickPayload()));
+
+      // Check for click on edge
+      const mouse = { x: p.mouseX, y: p.mouseY };
+      edges.forEach((edge) => {
+        if (buildEdgeGeometry(edge).isWithin(mouse)) {
+          console.log("Clicked on edge");
+        }
+      });
     }
 
     p.doubleClicked = () => {
