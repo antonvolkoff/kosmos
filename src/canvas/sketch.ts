@@ -3,6 +3,7 @@ import { Store } from "redux";
 
 import { Point } from "./geometry";
 import { buildNodeGeometry, drawNode } from "./node_geometry";
+import { buildEdgeGeometry } from "./edge_geometry";
 import * as Legend from "./legend";
 import { gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
@@ -51,14 +52,7 @@ export default function Sketch(store: Store<ApplicationState>) {
     }
 
     function drawEdges() {
-      p.push();
-
-      p.strokeWeight(1.5);
-      p.stroke(150);
-
-      edges.forEach(e => p.line(e.x1, e.y1, e.x2, e.y2));
-
-      p.pop();
+      edges.forEach(e => buildEdgeGeometry(e).draw(p));
     }
 
     function drawAtoms() {
