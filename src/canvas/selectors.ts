@@ -25,7 +25,7 @@ export const getDrawableAtoms =
   createSelector([getAtoms, getSelectedAtomId], (atoms, selectedAtomId) => {
     return Object.values(atoms).map(({ id, x, y, value }) => {
       const selected = (id == selectedAtomId);
-      return { x, y, value, selected };
+      return { id, x, y, value, selected };
     });
   });
 

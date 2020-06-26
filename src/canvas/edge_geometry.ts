@@ -31,7 +31,6 @@ const buildEdgeGeometry = (line: Line): EdgeGeometry => {
       const b = distance(mouse, end);
       const c = distance(start, end);
 
-
       // Perimeter and semi-perimeter
       const p = a + b + c;
       const s = p / 2;

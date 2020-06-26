@@ -2,7 +2,7 @@ import * as p5 from "p5";
 import { Store } from "redux";
 
 import { Point } from "./geometry";
-import { buildNodeGeometry, drawNode } from "./node_geometry";
+import { within, buildNodeGeometry, drawNode, withinDragArea } from "./node_geometry";
 import { buildEdgeGeometry } from "./edge_geometry";
 import * as Legend from "./legend";
 import { gridPoints, gridTiles } from "./grid";
@@ -49,6 +49,25 @@ export default function Sketch(store: Store<ApplicationState>) {
       const atomId = null;
       const dragArea = false;
       return { mouse, atomId, dragArea };
+    }
+
+    const processClick = (payload: Click): Click => {
+      // Convert coordinates
+      payload.mouse = ViewField.toGlobalCoordinates(viewField, payload.mouse);
+
+      // Detect click
+      const withinAtom = (candidate) => within(payload.mouse, buildNodeGeometry(candidate));
+      const atom = Object.values(atoms).find(withinAtom);
+      if (atom) {
+        payload.atomId = atom.id;
+        payload.dragArea = withinDragArea(payload.mouse, buildNodeGeometry(atom));
+        payload.clickOffset = {
+          deltaX: atom.x - payload.mouse.x,
+          deltaY: atom.y - payload.mouse.y,
+        };
+      }
+
+      return payload;
     }
 
     function drawEdges() {
@@ -146,23 +165,27 @@ export default function Sketch(store: Store<ApplicationState>) {
       const tagName = (event.srcElement as HTMLElement).tagName;
       if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
-      store.dispatch(actions.mousePressed(createClickPayload()));
+      const payload = processClick(createClickPayload());
+      store.dispatch(actions.mousePressed(payload));
     }
 
     p.mouseClicked = () => {
-      store.dispatch(actions.clicked(createClickPayload()));
+      const payload = processClick(createClickPayload());
+      store.dispatch(actions.clicked(payload));
+
+      if (payload.atomId) return;
 
       // Check for click on edge
-      const mouse = { x: p.mouseX, y: p.mouseY };
       edges.forEach((edge) => {
-        if (buildEdgeGeometry(edge).isWithin(mouse)) {
+        if (buildEdgeGeometry(edge).isWithin(payload.mouse)) {
           console.log("Clicked on edge");
         }
       });
     }
 
     p.doubleClicked = () => {
-      store.dispatch(actions.doubleClicked(createClickPayload()));
+      const payload = processClick(createClickPayload());
+      store.dispatch(actions.doubleClicked(payload));
     }
 
     p.mouseWheel = (event: WheelEvent) => {
@@ -172,7 +195,8 @@ export default function Sketch(store: Store<ApplicationState>) {
     }
 
     p.mouseDragged = () => {
-      store.dispatch(actions.mouseDragged(createClickPayload()));
+      const payload = processClick(createClickPayload());
+      store.dispatch(actions.mouseDragged(payload));
     }
 
     p.keyTyped = () => {
