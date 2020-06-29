@@ -2,7 +2,7 @@ import * as p5 from "p5";
 import { Store } from "redux";
 
 import { Point } from "./geometry";
-import { within, buildNodeGeometry, drawNode, withinDragArea } from "./node_geometry";
+import { buildNodeGeometry, NodeGeometry } from "./node_geometry";
 import { buildEdgeGeometry } from "./edge_geometry";
 import * as Legend from "./legend";
 import { gridPoints, gridTiles } from "./grid";
@@ -45,42 +45,24 @@ export default function Sketch(store: Store<ApplicationState>) {
     const backgroundColor = p.color("#FDFDFD");
     let bg: p5.Graphics = null;
 
-    const createClickPayload = (): Click => {
-      const mouse = { x: p.mouseX, y: p.mouseY };
-      const atomId = null;
-      const dragArea = false;
-      return { mouse, atomId, dragArea };
-    }
+    const createClickPayload = (x: number, y: number): Click => {
+      const clickedOn = (mouse) => (candidate) => buildNodeGeometry(candidate).isWithin(mouse);
 
-    const processClick = (payload: Click): Click => {
-      // Convert coordinates
-      payload.mouse = ViewField.toGlobalCoordinates(viewField, payload.mouse);
+      const mouse = ViewField.toGlobalCoordinates(viewField, { x, y });
+      const atom = Object.values(atoms).find(clickedOn(mouse));
+      const atomId = atom?.id;
+      const dragArea = atom ? buildNodeGeometry(atom).isWithinDragArea(mouse) : false;
+      const clickOffset = atom ? { deltaX: atom.x - mouse.x, deltaY: atom.y - mouse.y } : null;
 
-      // Detect click
-      const withinAtom = (candidate) => within(payload.mouse, buildNodeGeometry(candidate));
-      const atom = Object.values(atoms).find(withinAtom);
-      if (atom) {
-        payload.atomId = atom.id;
-        payload.dragArea = withinDragArea(payload.mouse, buildNodeGeometry(atom));
-        payload.clickOffset = {
-          deltaX: atom.x - payload.mouse.x,
-          deltaY: atom.y - payload.mouse.y,
-        };
-      }
-
-      return payload;
-    }
+      return { mouse, atomId, dragArea, clickOffset };
+    };
 
     function drawEdges() {
-      edges.forEach(e => buildEdgeGeometry(e).draw(p, e.selected));
+      edges.forEach((edge) => buildEdgeGeometry(edge).draw(p, edge.selected));
     }
 
     function drawAtoms() {
-      p.push();
-      atoms.forEach(atom => {
-        drawNode(p, buildNodeGeometry(atom), atom.selected);
-      });
-      p.pop();
+      atoms.forEach((node) => buildNodeGeometry(node).draw(p, node.selected));
     }
 
     function drawBackground(s: p5, bg: p5.Graphics, color: p5.Color) {
@@ -166,12 +148,12 @@ export default function Sketch(store: Store<ApplicationState>) {
       const tagName = (event.srcElement as HTMLElement).tagName;
       if (tagName !== "CANVAS" && tagName !== "INPUT") return;
 
-      const payload = processClick(createClickPayload());
+      const payload = createClickPayload(p.mouseX, p.mouseY);
       store.dispatch(actions.mousePressed(payload));
     }
 
     p.mouseClicked = () => {
-      const payload = processClick(createClickPayload());
+      const payload = createClickPayload(p.mouseX, p.mouseY);
       store.dispatch(actions.clicked(payload));
 
       if (payload.atomId) return;
@@ -186,7 +168,7 @@ export default function Sketch(store: Store<ApplicationState>) {
     }
 
     p.doubleClicked = () => {
-      const payload = processClick(createClickPayload());
+      const payload = createClickPayload(p.mouseX, p.mouseY);
       store.dispatch(actions.doubleClicked(payload));
     }
 
@@ -197,7 +179,7 @@ export default function Sketch(store: Store<ApplicationState>) {
     }
 
     p.mouseDragged = () => {
-      const payload = processClick(createClickPayload());
+      const payload = createClickPayload(p.mouseX, p.mouseY);
       store.dispatch(actions.mouseDragged(payload));
     }
 
