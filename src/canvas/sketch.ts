@@ -9,6 +9,7 @@ import { gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
 import * as ValueInput from "./value_input";
 import { ApplicationState } from "../store";
+import Edge from "./edge";
 
 import { actions, Click } from "./canvasReducer";
 import {
@@ -71,7 +72,7 @@ export default function Sketch(store: Store<ApplicationState>) {
     }
 
     function drawEdges() {
-      edges.forEach(e => buildEdgeGeometry(e).draw(p));
+      edges.forEach(e => buildEdgeGeometry(e).draw(p, e.selected));
     }
 
     function drawAtoms() {
@@ -178,7 +179,8 @@ export default function Sketch(store: Store<ApplicationState>) {
       // Check for click on edge
       edges.forEach((edge) => {
         if (buildEdgeGeometry(edge).isWithin(payload.mouse)) {
-          console.log("Clicked on edge");
+          const edgeId = Edge.id(edge);
+          store.dispatch(actions.selectEdge(edgeId));
         }
       });
     }

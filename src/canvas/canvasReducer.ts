@@ -33,6 +33,7 @@ export interface CanvasState {
   selectedAtomId: string;
   draggedAtomId: string;
   clickOffset: Offset;
+  selectedEdgeId: string;
   mode: Mode;
   draftConnection: {
     show: boolean;
@@ -48,6 +49,7 @@ const initialState: CanvasState = {
   draggedAtomId: null,
   selectedAtomId: null,
   clickOffset: { deltaX: 0, deltaY: 0 },
+  selectedEdgeId: null,
   mode: "idle",
   draftConnection: {
     show: false,
@@ -119,16 +121,21 @@ const canvasSlice = createSlice({
     },
     select(state, action: PayloadAction<string>) {
       state.selectedAtomId = action.payload;
+      state.selectedEdgeId = null;
       state.mode = "ready";
     },
     unselect(state, action: PayloadAction<void>) {
       state.selectedAtomId = null;
+      state.selectedEdgeId = null;
       state.mode = "idle";
     },
     typed(state, action: PayloadAction<void>) {
       if (state.mode === "ready") {
         state.mode = "enter";
       }
+    },
+    selectEdge(state, action: PayloadAction<string>) {
+      state.selectedEdgeId = action.payload;
     },
   },
   extraReducers: {

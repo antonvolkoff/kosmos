@@ -3,21 +3,22 @@ import { Line, Point, distance } from "./geometry";
 
 interface EdgeGeometry {
   line: Line;
-  draw(s: p5): void;
+  draw(s: p5, selected: boolean): void;
   isWithin(mouse: Point): boolean;
 }
 
 const buildEdgeGeometry = (line: Line): EdgeGeometry => {
   const strokeWeight = 1.5;
   const strokeColor = 150;
+  const strokeSelectedColor = "#79B8FF";
 
   return {
     line,
 
-    draw(s) {
+    draw(s, selected) {
       s.push();
       s.strokeWeight(strokeWeight);
-      s.stroke(strokeColor);
+      selected ? s.stroke(s.color(strokeSelectedColor)) : s.stroke(strokeColor);
       s.line(this.line.x1, this.line.y1, this.line.x2, this.line.y2);
       s.pop();
     },
@@ -39,7 +40,7 @@ const buildEdgeGeometry = (line: Line): EdgeGeometry => {
 
       const height = 2 * area / c;
 
-      return height < 10;
+      return height < 5;
     },
   };
 };
