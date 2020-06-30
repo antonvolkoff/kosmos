@@ -1,12 +1,9 @@
 import { PayloadAction, createSlice, Middleware } from "@reduxjs/toolkit";
 import * as ViewField from "./view_field";
-import {
-  getSelectedAtomId, getViewField, getAtoms, getDraftConnection
-} from "./selectors";
+import { getSelectedAtomId, getDraftConnection } from "./selectors";
 import { addAtom, moveAtom, connectAtoms } from "../store/defaultReducer";
 import { createAtom } from "../store/atom";
 import { Point, Line } from "./geometry";
-import { buildNodeGeometry, within, withinDragArea } from "./node_geometry";
 import { nearestGridPoint } from "./grid";
 
 interface WindowDimensions {
@@ -36,6 +33,7 @@ export interface CanvasState {
   selectedAtomId: string;
   draggedAtomId: string;
   clickOffset: Offset;
+  selectedEdgeId: string;
   mode: Mode;
   draftConnection: {
     show: boolean;
@@ -51,6 +49,7 @@ const initialState: CanvasState = {
   draggedAtomId: null,
   selectedAtomId: null,
   clickOffset: { deltaX: 0, deltaY: 0 },
+  selectedEdgeId: null,
   mode: "idle",
   draftConnection: {
     show: false,
@@ -122,16 +121,21 @@ const canvasSlice = createSlice({
     },
     select(state, action: PayloadAction<string>) {
       state.selectedAtomId = action.payload;
+      state.selectedEdgeId = null;
       state.mode = "ready";
     },
     unselect(state, action: PayloadAction<void>) {
       state.selectedAtomId = null;
+      state.selectedEdgeId = null;
       state.mode = "idle";
     },
     typed(state, action: PayloadAction<void>) {
       if (state.mode === "ready") {
         state.mode = "enter";
       }
+    },
+    selectEdge(state, action: PayloadAction<string>) {
+      state.selectedEdgeId = action.payload;
     },
   },
   extraReducers: {
@@ -140,61 +144,6 @@ const canvasSlice = createSlice({
     },
   }
 });
-
-const convertToGlobalCoordsMiddleware: Middleware = ({ getState }) => {
-  const types = [
-    canvasSlice.actions.doubleClicked.type,
-    canvasSlice.actions.clicked.type,
-    canvasSlice.actions.mousePressed.type,
-    canvasSlice.actions.clicked.type,
-    canvasSlice.actions.mouseDragged.type,
-  ];
-
-  return next => action => {
-    if (types.includes(action.type)) {
-      action.payload.mouse = ViewField.toGlobalCoordinates(
-        getViewField(getState()),
-        action.payload.mouse,
-      );
-    }
-
-    next(action);
-  }
-};
-
-const detectMouseLocationMiddleware: Middleware = ({getState}) => {
-  const types = [
-    canvasSlice.actions.doubleClicked.type,
-    canvasSlice.actions.clicked.type,
-    canvasSlice.actions.mousePressed.type,
-    canvasSlice.actions.clicked.type,
-    canvasSlice.actions.mouseDragged.type,
-  ];
-
-  return next => action => {
-    if (types.includes(action.type)) {
-      const atoms = getAtoms(getState());
-      const mouse = action.payload.mouse;
-      const withinAtom = (candidate) => (
-        within(mouse, buildNodeGeometry(candidate))
-      );
-      const atom = Object.values(atoms).find(withinAtom);
-      if (atom) {
-        action.payload.atomId = atom.id;
-        action.payload.dragArea = withinDragArea(mouse, buildNodeGeometry(atom));
-        action.payload.clickOffset = {
-          deltaX: atom.x - mouse.x,
-          deltaY: atom.y - mouse.y,
-        };
-      } else {
-        action.payload.atomId = null;
-        action.payload.dragArea = false;
-      }
-    }
-
-    next(action);
-  }
-};
 
 const doubleClickedMiddleware: Middleware = ({ getState, dispatch }) => {
   const switchToEditMode = () =>
@@ -288,8 +237,6 @@ const connectAtomsMiddleware: Middleware = ({ getState, dispatch }) => {
 };
 
 export const middlewares = [
-  convertToGlobalCoordsMiddleware,
-  detectMouseLocationMiddleware,
   doubleClickedMiddleware,
   mouseClickedMiddleware,
   moveDragAtomMiddleware,

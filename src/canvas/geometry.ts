@@ -43,3 +43,18 @@ export function midPoint(line: Line): Point {
 
   return { x: x3, y: y3 };
 }
+
+/**
+ * Checks if a given point `p` is inside of a rectangle `r`.
+ */
+export const within = (r: Rect, p: Point): boolean => {
+  const left = r.x;
+  const right = r.x + r.width;
+  const top = r.y;
+  const bottom = r.y + r.height;
+
+  return (
+    p.x > left && p.x < right &&
+    p.y < bottom && p.y > top
+  );
+};
