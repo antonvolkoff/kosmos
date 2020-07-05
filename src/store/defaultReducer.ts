@@ -5,6 +5,7 @@ import { buildNodeGeometry } from "../canvas/node_geometry";
 import { Line } from "../canvas/geometry";
 import { ApplicationState } from ".";
 import { EvalResult } from "../repl";
+import Edge from "../canvas/edge";
 
 export interface DefaultState {
   atoms: { [id: string]: Atom };
@@ -43,6 +44,10 @@ export const setAtomValue =
 export const evalSelectedAtom =
   () => ({ type: "eval-selected-atom" });
 
+export const deleteEdge = (edgeId: string) => (
+  { type: "delete-edge", payload: Edge.parseId(edgeId) }
+);
+
 const initialState: DefaultState = {
   atoms: {},
   edges: [],
@@ -65,6 +70,12 @@ const reducer = createReducer(initialState, {
       const isTarget = targetId === atomId;
       return !isSource && !isTarget;
     });
+  },
+  "delete-edge": (state, action) => {
+    const notMatchingEdge = (signature) => ({ sourceId, targetId }) => (
+      !(sourceId === signature.sourceId && targetId === signature.targetId)
+    );
+    state.edges = state.edges.filter(notMatchingEdge(action.payload));
   },
   "add-atom": (state, action) => {
     state.atoms[action.payload.id] = action.payload;

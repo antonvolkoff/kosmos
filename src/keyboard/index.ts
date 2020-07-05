@@ -2,7 +2,7 @@ import * as Mousetrap from "mousetrap";
 import { ApplicationState } from "../store";
 import {
   deleteAtom as deleteAtomAction, addAtom, connectAtoms, childrenSelector,
-  evalSelectedAtom, parentSelector, deepChildrenSelector
+  evalSelectedAtom, parentSelector, deepChildrenSelector, deleteEdge
 } from "../store/defaultReducer";
 import { buildNodeGeometry } from "../canvas/node_geometry";
 import { createAtom } from "../store/atom";
@@ -16,30 +16,44 @@ import { remote } from "electron";
 const { dialog } = remote;
 const { select, unselect, changeMode } = actions;
 const { toggleTranscript } = interfaceActions;
-const { getSelectedAtom, getMode } = selectors;
+const { getSelectedAtom, getMode, getSelectedEdgeId } = selectors;
 
 export default function Keyboard(store: Store<ApplicationState>) {
   let state = store.getState();
   let mode = getMode(store.getState());
   let selectedAtom = getSelectedAtom(store.getState());
+  let selectedEdgeId = getSelectedEdgeId(store.getState());
 
   store.subscribe(() => {
     state = store.getState();
     mode = getMode(store.getState());
     selectedAtom = getSelectedAtom(store.getState());
+    selectedEdgeId = getSelectedEdgeId(store.getState());
   });
 
   const standardAtomOffset = 40;
   const evaluateAtom = () => store.dispatch(evalSelectedAtom());
-  const deleteAtom = (event) => {
-    if (!selectedAtom) return;
 
-    event.preventDefault();
-
+  const deleteSelectedAtom = () => {
     const parent = parentSelector(state.default, selectedAtom.id);
     store.dispatch(deleteAtomAction(selectedAtom.id));
     if (parent) store.dispatch(select(parent.id));
   };
+
+  const deleteSelectedEdge = () => store.dispatch(deleteEdge(selectedEdgeId));
+
+  const deleteSelectedElement = (event) => {
+    if (selectedAtom) {
+      event.preventDefault();
+      deleteSelectedAtom();
+    }
+
+    if (selectedEdgeId) {
+      event.preventDefault();
+      deleteSelectedEdge();
+    }
+  };
+
   const createChildAtom = (event) => {
     if (!selectedAtom) return;
 
@@ -163,7 +177,7 @@ export default function Keyboard(store: Store<ApplicationState>) {
   };
 
   Mousetrap.bind("command+e", evaluateAtom);
-  Mousetrap.bind("command+backspace", deleteAtom);
+  Mousetrap.bind("command+backspace", deleteSelectedElement);
   Mousetrap.bind("tab", createChildAtom);
   Mousetrap.bind("command+enter", handleCmdEnter);
   Mousetrap.bind("esc", handleEsc);
