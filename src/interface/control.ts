@@ -3,7 +3,7 @@ import { html } from "htm/react";
 import { Store } from "redux";
 
 import { ApplicationState } from "../store";
-import { deleteAtom, evalSelectedAtom } from "../store/defaultReducer";
+import { deleteAtom, evalSelectedAtom, deleteEdge } from "../store/defaultReducer";
 import { selectors as canvasSelectors } from "../canvas";
 import PlayIcon from "./play_icon";
 import TrashIcon from "./trash_icon";
@@ -11,7 +11,7 @@ import CastIcon from "./cast_icon";
 import BookIcon from "./book_icon";
 import { actions } from "./interfaceReducer";
 
-const { getSelectedAtomId } = canvasSelectors;
+const { getSelectedAtomId, getSelectedEdgeId } = canvasSelectors;
 const { toggleTranscript } = actions;
 
 interface Props {
@@ -20,10 +20,12 @@ interface Props {
 
 export default function Control({ store }: Props) {
   const [selectedAtomId, setSelectedAtomId] = useState(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState(null);
   const [connectedToRepl, setConnectedToRepl] = useState(false);
 
   store.subscribe(() => {
     setSelectedAtomId(getSelectedAtomId(store.getState()));
+    setSelectedEdgeId(getSelectedEdgeId(store.getState()));
     setConnectedToRepl(store.getState().default.connectedToRepl);
   });
 
@@ -36,7 +38,8 @@ export default function Control({ store }: Props) {
   const onDeleteClick = (event) => {
     event.preventDefault();
     event.stopPropagation();
-    store.dispatch(deleteAtom(selectedAtomId));
+    if (selectedAtomId) store.dispatch(deleteAtom(selectedAtomId));
+    if (selectedEdgeId) store.dispatch(deleteEdge(selectedEdgeId));
   }
 
   const onTranscriptClick = (event) => {
@@ -58,7 +61,7 @@ export default function Control({ store }: Props) {
         <${PlayIcon} />
       </button>
       <button className="control-button"
-              disabled=${!selectedAtomId}
+              disabled=${!selectedAtomId && !selectedEdgeId}
               onClick=${onDeleteClick}>
         <${TrashIcon} />
       </button>
