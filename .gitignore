@@ -3,3 +3,5 @@ dist
 .nrepl-port
 out/
 .DS_Store
+.shadow-cljs
+.calva

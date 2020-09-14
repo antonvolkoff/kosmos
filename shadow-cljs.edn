@@ -1,0 +1,6 @@
+{:source-paths ["src" "test"]
+ :dependencies []
+ :builds {:app {:target :browser
+                :output-dir "dist/js"
+                :js-options {:js-provider :require}
+                :modules {:main {:init-fn kosmos.core/start!}}}}}

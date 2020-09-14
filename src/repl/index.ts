@@ -1,7 +1,6 @@
 import { promisify } from 'util';
 import * as repl from "nrepl-client";
 import { homedir } from "os";
-import { readFileSync } from "fs";
 
 import { ApplicationState } from "../store";
 import { connectedToRepl } from "../store/defaultReducer";
@@ -13,6 +12,7 @@ type NRepl = {
   state: NReplState;
   port: number | undefined;
   client: any;
+  session: string | undefined;
 };
 
 export interface EvalResult {
@@ -28,15 +28,20 @@ let nRepl: NRepl = {
   state: "waiting-for-port",
   port: undefined,
   client: undefined,
+  session: undefined,
 };
+
+declare global {
+  interface Window { kosmos: any }
+}
 
 export default function Repl(store: Store<ApplicationState>) {
   const process = (nRepl: NRepl): NRepl => {
     switch (nRepl.state) {
       case "waiting-for-port":
         try {
-          const buffer = readFileSync(nReplPortFile);
-          nRepl.port = parseInt(buffer.toString());
+          const replConfig = window.kosmos.core.load("repl.edn");
+          nRepl.port = replConfig.port;
           nRepl.state = "connecting";
           setTimeout(processRepl, 1000);
         } catch(err) {
@@ -57,6 +62,12 @@ export default function Repl(store: Store<ApplicationState>) {
         break;
 
       case "connected":
+        if (nRepl.session === undefined) {
+          nRepl.client.clone((err, result) => {
+            nRepl.session = result[0]["new-session"];
+          });
+        }
+
         setTimeout(processRepl, 10000);
         break;
     }
@@ -79,7 +90,7 @@ const reduceError =
 
 export async function execute(code: string): Promise<EvalResult> {
   const evalPromise = promisify(nRepl.client.eval);
-  const result = await evalPromise(code);
+  const result = await evalPromise(code, undefined, nRepl.session);
   return {
     id: new Date().getTime(),
     value: result.reduce(reduceValue, ""),
