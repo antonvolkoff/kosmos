@@ -176,6 +176,10 @@ export default function Keyboard(store: Store<ApplicationState>) {
     }
   };
 
+  const copy = async (e) => true;
+
+  const paste = async (e) => true;
+
   Mousetrap.bind("command+e", evaluateAtom);
   Mousetrap.bind("command+backspace", deleteSelectedElement);
   Mousetrap.bind("tab", createChildAtom);
@@ -188,6 +192,8 @@ export default function Keyboard(store: Store<ApplicationState>) {
   Mousetrap.bind("option+up", moveToPreviousSibling);
   Mousetrap.bind("command+s", saveFile);
   Mousetrap.bind("command+o", openFile);
+  Mousetrap.bind("command+c", copy);
+  Mousetrap.bind("command+v", paste);
 
   Mousetrap.bind("command+shift+t", () => {
     store.dispatch(toggleTranscript());
