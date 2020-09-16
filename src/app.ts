@@ -5,7 +5,6 @@ import Interface from "./interface";
 import Canvas from "./canvas";
 import Repl from "./repl";
 import "./workspace";
-import "./window";
 import { start } from "./core/actor";
 
 const store = createApplicationStore();

@@ -171,6 +171,7 @@ export default function Keyboard(store: Store<ApplicationState>) {
     try {
       const { filePaths } = await dialog.showOpenDialog({});
       send("workspace", "open", filePaths[0]);
+      window.kosmos.core.dispatch(["keyboard/open-file", filePaths[0]]);
     } catch (error) {
       console.log(error);
     }

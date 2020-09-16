@@ -2,10 +2,18 @@
   (:require [kosmos.config-file :as cf]
             [reagent.dom :as dom]
             [kosmos.component :refer [container node edge]]
-            [kosmos.flag :refer [enabled?]]))
+            [kosmos.flag :refer [enabled?]]
+            [kosmos.fx]
+            [kosmos.events]
+            [re-frame.core :as rf]))
 
 (defn load [filename]
   (clj->js (cf/load filename)))
+
+(defn dispatch [event]
+  (let [[name params] (js->clj event)
+        name (keyword name)]
+    (rf/dispatch [name params])))
 
 (defn render-svg-canvas []
   (let [el (.getElementById js/document "app")]
@@ -18,4 +26,8 @@
 (defn ^:dev/after-load start []
   (when (enabled? :svg) (render-svg-canvas)))
 
-(defn start! [] (start))
+(defn start! [] 
+  (rf/dispatch [:init])
+  (start))
+
+(comment (rf/dispatch [:file/open "bla/one.txt"]))
