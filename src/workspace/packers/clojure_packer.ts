@@ -177,7 +177,7 @@ export function read(data: string): Graph {
 }
 
 const ClojurePacker: Packer = {
-  extensions: [".clj"],
+  extensions: [".clj", ".cljs", ".edn"],
 
   pack(nodes) {
     return [...nodes.map(translate), "\r\n"].join("");
