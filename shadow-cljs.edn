@@ -1,5 +1,5 @@
 {:source-paths ["src" "test"]
- :dependencies []
+ :dependencies [[reagent "1.0.0-alpha2"]]
  :builds {:app {:target :browser
                 :output-dir "dist/js"
                 :js-options {:js-provider :require}
