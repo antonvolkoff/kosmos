@@ -34,10 +34,6 @@ function validPath(path) {
   return typeof path === "string" && path !== "";
 }
 
-function changeWindowTitle(filename: string) {
-  send("window", "changeTitle", `${filename} - Kosmos`);
-}
-
 function nodes() {
   const defaultState = getState();
   return topLevelAtoms(defaultState).map(atom => {
@@ -126,7 +122,6 @@ const Workspace = {
   new() {
     setState([], []);
     resetCanvas();
-    changeWindowTitle(initialState.filename);
     return initialState;
   },
 
@@ -139,7 +134,6 @@ const Workspace = {
     if (!validPath(path)) return state;
 
     const filename = getFilename(path);
-    changeWindowTitle(filename);
 
     writeFileSync(path, pack(nodes(), getExtension(path)));
     return { path, filename };
@@ -154,7 +148,6 @@ const Workspace = {
     setState(atoms, edges);
 
     const filename = getFilename(path);
-    changeWindowTitle(filename);
 
     return { path, filename };
   },
