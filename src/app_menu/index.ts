@@ -12,7 +12,9 @@ export default function AppMenu(store: Store<ApplicationState>) {
 
   ipcRenderer.on("click-open", async () => {
     try {
-      const { filePaths } = await dialog.showOpenDialog({});
+      const { filePaths } = await dialog.showOpenDialog({
+        properties: ["openFile", "showHiddenFiles"],
+      });
       send("workspace", "open", filePaths[0]);
       window.kosmos.core.dispatch(["menu/clicked-open", filePaths[0]]);
     } catch (error) {
