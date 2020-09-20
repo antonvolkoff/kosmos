@@ -1,4 +1,3 @@
-import { parse } from "jsedn"
 import { Node, Packer } from "./default_packer";
 import { createGraph, Graph } from "../graph";
 
@@ -33,74 +32,37 @@ function translate(node: Node): string {
 function traverse(edn, graph = null, parentId = null): Graph {
   let g = graph ? graph : createGraph();
 
-  let type = "";
-  switch (typeof edn) {
-    case "number":
-      type = "number"
-      break;
-    case "string":
-      type = "string";
-      break;
-    default:
-      switch (edn.constructor.name) {
-        case "Keyword":
-          type = "keyword"
-          break;
-        case "List":
-          type = "list"
-          break;
-        case "Symbol":
-          type = "symbol"
-          break;
-        case "Tagged":
-          type = "tagged"
-          break;
-        case "Vector":
-          type = "vector"
-          break;
-        case "Set":
-          type = "set"
-          break;
-        case "Map":
-          type = "map"
-          break;
-        default:
-          break;
-      }
-      break;
+  if (Array.isArray(edn)) {
+    edn.forEach(item => g = traverse(item, g))
+    return g;
   }
 
+  const type = edn.type;
   switch (type) {
-    case "tagged":
-      if (edn.tag().namespace == "kosmos") {
-        edn.obj().each(item => g = traverse(item, g));
-      }
-      break;
-
     case "number":
-      const numberId = g.addNode({ value: edn, type });
+      const numberId = g.addNode({ value: edn.form, type });
       if (parentId) g.addEdge(parentId, numberId);
       break;
 
     case "string":
-      const stringId = g.addNode({ value: edn, type });
+      const stringId = g.addNode({ value: edn.form, type });
       if (parentId) g.addEdge(parentId, stringId);
       break;
 
     case "keyword":
-      const keywordId = g.addNode({ value: edn.name, type });
+      const keywordId = g.addNode({ value: edn.form, type });
       if (parentId) g.addEdge(parentId, keywordId);
       break;
 
     case "symbol":
-      const symbolId = g.addNode({ value: edn.name, type });
+      const symbolId = g.addNode({ value: edn.form, type });
       if (parentId) g.addEdge(parentId, symbolId);
       break;
 
     case "list":
       const listId = g.addNode({ value: "list", type });
       if (parentId) g.addEdge(parentId, listId);
-      edn.val.forEach(ednItem => {
+      edn.form.forEach(ednItem => {
         g = traverse(ednItem, g, listId);
       })
       break;
@@ -108,7 +70,7 @@ function traverse(edn, graph = null, parentId = null): Graph {
     case "vector":
       const vectorId = g.addNode({ value: "vector", type });
       if (parentId) g.addEdge(parentId, vectorId);
-      edn.val.forEach(ednItem => {
+      edn.form.forEach(ednItem => {
         g = traverse(ednItem, g, vectorId);
       })
       break;
@@ -116,7 +78,7 @@ function traverse(edn, graph = null, parentId = null): Graph {
     case "set":
       const setId = g.addNode({ value: "set", type: "set" });
       if (parentId) g.addEdge(parentId, setId);
-      edn.val.forEach(ednItem => {
+      edn.form.forEach(ednItem => {
         g = traverse(ednItem, g, setId);
       })
       break;
@@ -124,10 +86,11 @@ function traverse(edn, graph = null, parentId = null): Graph {
     case "map":
       const mapId = g.addNode({ value: "hash-map", type });
       if (parentId) g.addEdge(parentId, mapId);
-      for(let i = 0; i < edn.keys.length; i++) {
-        g = traverse(edn.keys[i], g, mapId);
-        g = traverse(edn.vals[i], g, mapId);
-      }
+
+      edn.form.forEach(({ key, value }) => {
+        g = traverse(key, g, mapId);
+        g = traverse(value, g, mapId);
+      });
       break;
 
     default:
@@ -172,7 +135,7 @@ function foldLists(g: Graph): Graph {
 }
 
 export function read(data: string): Graph {
-  const ast = parse("#kosmos/root (" + data + ")");
+  const ast = window.kosmos.core.parse(data);
   return traverse(ast);
 }
 
@@ -184,7 +147,9 @@ const ClojurePacker: Packer = {
   },
 
   unpack(data) {
-    const ast = parse("#kosmos/root (" + data + ")");
+    const ast = window.kosmos.core.parse(data);
+    console.log(ast);
+
     const graph = convertNodeValues(foldLists(traverse(ast)));
     return graph;
   },

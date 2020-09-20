@@ -5,7 +5,8 @@
             [kosmos.flag :refer [enabled?]]
             [kosmos.fx]
             [kosmos.events]
-            [re-frame.core :as rf]))
+            [re-frame.core :as rf]
+            [kosmos.io.clojure]))
 
 (defn load [filename]
   (clj->js (cf/load filename)))
@@ -14,6 +15,11 @@
   (let [[name params] (js->clj event)
         name (keyword name)]
     (rf/dispatch [name params])))
+
+(defn parse [data]
+  (-> data kosmos.io.clojure/parse clj->js))
+
+;;;;
 
 (defn render-svg-canvas []
   (let [el (.getElementById js/document "app")]
