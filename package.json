@@ -1,14 +1,21 @@
 {
   "name": "Kosmos",
   "version": "20.3.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antonvolkoff/kosmos.git"
+  },
+  "license": "MIT",
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "lint": "tslint -c tslint.json -p tsconfig.json",
-    "start": "npm run build && electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
+    "dev": "concurrently \"npm:watch:cljs\" \"npm:watch:ts\" \"npm:electron:start\"",
+    "test": "shadow-cljs compile test",
+    "release": "shadow-cljs compile app && tsc && npm run electron:make",
+
+    "watch:cljs": "shadow-cljs watch app test",
+    "watch:ts": "tsc --watch --preserveWatchOutput",
+    "electron:start": "electron-forge start",
+    "electron:make": "electron-forge make",
     "icons:build": "(cd assets; ./build_icons.sh)",
     "icons:reset": "touch out/Kosmos-darwin-x64/Kosmos.app"
   },
@@ -22,11 +29,11 @@
     "@types/p5": "^0.9.0",
     "@types/react": "^16.9.32",
     "@types/react-dom": "^16.9.6",
+    "concurrently": "5.3.0",
     "electron": "8.2.4",
     "jest": "^26.0.1",
     "shadow-cljs": "^2.11.2",
     "ts-jest": "^26.0.0",
-    "tslint": "6.1.0",
     "typescript": "3.8.3"
   },
   "dependencies": {
