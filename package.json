@@ -9,13 +9,11 @@
   "main": "dist/main.js",
   "scripts": {
     "dev": "concurrently \"npm:watch:cljs\" \"npm:watch:ts\" \"npm:electron:start\"",
-    "test": "npm run compile:cljs && node out/test/node.js",
-    "release": "npm run compile:cljs && npm run compile:ts && npm run electron:make",
+    "test": "shadow-cljs compile test",
+    "release": "shadow-cljs compile app && tsc && npm run electron:make",
 
     "watch:cljs": "shadow-cljs watch app test",
     "watch:ts": "tsc --watch --preserveWatchOutput",
-    "compile:cljs": "shadow-cljs compile app test",
-    "compile:ts": "tsc",
     "electron:start": "electron-forge start",
     "electron:make": "electron-forge make",
     "icons:build": "(cd assets; ./build_icons.sh)",

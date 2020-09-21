@@ -5,11 +5,20 @@
 
 (def filename "read_test.edn")
 
-(defn delete-test-configs [f]
-  (f)
-  (fs/unlink-sync (cf/path filename)))
+(defn create-config-folder [path]
+  (when-not (fs/exists-sync path)
+    (fs/mkdir-sync path)))
 
-(use-fixtures :each delete-test-configs)
+(defn delete-config-file [path]
+  (when (fs/exists-sync path)
+    (fs/unlink-sync (cf/path path))))
+
+(defn setup-test [f]
+  (create-config-folder cf/config-dir)
+  (f)
+  (delete-config-file (cf/path filename)))
+
+(use-fixtures :each setup-test)
 
 (deftest read-existing-file-test
   (fs/write-file-sync (cf/path filename) (pr-str {:ok true}))
