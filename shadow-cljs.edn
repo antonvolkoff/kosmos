@@ -5,4 +5,7 @@
  :builds {:app {:target :browser
                 :output-dir "dist/js"
                 :js-options {:js-provider :require}
-                :modules {:main {:init-fn kosmos.core/start!}}}}}
+                :modules {:main {:init-fn kosmos.core/start!}}}
+          :test {:target :node-test
+                 :output-to "out/test/node.js"
+                 :autorun true}}}

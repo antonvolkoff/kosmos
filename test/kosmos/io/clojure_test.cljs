@@ -3,4 +3,4 @@
             [kosmos.io.clojure :as io]))
 
 (deftest parse-empty-test
-  (is (= [] (io/parsre ""))))
+  (is (= [] (io/parse ""))))
