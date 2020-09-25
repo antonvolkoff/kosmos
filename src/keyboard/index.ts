@@ -173,7 +173,7 @@ export default function Keyboard(store: Store<ApplicationState>) {
         properties: ["openFile", "showHiddenFiles"],
       });
       send("workspace", "open", filePaths[0]);
-      window.kosmos.core.dispatch(["keyboard/open-file", filePaths[0]]);
+      window.kosmos.api.dispatch(["keyboard/open-file", filePaths[0]]);
     } catch (error) {
       console.log(error);
     }

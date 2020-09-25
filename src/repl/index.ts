@@ -40,7 +40,7 @@ export default function Repl(store: Store<ApplicationState>) {
     switch (nRepl.state) {
       case "waiting-for-port":
         try {
-          const replConfig = window.kosmos.core.load("repl.edn");
+          const replConfig = window.kosmos.api.load("repl.edn");
           nRepl.port = replConfig.port;
           nRepl.state = "connecting";
           setTimeout(processRepl, 1000);

@@ -135,7 +135,7 @@ function foldLists(g: Graph): Graph {
 }
 
 export function read(data: string): Graph {
-  const ast = window.kosmos.core.parse(data);
+  const ast = window.kosmos.api.parse(data);
   return traverse(ast);
 }
 
@@ -147,7 +147,7 @@ const ClojurePacker: Packer = {
   },
 
   unpack(data) {
-    const ast = window.kosmos.core.parse(data);
+    const ast = window.kosmos.api.parse(data);
     console.log(ast);
 
     const graph = convertNodeValues(foldLists(traverse(ast)));

@@ -16,7 +16,7 @@ export default function AppMenu(store: Store<ApplicationState>) {
         properties: ["openFile", "showHiddenFiles"],
       });
       send("workspace", "open", filePaths[0]);
-      window.kosmos.core.dispatch(["menu/clicked-open", filePaths[0]]);
+      window.kosmos.api.dispatch(["menu/clicked-open", filePaths[0]]);
     } catch (error) {
       // tslint:disable-next-line:no-console
       console.log(error);
@@ -36,7 +36,7 @@ export default function AppMenu(store: Store<ApplicationState>) {
   ipcRenderer.on("click-save-as", async () => {
     const { filePath } = await dialog.showSaveDialog({});
     send("workspace", "saveAs", filePath);
-    window.kosmos.core.dispatch(["menu/clicked-save-as", filePath]);
+    window.kosmos.api.dispatch(["menu/clicked-save-as", filePath]);
   });
 
   ipcRenderer.on("click-transcript", () => {

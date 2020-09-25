@@ -1,25 +1,11 @@
 (ns kosmos.core
-  (:require [kosmos.config-file :as cf]
-            [reagent.dom :as dom]
+  (:require [reagent.dom :as dom]
             [kosmos.component :refer [container node edge]]
             [kosmos.flag :refer [enabled?]]
             [kosmos.fx]
             [kosmos.events]
-            [re-frame.core :as rf]
-            [kosmos.io.clojure]))
-
-(defn load [filename]
-  (clj->js (cf/load filename)))
-
-(defn dispatch [event]
-  (let [[name params] (js->clj event)
-        name (keyword name)]
-    (rf/dispatch [name params])))
-
-(defn parse [data]
-  (-> data kosmos.io.clojure/parse clj->js))
-
-;;;;
+            [kosmos.api]
+            [re-frame.core :as rf]))
 
 (defn render-svg-canvas []
   (let [el (.getElementById js/document "app")]
@@ -35,5 +21,3 @@
 (defn start! [] 
   (rf/dispatch [:init])
   (start))
-
-(comment (rf/dispatch [:file/open "bla/one.txt"]))
