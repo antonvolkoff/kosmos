@@ -1,9 +1,10 @@
 (ns kosmos.core
   (:require [reagent.dom :as dom]
-            [kosmos.components :refer [canvas]]
-            [kosmos.flag :refer [enabled?]]
             [kosmos.fx]
             [kosmos.events]
+            [kosmos.subs]
+            [kosmos.components :refer [canvas]]
+            [kosmos.flag :refer [enabled?]]
             [kosmos.api]
             [re-frame.core :as rf]))
 
