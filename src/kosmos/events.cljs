@@ -1,5 +1,5 @@
 (ns kosmos.events
-  (:require [re-frame.core :refer [reg-event-fx]]
+  (:require [re-frame.core :refer [reg-event-fx reg-event-db]]
             [kosmos.node.path :refer [parse]]))
 
 (def path-lib (js/require "path"))
@@ -13,7 +13,8 @@
 (reg-event-fx
  :init
  (fn [_ _]
-   {:window-title (title "untitled")}))
+   {:window-title (title "untitled")
+    :db {:nodes []}}))
 
 (reg-event-fx 
  :menu/clicked-open
@@ -29,3 +30,8 @@
  :menu/clicked-save-as
  (fn [_ [_ path]]
    {:window-title (-> path filename title)}))
+
+(reg-event-db
+ :clicked-add-point
+ (fn [db _]
+   (update-in db [:nodes] conj {})))
