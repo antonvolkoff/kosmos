@@ -11,7 +11,7 @@
 
 (defn delete-config-file [path]
   (when (fs/exists-sync path)
-    (fs/unlink-sync (cf/path path))))
+    (fs/unlink-sync path)))
 
 (defn setup-test [f]
   (create-config-folder cf/config-dir)
