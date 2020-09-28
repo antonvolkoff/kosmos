@@ -8,25 +8,38 @@
   (let [style {:fill "#fff" :stroke "#444" :stroke-width 2 :r 4}]
     [:circle.r-6-hover (merge style {:cx x :cy y})]))
 
-(defn node-input []
-  (let [style {:font-family "Fira Code" :font-size "14px" :border 0 :outline "none"}]
-     [:input {:style style :placeholder "Enter value"}]))
+(def node-input-style
+  {:font-family "Fira Code" :font-size "14px" :border 0 :outline "none"
+   :background-color "#fdfdfd"})
+
+(def node-input-placeholder "Enter value")
+
+(defn node-input [{:keys [on-change value]}]
+  [:input {:style node-input-style
+           :placeholder node-input-placeholder
+           :value value
+           :on-change on-change}])
 
 (def node-input-wrapper 
   (with-meta node-input {:component-did-mount #(.focus (rdom/dom-node %))}))
 
-(defn node [{:keys [x y]}]
+(defn change-handler [id]
+  (fn [e] 
+    (let [new-value (-> e .-target .-value)]
+      (dispatch [:change-node-value id new-value]))))
+
+(defn node [{:keys [x y id value]}]
   (let [tx (+ x 12) ty (- y 9)]
     [:g
      [node-dot {:x x :y y}]
      [:foreignObject {:x tx :y ty :width 100 :height 20}
-      [node-input-wrapper]]]))
+      [node-input-wrapper {:on-change (change-handler id) :value value}]]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn add-point [{:keys [x y]}]
   (let [offset 4 radius 7 stroke "#999" fill "#fff"]
-    [:g.c-add-point {:on-click (fn [] (dispatch [:clicked-add-point]))}
+    [:g.c-add-point {:on-click (fn [] (dispatch [:add-node]))}
      [:circle
       {:cx x :cy y :r radius :fill fill :stroke stroke :stroke-width 1.2}]
      [:line {:x1 (- x offset) :y1 y :x2 (+ x offset) :y2 y :stroke stroke}]
@@ -49,7 +62,8 @@
 (defn document []
   (let [nodes (subscribe [:nodes])]
     [:g 
-     (map-indexed #(-> ^{:key %1} [node (position 0 %1)]) @nodes)
+     (map-indexed (fn [n [k v]] ^{:key k} [node (merge (position 0 n) v)])
+                  @nodes)
      [add-point (position 0 (count @nodes))]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
