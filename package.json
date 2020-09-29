@@ -11,7 +11,6 @@
     "dev": "concurrently \"npm:watch:cljs\" \"npm:watch:ts\" \"npm:electron:start\"",
     "test": "shadow-cljs compile test",
     "release": "shadow-cljs compile app && tsc && npm run electron:make",
-
     "watch:cljs": "shadow-cljs watch app test",
     "watch:ts": "tsc --watch --preserveWatchOutput",
     "electron:start": "electron-forge start",

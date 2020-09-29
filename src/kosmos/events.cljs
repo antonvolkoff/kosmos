@@ -14,9 +14,9 @@
  :init
  (fn [_ _]
    {:window-title (title "untitled")
-    :db {:nodes []}}))
+    :db {:nodes {}}}))
 
-(reg-event-fx 
+(reg-event-fx
  :menu/clicked-open
  (fn [_ [_ path]]
    {:window-title (-> path filename title)}))
@@ -31,7 +31,16 @@
  (fn [_ [_ path]]
    {:window-title (-> path filename title)}))
 
-(reg-event-db
- :clicked-add-point
- (fn [db _]
-   (update-in db [:nodes] conj {})))
+(defn add-node 
+  [db _]
+  (let [id (random-uuid)
+        node {:id id :value ""}]
+    (assoc-in db [:nodes id] node)))
+
+(reg-event-db :add-node add-node)
+
+(defn change-node-value
+  [db [_ id new-value]]
+  (assoc-in db [:nodes id :value] new-value))
+
+(reg-event-db :change-node-value change-node-value)
