@@ -1,20 +1,15 @@
 (ns kosmos.core
-  (:require [reagent.dom :as dom]
-            [kosmos.fx]
-            [kosmos.events]
-            [kosmos.subs]
-            [kosmos.components :refer [canvas]]
-            [kosmos.flag :refer [enabled?]]
-            [kosmos.api]
-            [re-frame.core :as rf]))
+  (:require [reagent.dom :as rdom]
+            [re-frame.core :refer [dispatch]]))
 
-(defn render-svg-canvas []
-  (let [el (.getElementById js/document "app")]
-    (dom/render [canvas] el)))
+(def placeholder-id "app")
 
 (defn ^:dev/after-load start []
-  (when (enabled? :svg) (render-svg-canvas)))
+  (dispatch [:start])
+  (->> placeholder-id
+       (.getElementById js/document)
+       (rdom/render [:div "application"])))
 
-(defn start! [] 
-  (rf/dispatch [:init])
+(defn init! []
+  (dispatch [:init])
   (start))

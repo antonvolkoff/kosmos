@@ -2,10 +2,13 @@
  :dependencies [[reagent "1.0.0-alpha2"]
                 [re-frame "1.1.1"]
                 [org.clojure/tools.reader "1.3.3"]]
- :builds {:app {:target :browser
-                :output-dir "dist/js"
+ :builds {:main {:target :node-script
+                 :output-to "resources/desktop/main.js"
+                 :main kosmos.electron/main}
+          :app {:target :browser
+                :output-dir "resources/desktop/js"
                 :js-options {:js-provider :require}
-                :modules {:main {:init-fn kosmos.core/start!}}}
+                :modules {:app {:init-fn kosmos.core/init!}}}
           :test {:target :node-test
                  :output-to "out/test/node.js"
                  :autorun true}}}

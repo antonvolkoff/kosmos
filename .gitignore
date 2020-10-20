@@ -5,3 +5,5 @@ out/
 .DS_Store
 .shadow-cljs
 .calva
+resources/desktop/js
+resources/desktop/main.js
