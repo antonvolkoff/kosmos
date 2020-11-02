@@ -18,7 +18,7 @@ function DemoVideo() {
 }
 
 export default function Index() {
-  const downloadURL = "https://github.com/antonvolkoff/kosmos/releases/tag/v20.3.0";
+  const downloadURL = "https://github.com/antonvolkoff/kosmos/releases/tag/v20.3.2";
   const githubURL = "https://github.com/antonvolkoff/kosmos";
 
   return <div>
@@ -48,8 +48,8 @@ export default function Index() {
         <p>Experimental Instrument For Touch Programming</p>
         <nav>
           <ul>
-            <li><a href={githubURL}>Source Code</a></li>
-            <li><a href="mailto:contact@antonvolkoff.com">Contact via Mail</a></li>
+            <li><a href={downloadURL}>Latest Release</a></li>
+            <li><a href={githubURL}>Source</a></li>
           </ul>
         </nav>
       </header>
@@ -65,17 +65,20 @@ export default function Index() {
       <section>
         <img src="welcome.png" />
       </section>
-      <section>
-        <h3 id="updates">Updates</h3>
-        <p><em>July 5th 2020:</em> Released v20.3.0</p>
-        <p><em>June 8th 2020:</em> Released v20.2.0</p>
-        <p><em>May 5th 2020:</em> Kosmos project was publicly announced</p>
-      </section>
+      <DemoVideo />
       <section>
         <h3 id="download">Download</h3>
         <p>
-          <a href={downloadURL}>v20.3.0</a>
+          <a href={downloadURL}>v20.3.2</a>
         </p>
+      </section>
+      <section>
+        <h3 id="updates">Updates</h3>
+        <p><em>November 2nd, 2020:</em> Release v20.3.2</p>
+        <p><em>July 25nd, 2020:</em> Release v20.3.1</p>
+        <p><em>July 5th 2020:</em> Released v20.3.0</p>
+        <p><em>June 8th 2020:</em> Released v20.2.0</p>
+        <p><em>May 5th 2020:</em> Kosmos project was publicly announced</p>
       </section>
       <section>
         <small>Kosmos © Anton Volkov</small>
