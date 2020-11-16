@@ -36,6 +36,7 @@
 
       /* ------ Layout ------ */
       .container {
+        margin-top: 46px;
         display: flex;
       }
 
@@ -90,25 +91,23 @@
       }
 
       .control {
-        position: absolute;
+        position: fixed;
         left: 0;
         right: 0;
         top: 0;
         display: flex;
-        justify-content: center;
+        height: 46px;
         z-index: 100;
       }
 
       .control-panel {
         display: flex;
-        /* align-items: center; */
-        min-width: 50px;
+        min-width: 100%;
         background-color: #fff;
-        border: 1px solid #D0D0D0;
+        border-bottom: 1px solid #D0D0D0;
         color: #5A5A5A;
         padding: .5rem 1rem;
-        border-radius: 0 0 12px 12px;
-        box-shadow: 0px 1px 20px rgba(0, 0, 0, 0.2);
+        box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.1);
       }
 
       .control-panel.at-top {
@@ -184,10 +183,10 @@
   <body>
     <div id="app"></div>
 
+    <div id="control" class="control"></div>
     <div class="container">
       <div id="canvas" class="canvas"></div>
       <div id="transcript"></div>
-      <div id="control" class="control"></div>
     </div>
 
     <script src="dist/js/main.js"></script>

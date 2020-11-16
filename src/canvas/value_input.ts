@@ -7,8 +7,10 @@ import { toLocalCoordinates, ViewField } from "./view_field";
 
 let element: HTMLTextAreaElement;
 
+const canvasOffsetY = 46;
+
 const setPosition = (view: ViewField, x: number, y: number) => {
-  const p = toLocalCoordinates(view, { x: x + 2, y: y - 9 });
+  const p = toLocalCoordinates(view, { x: x + 2, y: y - 9 + canvasOffsetY});
   element.style.left = `${p.x}px`;
   element.style.top = `${p.y}px`;
 }
@@ -27,7 +29,7 @@ const setValue = (value: string) => {
 
 const focus = () => {
   element.hidden = false;
-  element.focus();
+  element.focus({ preventScroll: true });
 };
 
 const blur = () => {
