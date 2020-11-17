@@ -24,7 +24,7 @@ jobs:
           tools-deps: "1.10.1"
 
       - name: Setup node
-        uses: actions/setup-node@v1.4.3
+        uses: actions/setup-node@v2-beta
         with:
           node-version: "12.18.3"
 

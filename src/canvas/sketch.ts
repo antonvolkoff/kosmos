@@ -21,6 +21,8 @@ import {
   getMode,
 } from "./selectors";
 
+const canvasOffsetY = 46;
+
 export default function Sketch(store: Store<ApplicationState>) {
   return (p: p5) => {
     let state = store.getState();
@@ -98,14 +100,16 @@ export default function Sketch(store: Store<ApplicationState>) {
       p.frameRate(30);
       p.noLoop();
 
+      const windowHeight = p.windowHeight - canvasOffsetY;
+
       store.dispatch(
         actions.changeWindowDimensions({
           width: p.windowWidth,
-          height: p.windowHeight,
+          height: windowHeight,
         }),
       );
 
-      p.createCanvas(p.windowWidth, p.windowHeight);
+      p.createCanvas(p.windowWidth, windowHeight);
       bg = p.createGraphics(1000, 1000);
       bg = drawBackground(p, bg, backgroundColor);
 
