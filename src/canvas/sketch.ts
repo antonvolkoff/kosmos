@@ -5,7 +5,6 @@ import { Point } from "./geometry";
 import { buildNodeGeometry, NodeGeometry } from "./node_geometry";
 import { buildEdgeGeometry } from "./edge_geometry";
 import * as Legend from "./legend";
-import { gridPoints, gridTiles } from "./grid";
 import * as ViewField from "./view_field";
 import * as ValueInput from "./value_input";
 import { ApplicationState } from "../store";
@@ -44,7 +43,6 @@ export default function Sketch(store: Store<ApplicationState>) {
       p.redraw();
     });
 
-    const backgroundColor = p.color("#FDFDFD");
     let bg: p5.Graphics = null;
 
     const createClickPayload = (x: number, y: number): Click => {
@@ -65,18 +63,6 @@ export default function Sketch(store: Store<ApplicationState>) {
 
     function drawAtoms() {
       atoms.forEach((node) => buildNodeGeometry(node).draw(p, node.selected));
-    }
-
-    function drawBackground(s: p5, bg: p5.Graphics, color: p5.Color) {
-      const renderPoint = ({x, y}: Point) => bg.point(x, y);
-
-      bg.background(color);
-      bg.stroke(210);
-      bg.strokeWeight(3);
-
-      gridPoints(bg.width, bg.height).forEach(renderPoint);
-
-      return bg;
     }
 
     const drawLegend = () => {
@@ -111,19 +97,17 @@ export default function Sketch(store: Store<ApplicationState>) {
 
       p.createCanvas(p.windowWidth, windowHeight);
       bg = p.createGraphics(1000, 1000);
-      bg = drawBackground(p, bg, backgroundColor);
 
       ValueInput.setup(p, store);
     };
 
     p.draw = () => {
+      p.clear();
+
       const { x, y } = translateValue;
       p.translate(x, y);
 
       ValueInput.update(p, store);
-
-      const tiles = gridTiles(viewField, bg.width, bg.height);
-      tiles.forEach(({ x, y, width, height}) => p.image(bg, x, y, width, height));
 
       if (draftConnection) {
         p.push();

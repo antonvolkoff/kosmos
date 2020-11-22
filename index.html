@@ -21,6 +21,11 @@
 
       canvas { display: block; }
 
+      canvas[resize] {
+        width: 100%;
+        height: 100%;
+      }
+
       .node-input {
         font-size: 14px;
         font-family: monospace;
@@ -32,6 +37,7 @@
         overflow: hidden;
         position: absolute;
         line-height: 17px;
+        z-index: 20;
       }
 
       /* ------ Layout ------ */
@@ -178,14 +184,26 @@
       .r-6-hover:hover {
         r: 6;
       }
+
+      .app {
+        position: absolute;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .canvas-wrapper {
+        z-index: 10;
+      }
     </style>
   </head>
   <body>
-    <div id="app"></div>
-
     <div id="control" class="control"></div>
     <div class="container">
-      <div id="canvas" class="canvas"></div>
+      <div id="app" class="app"></div>
+      <div class="canvas-wrapper">
+        <div id="canvas" class="canvas"></div>
+      </div>
       <div id="transcript"></div>
     </div>
 
