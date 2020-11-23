@@ -2,7 +2,7 @@
 
 (def gap 20)
 
-(defn make-grid [width height]
+(defn make-grid [[width height]]
   (let [columns (take (/ width gap) (range))
         rows (take (/ height gap) (range))]
     (apply concat
