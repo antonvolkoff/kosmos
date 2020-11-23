@@ -13,14 +13,12 @@
    {:component-did-mount #(on-mount (rdom/dom-node %))
     :reagent-render #(-> [:canvas {:resize ""}])}))
 
-(defn- render [^paper/PaperScope scope]
-  (let [view ^paper/CanvasView (.-view scope)
-        width (-> view .-bounds .-width)
-        height (-> view .-bounds .-height)
-        bg-rect #js {:from #js [0 0] :to #js [width height] :fillColor background-color}
+(defn- render [^paper/PaperScope _scope]
+  (let [size [3840 2160] ; This is an 4K size
+        bg-rect #js {:from #js [0 0] :to (clj->js size) :fillColor background-color}
         dot-circles (map (fn [center]
                            #js {:center (clj->js center) :radius 1.25 :fillColor grid-color})
-                         (make-grid width height))]
+                         (make-grid size))]
     (new paper/Path.Rectangle bg-rect)
     (dorun (map #(new paper/Path.Circle %) dot-circles))))
 
