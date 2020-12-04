@@ -154,6 +154,7 @@ const doubleClickedMiddleware: Middleware = ({ getState, dispatch }) => {
     const newAtom = createAtom(x, y);
 
     dispatch(addAtom(newAtom));
+    window.kosmos.api.dispatch(["canvas/add-node", newAtom]);
     dispatch(canvasSlice.actions.select(newAtom.id));
   };
 
@@ -229,6 +230,7 @@ const connectAtomsMiddleware: Middleware = ({ getState, dispatch }) => {
       const targetId = action.payload.atomId;
       if (sourceId !== targetId) {
         dispatch(connectAtoms(sourceId, targetId));
+        window.kosmos.api.dispatch(["canvas/connect-nodes", [sourceId, targetId]]);
       }
     }
 

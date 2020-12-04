@@ -3,6 +3,7 @@
             [kosmos.fx]
             [kosmos.events]
             [kosmos.subs]
+            [kosmos.canvas.events]
             [kosmos.canvas.views :as canvas]
             [kosmos.api]
             [re-frame.core :as rf]))

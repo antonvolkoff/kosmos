@@ -1,8 +1,7 @@
 import * as p5 from "p5";
 import { Store } from "redux";
 
-import { Point } from "./geometry";
-import { buildNodeGeometry, NodeGeometry } from "./node_geometry";
+import { buildNodeGeometry } from "./node_geometry";
 import { buildEdgeGeometry } from "./edge_geometry";
 import * as Legend from "./legend";
 import * as ViewField from "./view_field";
@@ -117,7 +116,7 @@ export default function Sketch(store: Store<ApplicationState>) {
       }
 
 
-      drawEdges();
+      // drawEdges();
       drawAtoms();
       drawLegend();
     };
