@@ -2,7 +2,8 @@
   (:require [re-frame.core :refer [subscribe]]
             [kosmos.paper :refer [paper-container rectangle circle layer line]]
             [kosmos.canvas.grid :refer [make-grid]]
-            [kosmos.canvas.subs]))
+            [kosmos.canvas.subs]
+            [clojure.data]))
 
 (def background-color "#fdfdfd")
 
@@ -32,4 +33,3 @@
      [layer
       (map (fn [edge-attrs] [edge edge-attrs])
            edges)]]))
-

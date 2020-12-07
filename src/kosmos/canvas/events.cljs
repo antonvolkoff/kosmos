@@ -11,5 +11,9 @@
   (let [edge {:source-id source-id :target-id target-id}]
     (update-in db [:canvas :edges] (fnil conj []) edge)))
 
+(defn move-node [db [_ [node-id x y]]]
+  (update-in db [:canvas :nodes node-id] merge {:x x :y y}))
+
 (reg-event-db :canvas/add-node add-node)
 (reg-event-db :canvas/connect-nodes connect-nodes)
+(reg-event-db :canvas/move-node move-node)
