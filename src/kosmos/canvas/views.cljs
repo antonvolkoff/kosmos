@@ -5,9 +5,9 @@
             [kosmos.canvas.subs]
             [clojure.data]))
 
-(def background-color "#fdfdfd")
+(def background-color "#FDFDFD")
 
-(def grid-color "#ccc")
+(def grid-color "#CCC")
 
 (def edge-color "#969696")
 
@@ -20,11 +20,13 @@
   [{:keys [x y]}]
   [x y])
 
-(defn edge [{:keys [source target]}]
-  [line {:from (edge-point source) :to (edge-point target) :stroke-color edge-color}])
+(defn edge [{:keys [source-id target-id]}]
+  (let [source @(subscribe [:canvas/node source-id])
+        target @(subscribe [:canvas/node target-id])]
+    [line {:from (edge-point source) :to (edge-point target) :stroke-color edge-color}]))
 
 (defn background []
-  (let [edges @(subscribe [:canvas/edges-with-nodes])]
+  (let [edges @(subscribe [:canvas/edges])]
     [paper-container
      [layer
       [rectangle {:from [0 0] :size canvas-size :fill-color background-color}]

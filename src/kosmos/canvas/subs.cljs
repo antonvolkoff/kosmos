@@ -6,12 +6,14 @@
  (fn [db _]
    (:canvas db)))
 
-(defn edge->edge-with-nodes
-  [{:keys [source-id target-id]} nodes]
-  {:source (get nodes source-id) :target (get nodes target-id)})
+(reg-sub
+ :canvas/edges
+ :<-[:canvas]
+ (fn [canvas]
+   (:edges canvas)))
 
 (reg-sub
- :canvas/edges-with-nodes
+ :canvas/node
  :<-[:canvas]
- (fn [{:keys [nodes edges]}]
-   (map #(edge->edge-with-nodes % nodes) edges)))
+ (fn [canvas [_ node-id]]
+   (get-in canvas [:nodes node-id])))
