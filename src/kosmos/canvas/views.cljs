@@ -19,6 +19,9 @@
   [{:keys [x y]}]
   [x y])
 
+(defn edge-id [{:keys [source-id target-id]}]
+  (str source-id "-" target-id))
+
 (defn edge [{:keys [source-id target-id]}]
   (let [source @(subscribe [:canvas/node source-id])
         target @(subscribe [:canvas/node target-id])
@@ -38,4 +41,4 @@
       [:rect {:x 0 :y 0 :width width :height height :fill background-color}]
       (map-indexed (fn [idx attrs] ^{:key (str "dot-" idx)} [dot attrs]) dots)]
      [:g
-      (map (fn [edge-attrs] [edge edge-attrs]) edges)]]))
+      (map (fn [edge-attrs] ^{:key (edge-id edge-attrs)} [edge edge-attrs]) edges)]]))

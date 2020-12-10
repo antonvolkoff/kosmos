@@ -36,6 +36,7 @@ export default function Keyboard(store: Store<ApplicationState>) {
 
   const deleteSelectedAtom = () => {
     const parent = parentSelector(state.default, selectedAtom.id);
+    window.kosmos.api.dispatch(["canvas/delete-node", selectedAtom.id]);
     store.dispatch(deleteAtomAction(selectedAtom.id));
     if (parent) store.dispatch(select(parent.id));
   };
