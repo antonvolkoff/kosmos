@@ -33,12 +33,16 @@
   (let [[cx cy] center]
     [:circle {:cx cx :cy cy :r radius :fill fill}]))
 
+(defn edges-layer []
+  (let [edges @(subscribe [:canvas/edges])]
+    [:g
+     (for [edge-attrs edges]
+       ^{:key (edge-id edge-attrs)} [edge edge-attrs])]))
+
 (defn background []
-  (let [edges @(subscribe [:canvas/edges])
-        [width height] canvas-size]
+  (let [[width height] canvas-size]
     [:svg {:width 800 :height 800}
      [:g
       [:rect {:x 0 :y 0 :width width :height height :fill background-color}]
       (map-indexed (fn [idx attrs] ^{:key (str "dot-" idx)} [dot attrs]) dots)]
-     [:g
-      (map (fn [edge-attrs] ^{:key (edge-id edge-attrs)} [edge edge-attrs]) edges)]]))
+     [edges-layer]]))

@@ -37,6 +37,7 @@
     "@types/graphlib-dot": "^0.6.1",
     "electron-devtools-installer": "^2.2.4",
     "graphlib-dot": "^0.6.4",
+    "highlight.js": "9.18.1",
     "htm": "^3.0.3",
     "immer": "^6.0.5",
     "lodash": "4.17.19",
@@ -45,6 +46,7 @@
     "p5": "1.0.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-highlight.js": "1.0.7",
     "redux": "^4.0.5",
     "redux-devtools-extension": "^2.13.8"
   },
