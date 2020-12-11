@@ -201,7 +201,7 @@ const moveDragAtomMiddleware: Middleware = ({ getState, dispatch }) => {
           y: mouse.y + deltaY,
         });
         dispatch(moveAtom(draggedAtomId, x, y));
-        window.kosmos.api.dispatch(['canvas/move-node', [draggedAtomId, x, y]]);
+        window.kosmos.api.dispatch(['canvas/node-moved', [draggedAtomId, x, y]]);
       }
     }
 
@@ -213,7 +213,7 @@ const moveDragAtomMiddleware: Middleware = ({ getState, dispatch }) => {
         const { x, y } = mouse;
         const { deltaX, deltaY } = clickOffset;
         dispatch(moveAtom(draggedAtomId, x + deltaX, y + deltaY));
-        window.kosmos.api.dispatch(['canvas/move-node', [draggedAtomId, x + deltaX, y + deltaY]]);
+        window.kosmos.api.dispatch(['canvas/node-moved', [draggedAtomId, x + deltaX, y + deltaY]]);
       }
     }
   };
