@@ -40,8 +40,9 @@
        ^{:key (edge-id edge-attrs)} [edge edge-attrs])]))
 
 (defn background []
-  (let [[width height] canvas-size]
-    [:svg {:width 800 :height 800}
+  (let [[width height] canvas-size
+        window-size @(subscribe [:window])]
+    [:svg {:width (:width window-size) :height (:height window-size)}
      [:g
       [:rect {:x 0 :y 0 :width width :height height :fill background-color}]
       (map-indexed (fn [idx attrs] ^{:key (str "dot-" idx)} [dot attrs]) dots)]

@@ -31,7 +31,7 @@
  (fn [_ [_ path]]
    {:window-title (-> path filename title)}))
 
-(defn add-node 
+(defn add-node
   [db _]
   (let [id (random-uuid)
         node {:id id :value ""}]
