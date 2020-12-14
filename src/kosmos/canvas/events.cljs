@@ -2,6 +2,9 @@
   (:require [re-frame.core :refer [reg-event-db reg-event-fx]]
             [clojure.walk :refer [keywordize-keys]]))
 
+(defn init [db _]
+  (assoc db :canvas {:nodes {} :edges [] :offset {:x 0 :y 0}}))
+
 (defn add-node [db [_ node]]
   (let [node (keywordize-keys node)
         node-id (:id node)]
@@ -49,8 +52,16 @@
       (update-in [:canvas :nodes] dissoc node-id)
       (update-in [:canvas :edges] remove-all-edges node-id)))
 
+(defn moved [db [_ offset-change]]
+  (let [dx (get offset-change "dx") dy (get offset-change "dy") bound 0]
+    (-> db
+        (update-in [:canvas :offset :x] (fn [x] (min bound (- x dx))))
+        (update-in [:canvas :offset :y] (fn [y] (min bound (- y dy)))))))
+
+(reg-event-db :canvas/init init)
 (reg-event-db :canvas/add-node add-node)
 (reg-event-db :canvas/connect-nodes connect-nodes)
 (reg-event-fx :canvas/node-moved node-moved)
 (reg-event-fx :canvas/node-moved-by node-moved-by)
 (reg-event-db :canvas/delete-node delete-node)
+(reg-event-db :canvas/moved moved)

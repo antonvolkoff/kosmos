@@ -17,3 +17,9 @@
  :<-[:canvas]
  (fn [canvas [_ node-id]]
    (get-in canvas [:nodes node-id])))
+
+(reg-sub
+ :canvas/offset
+ :<-[:canvas]
+ (fn [canvas _]
+   (:offset canvas)))

@@ -39,6 +39,14 @@
      (for [edge-attrs edges]
        ^{:key (edge-id edge-attrs)} [edge edge-attrs])]))
 
+(defn offset->transform [{:keys [x y]}]
+  (str "translate(" x " " y ")"))
+
+(defn movable-group [children]
+  (let [offset @(subscribe [:canvas/offset])]
+    [:g {:transform (offset->transform offset)}
+     children]))
+
 (defn background []
   (let [[width height] canvas-size
         window-size @(subscribe [:window])]
@@ -46,4 +54,5 @@
      [:g
       [:rect {:x 0 :y 0 :width width :height height :fill background-color}]
       (map-indexed (fn [idx attrs] ^{:key (str "dot-" idx)} [dot attrs]) dots)]
-     [edges-layer]]))
+     [movable-group
+      [edges-layer]]]))

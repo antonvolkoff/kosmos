@@ -16,4 +16,5 @@
 (defn start! []
   (rf/dispatch [:init])
   (rf/dispatch [:window/init])
+  (rf/dispatch [:canvas/init])
   (start))

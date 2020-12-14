@@ -163,6 +163,7 @@ export default function Sketch(store: Store<ApplicationState>) {
       store.dispatch(
         actions.moveCanvas({ deltaX: event.deltaX, deltaY: event.deltaY })
       );
+      window.kosmos.api.dispatch(["canvas/moved", { dx: event.deltaX, dy: event.deltaY }]);
     }
 
     p.mouseDragged = () => {
