@@ -59,13 +59,13 @@ const buildNodeGeometry = (atom: any): NodeGeometry => {
       // s.rect(border.x, border.y, border.width, border.height, borderRadius);
       s.pop();
 
-      if (selected) {
-        s.push();
-        s.fill(s.color(fillColor));
-        s.stroke(s.color(strokeColor));
-        this.dragPoints.forEach((p) => s.circle(p.x, p.y, 2));
-        s.pop();
-      }
+      // if (selected) {
+      //   s.push();
+      //   s.fill(s.color(fillColor));
+      //   s.stroke(s.color(strokeColor));
+      //   this.dragPoints.forEach((p) => s.circle(p.x, p.y, 2));
+      //   s.pop();
+      // }
 
       s.push();
       s.fill(50);
