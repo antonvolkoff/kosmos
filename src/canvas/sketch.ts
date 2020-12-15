@@ -1,14 +1,11 @@
 import * as p5 from "p5";
 import { Store } from "redux";
 
-import { Point } from "./geometry";
-import { buildNodeGeometry, NodeGeometry } from "./node_geometry";
-import { buildEdgeGeometry } from "./edge_geometry";
+import { buildNodeGeometry } from "./node_geometry";
 import * as Legend from "./legend";
 import * as ViewField from "./view_field";
 import * as ValueInput from "./value_input";
 import { ApplicationState } from "../store";
-import Edge from "./edge";
 
 import { actions, Click } from "./canvasReducer";
 import {
@@ -56,10 +53,6 @@ export default function Sketch(store: Store<ApplicationState>) {
 
       return { mouse, atomId, dragArea, clickOffset };
     };
-
-    function drawEdges() {
-      edges.forEach((edge) => buildEdgeGeometry(edge).draw(p, edge.selected));
-    }
 
     function drawAtoms() {
       atoms.forEach((node) => buildNodeGeometry(node).draw(p, node.selected));
@@ -116,8 +109,6 @@ export default function Sketch(store: Store<ApplicationState>) {
         p.pop();
       }
 
-
-      drawEdges();
       drawAtoms();
       drawLegend();
     };
@@ -143,16 +134,6 @@ export default function Sketch(store: Store<ApplicationState>) {
     p.mouseClicked = () => {
       const payload = createClickPayload(p.mouseX, p.mouseY);
       store.dispatch(actions.clicked(payload));
-
-      if (payload.atomId) return;
-
-      // Check for click on edge
-      edges.forEach((edge) => {
-        if (buildEdgeGeometry(edge).isWithin(payload.mouse)) {
-          const edgeId = Edge.id(edge);
-          store.dispatch(actions.selectEdge(edgeId));
-        }
-      });
     }
 
     p.doubleClicked = () => {
@@ -164,6 +145,7 @@ export default function Sketch(store: Store<ApplicationState>) {
       store.dispatch(
         actions.moveCanvas({ deltaX: event.deltaX, deltaY: event.deltaY })
       );
+      window.kosmos.api.dispatch(["canvas/moved", { dx: event.deltaX, dy: event.deltaY }]);
     }
 
     p.mouseDragged = () => {
