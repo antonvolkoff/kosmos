@@ -4,14 +4,14 @@
             [kosmos.events]
             [kosmos.subs]
             [kosmos.canvas.events]
-            [kosmos.canvas.views :as canvas]
+            [kosmos.canvas.views :as canvas.views]
             [kosmos.api]
             [kosmos.window.core]
             [re-frame.core :as rf]))
 
 (defn ^:dev/after-load start []
   (let [element (.getElementById js/document "app")]
-    (rdom/render [canvas/background] element)))
+    (rdom/render [canvas.views/canvas] element)))
 
 (defn start! []
   (rf/dispatch [:init])

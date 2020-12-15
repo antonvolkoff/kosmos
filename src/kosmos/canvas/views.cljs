@@ -47,7 +47,7 @@
     [:g {:transform (offset->transform offset)}
      children]))
 
-(defn background []
+(defn canvas []
   (let [[width height] canvas-size
         window-size @(subscribe [:window])]
     [:svg {:width (:width window-size) :height (:height window-size)}
