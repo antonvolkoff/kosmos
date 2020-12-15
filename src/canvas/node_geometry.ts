@@ -56,7 +56,7 @@ const buildNodeGeometry = (atom: any): NodeGeometry => {
       s.stroke(s.color(strokeColor));
 
       const border = this.border;
-      s.rect(border.x, border.y, border.width, border.height, borderRadius);
+      // s.rect(border.x, border.y, border.width, border.height, borderRadius);
       s.pop();
 
       if (selected) {

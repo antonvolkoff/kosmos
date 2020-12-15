@@ -23,3 +23,5 @@
  :<-[:canvas]
  (fn [canvas _]
    (:offset canvas)))
+
+(reg-sub :canvas/nodes :<- [:canvas] #(-> %1 :nodes vals))

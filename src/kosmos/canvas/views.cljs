@@ -1,6 +1,7 @@
 (ns kosmos.canvas.views
   (:require [re-frame.core :refer [subscribe]]
             [kosmos.canvas.grid :refer [make-grid]]
+            [kosmos.canvas.components :as components]
             [kosmos.canvas.subs]
             [clojure.data]))
 
@@ -11,6 +12,12 @@
 (def edge-color "#969696")
 
 (def canvas-size [3840 2160]) ; This is an 4K size
+
+(def node-style
+  {:fill-color "#ffffff"
+   :stroke-color "#999999"
+   :stroke-width 1.5
+   :border-radius 6})
 
 (def dots (map (fn [center] {:center center :radius 1.25 :fill grid-color})
                (make-grid canvas-size)))
@@ -39,6 +46,12 @@
      (for [edge-attrs edges]
        ^{:key (edge-id edge-attrs)} [edge edge-attrs])]))
 
+(defn nodes-layer []
+  (let [nodes @(subscribe [:canvas/nodes])]
+    [:g
+     (for [node nodes]
+       ^{:key (:id node)} [components/node node node-style])]))
+
 (defn offset->transform [{:keys [x y]}]
   (str "translate(" x " " y ")"))
 
@@ -55,4 +68,6 @@
       [:rect {:x 0 :y 0 :width width :height height :fill background-color}]
       (map-indexed (fn [idx attrs] ^{:key (str "dot-" idx)} [dot attrs]) dots)]
      [movable-group
-      [edges-layer]]]))
+      [edges-layer]]
+     [movable-group
+      [nodes-layer]]]))

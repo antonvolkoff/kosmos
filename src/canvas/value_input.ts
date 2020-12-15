@@ -41,6 +41,7 @@ const handleInput = (store: Store<ApplicationState>) => {
   const atom = getSelectedAtom(store.getState());
   const value = element.value;
   store.dispatch(setAtomValue(atom.id, value));
+  window.kosmos.api.dispatch(["canvas/node-value-changed", [atom.id, value]]);
   setValue(value);
 };
 

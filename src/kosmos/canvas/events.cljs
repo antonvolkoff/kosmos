@@ -37,6 +37,9 @@
                 [:dispatch [:canvas/node-moved-by [child-id dx dy]]])
               child-ids)}))
 
+(defn node-value-changed [db [_ [node-id new-value]]]
+  (assoc-in db [:canvas :nodes node-id :value] new-value))
+
 (defn part-of-edge? [{:keys [source-id target-id]} node-id]
   (or (= node-id source-id) (= node-id target-id)))
 
@@ -63,5 +66,6 @@
 (reg-event-db :canvas/connect-nodes connect-nodes)
 (reg-event-fx :canvas/node-moved node-moved)
 (reg-event-fx :canvas/node-moved-by node-moved-by)
+(reg-event-db :canvas/node-value-changed node-value-changed)
 (reg-event-db :canvas/delete-node delete-node)
 (reg-event-db :canvas/moved moved)
