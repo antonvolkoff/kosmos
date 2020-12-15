@@ -37,7 +37,7 @@
     "@types/graphlib-dot": "^0.6.1",
     "electron-devtools-installer": "^2.2.4",
     "graphlib-dot": "^0.6.4",
-    "highlight.js": "9.18.1",
+    "highlight.js": "10.4.1",
     "htm": "^3.0.3",
     "immer": "^6.0.5",
     "lodash": "4.17.19",
