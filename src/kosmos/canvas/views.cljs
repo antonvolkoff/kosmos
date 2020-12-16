@@ -1,5 +1,5 @@
 (ns kosmos.canvas.views
-  (:require [re-frame.core :refer [subscribe]]
+  (:require [re-frame.core :refer [subscribe dispatch]]
             [kosmos.canvas.grid :refer [make-grid]]
             [kosmos.canvas.components :as components]
             [kosmos.canvas.subs]
@@ -16,6 +16,7 @@
 (def node-style
   {:fill-color "#ffffff"
    :stroke-color "#999999"
+   :active-color "#79B8FF"
    :stroke-width 1.5
    :border-radius 6})
 
@@ -50,7 +51,10 @@
   (let [nodes @(subscribe [:canvas/nodes])]
     [:g
      (for [node nodes]
-       ^{:key (:id node)} [components/node node node-style])]))
+       ^{:key (:id node)}
+       [components/node {:data node
+                         :style node-style
+                         :on-click #(dispatch [:canvas/node-clicked (:id node)])}])]))
 
 (defn offset->transform [{:keys [x y]}]
   (str "translate(" x " " y ")"))
@@ -64,7 +68,7 @@
   (let [[width height] canvas-size
         window-size @(subscribe [:window])]
     [:svg {:width (:width window-size) :height (:height window-size)}
-     [:g
+     [:g {:on-click #(dispatch [:canvas/background-clicked])}
       [:rect {:x 0 :y 0 :width width :height height :fill background-color}]
       (map-indexed (fn [idx attrs] ^{:key (str "dot-" idx)} [dot attrs]) dots)]
      [movable-group

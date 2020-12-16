@@ -2,6 +2,27 @@
   (:require [re-frame.core :refer [reg-event-db reg-event-fx]]
             [clojure.walk :refer [keywordize-keys]]))
 
+; TODO: Find a better place for this function
+(defn deactivate-all [nodes]
+  (->> nodes
+       (map (fn [[id node]] [id (assoc node :active? false)]))
+       (into {})))
+
+; TODO: Find a better place for this function
+(defn activate [nodes node-id]
+  (assoc-in nodes [node-id :active?] true))
+
+; TODO: Find a better place for this function
+(defn part-of-edge? [{:keys [source-id target-id]} node-id]
+  (or (= node-id source-id) (= node-id target-id)))
+
+; TODO: Find a better place for this function
+(def not-part-of-edge? (complement part-of-edge?))
+
+; TODO: Find a better place for this function
+(defn remove-all-edges [edges node-id]
+  (filter #(not-part-of-edge? % node-id) edges))
+
 (defn init [db _]
   (assoc db :canvas {:nodes {} :edges [] :offset {:x 0 :y 0}}))
 
@@ -40,14 +61,10 @@
 (defn node-value-changed [db [_ [node-id new-value]]]
   (assoc-in db [:canvas :nodes node-id :value] new-value))
 
-(defn part-of-edge? [{:keys [source-id target-id]} node-id]
-  (or (= node-id source-id) (= node-id target-id)))
-
-(def not-part-of-edge? (complement part-of-edge?))
-
-; Should this belong to a different namespace?
-(defn remove-all-edges [edges node-id]
-  (filter #(not-part-of-edge? % node-id) edges))
+(defn node-clicked [db [_ node-id]]
+  (-> db
+      (update-in [:canvas :nodes] deactivate-all)
+      (update-in [:canvas :nodes] activate node-id)))
 
 (defn delete-node [db [_ node-id]]
   (print node-id)
@@ -61,11 +78,16 @@
         (update-in [:canvas :offset :x] (fn [x] (min bound (- x dx))))
         (update-in [:canvas :offset :y] (fn [y] (min bound (- y dy)))))))
 
+(defn background-clicked [db _]
+  (update-in db [:canvas :nodes] deactivate-all))
+
 (reg-event-db :canvas/init init)
 (reg-event-db :canvas/add-node add-node)
 (reg-event-db :canvas/connect-nodes connect-nodes)
 (reg-event-fx :canvas/node-moved node-moved)
 (reg-event-fx :canvas/node-moved-by node-moved-by)
 (reg-event-db :canvas/node-value-changed node-value-changed)
+(reg-event-db :canvas/node-clicked node-clicked)
 (reg-event-db :canvas/delete-node delete-node)
 (reg-event-db :canvas/moved moved)
+(reg-event-db :canvas/background-clicked background-clicked)
