@@ -18,7 +18,9 @@
    :stroke-color "#999999"
    :active-color "#79B8FF"
    :stroke-width 1.5
-   :border-radius 6})
+   :border-radius 6
+   :font-family "monospace"
+   :font-size "14px"})
 
 (def dots (map (fn [center] {:center center :radius 1.25 :fill grid-color})
                (make-grid canvas-size)))

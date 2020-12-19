@@ -67,14 +67,14 @@ const buildNodeGeometry = (atom: any): NodeGeometry => {
       //   s.pop();
       // }
 
-      s.push();
-      s.fill(50);
-      s.strokeWeight(0);
-      s.textAlign(s.LEFT, s.TOP);
-      s.textFont("monospace", 14);
-      s.textLeading(17);
-      s.text(this.value, this.text.x, this.text.y);
-      s.pop();
+      // s.push();
+      // s.fill(50);
+      // s.strokeWeight(0);
+      // s.textAlign(s.LEFT, s.TOP);
+      // s.textFont("monospace", 14);
+      // s.textLeading(17);
+      // s.text(this.value, this.text.x, this.text.y);
+      // s.pop();
     },
 
     isWithin(mouse) {

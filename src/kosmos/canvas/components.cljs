@@ -23,6 +23,8 @@
   (let [{:keys [x y value active?]} data
         border-x (- x 20)
         border-y (- y 14)
+        text-x (+ x 2)
+        text-y (+ y 4)
         width (calculate-width 60 value)
         height 28
         stroke (if active? (:active-color style) (:stroke-color style))]
@@ -36,4 +38,10 @@
              :stroke-width (:stroke-width style)
              :rx (:border-radius style)
              :on-click on-click}]
-     (when active? [drag-area {:x (- x 21) :y (- y 12)} stroke])]))
+     (when active? [drag-area {:x (- x 21) :y (- y 12)} stroke])
+     [:text
+      {:x text-x
+       :y text-y
+       :font-family (:font-family style)
+       :font-size (:font-size style)}
+      value]]))
