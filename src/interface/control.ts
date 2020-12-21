@@ -38,10 +38,7 @@ export default function Control({ store }: Props) {
   const onDeleteClick = (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (selectedAtomId) {
-      store.dispatch(deleteAtom(selectedAtomId));
-      window.kosmos.api.dispatch(["canvas/delete-node", selectedAtomId]);
-    }
+    if (selectedAtomId) store.dispatch(deleteAtom(selectedAtomId));
     if (selectedEdgeId) store.dispatch(deleteEdge(selectedEdgeId));
   }
 

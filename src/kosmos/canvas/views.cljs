@@ -1,58 +1,19 @@
 (ns kosmos.canvas.views
-  (:require [re-frame.core :refer [subscribe]]
-            [kosmos.canvas.grid :refer [make-grid]]
-            [kosmos.canvas.subs]
-            [clojure.data]))
+  (:require [kosmos.paper :refer [paper-container rectangle circle layer]]
+            [kosmos.canvas.grid :refer [make-grid]]))
 
-(def background-color "#FDFDFD")
+(def background-color "#fdfdfd")
 
-(def grid-color "#CCC")
-
-(def edge-color "#969696")
+(def grid-color "#ccc")
 
 (def canvas-size [3840 2160]) ; This is an 4K size
 
-(def dots (map (fn [center] {:center center :radius 1.25 :fill grid-color})
+(def dots (map (fn [center] {:center center :radius 1.25 :fill-color grid-color})
                (make-grid canvas-size)))
 
-(defn edge-point
-  [{:keys [x y]}]
-  [x y])
-
-(defn edge-id [{:keys [source-id target-id]}]
-  (str source-id "-" target-id))
-
-(defn edge [{:keys [source-id target-id]}]
-  (let [source @(subscribe [:canvas/node source-id])
-        target @(subscribe [:canvas/node target-id])
-        [x1 y1] (edge-point source)
-        [x2 y2] (edge-point target)]
-    [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :stroke edge-color}]))
-
-(defn dot [{:keys [center radius fill]}]
-  (let [[cx cy] center]
-    [:circle {:cx cx :cy cy :r radius :fill fill}]))
-
-(defn edges-layer []
-  (let [edges @(subscribe [:canvas/edges])]
-    [:g
-     (for [edge-attrs edges]
-       ^{:key (edge-id edge-attrs)} [edge edge-attrs])]))
-
-(defn offset->transform [{:keys [x y]}]
-  (str "translate(" x " " y ")"))
-
-(defn movable-group [children]
-  (let [offset @(subscribe [:canvas/offset])]
-    [:g {:transform (offset->transform offset)}
-     children]))
-
-(defn canvas []
-  (let [[width height] canvas-size
-        window-size @(subscribe [:window])]
-    [:svg {:width (:width window-size) :height (:height window-size)}
-     [:g
-      [:rect {:x 0 :y 0 :width width :height height :fill background-color}]
-      (map-indexed (fn [idx attrs] ^{:key (str "dot-" idx)} [dot attrs]) dots)]
-     [movable-group
-      [edges-layer]]]))
+(defn background []
+  [paper-container
+   [layer
+    [rectangle {:from [0 0] :size canvas-size :fill-color background-color}]
+    (map-indexed (fn [idx dot] ^{:key (str "dot-" idx)} [circle dot])
+                 dots)]])

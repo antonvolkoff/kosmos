@@ -154,7 +154,6 @@ const doubleClickedMiddleware: Middleware = ({ getState, dispatch }) => {
     const newAtom = createAtom(x, y);
 
     dispatch(addAtom(newAtom));
-    window.kosmos.api.dispatch(["canvas/add-node", newAtom]);
     dispatch(canvasSlice.actions.select(newAtom.id));
   };
 
@@ -201,7 +200,6 @@ const moveDragAtomMiddleware: Middleware = ({ getState, dispatch }) => {
           y: mouse.y + deltaY,
         });
         dispatch(moveAtom(draggedAtomId, x, y));
-        window.kosmos.api.dispatch(['canvas/node-moved', [draggedAtomId, x, y]]);
       }
     }
 
@@ -213,7 +211,6 @@ const moveDragAtomMiddleware: Middleware = ({ getState, dispatch }) => {
         const { x, y } = mouse;
         const { deltaX, deltaY } = clickOffset;
         dispatch(moveAtom(draggedAtomId, x + deltaX, y + deltaY));
-        window.kosmos.api.dispatch(['canvas/node-moved', [draggedAtomId, x + deltaX, y + deltaY]]);
       }
     }
   };
@@ -232,7 +229,6 @@ const connectAtomsMiddleware: Middleware = ({ getState, dispatch }) => {
       const targetId = action.payload.atomId;
       if (sourceId !== targetId) {
         dispatch(connectAtoms(sourceId, targetId));
-        window.kosmos.api.dispatch(["canvas/connect-nodes", [sourceId, targetId]]);
       }
     }
 
