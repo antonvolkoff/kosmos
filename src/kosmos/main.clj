@@ -1,4 +1,5 @@
 (ns kosmos.main
+  (:require [nrepl.server :as nrepl])
   (:import [org.lwjgl.glfw GLFW GLFWErrorCallback GLFWKeyCallback]
            [org.lwjgl.opengl GL GL11]
            [org.lwjgl.system MemoryUtil]
@@ -52,6 +53,8 @@
 (defn color [rgba]
   (.intValue (Long/valueOf rgba)))
 
+(def message (atom "Hello, Wolrd!"))
+
 (defn draw [canvas]
   (.clear canvas (color 0xFFFFFFFF))
   (let [typeface (-> (FontMgr/getDefault) (.matchFamilyStyle "monospace" FontStyle/NORMAL))
@@ -59,11 +62,20 @@
         red-paint (-> (new Paint) (.setColor (color 0xFFFF0000)))
         black-paint (-> (new Paint) (.setColor (color 0xFF000000)))]
     (.drawCircle canvas 50 50 30 red-paint)
-    (.drawString canvas "Hello, world!" 100 100 font black-paint)))
+    (.drawString canvas @message 100 100 font black-paint)))
 
-(defn -main [& _args]
+(defn start []
   (set-error-callback)
   (let [window (init)]
     (render-loop window draw)
     (cleanup window))
   (free-error-callback))
+
+(defn -main [& _args]
+  (nrepl/start-server :port 8888)
+  (doto (Thread. #(clojure.main/main))
+    (.start))
+  (start))
+
+(comment
+  (+ 1 1 1))

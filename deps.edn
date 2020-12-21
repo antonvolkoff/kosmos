@@ -5,4 +5,7 @@
         org.lwjgl/lwjgl-glfw$natives-macos {:mvn/version "3.2.3"}
         org.lwjgl/lwjgl-opengl {:mvn/version "3.2.3"}
         org.lwjgl/lwjgl-opengl$natives-macos {:mvn/version "3.2.3"}
-        org.jetbrains.skija/skija-macos {:mvn/version "0.6.43"}}}
+        org.jetbrains.skija/skija-macos {:mvn/version "0.6.43"}
+        nrepl/nrepl {:mvn/version "0.8.3"}}
+ :aliases {:nrepl {:extra-deps
+                   {nrepl/nrepl {:mvn/version "0.8.3"}}}}}
