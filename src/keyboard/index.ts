@@ -36,7 +36,6 @@ export default function Keyboard(store: Store<ApplicationState>) {
 
   const deleteSelectedAtom = () => {
     const parent = parentSelector(state.default, selectedAtom.id);
-    window.kosmos.api.dispatch(["canvas/delete-node", selectedAtom.id]);
     store.dispatch(deleteAtomAction(selectedAtom.id));
     if (parent) store.dispatch(select(parent.id));
   };
@@ -69,13 +68,10 @@ export default function Keyboard(store: Store<ApplicationState>) {
     const { x, y } = nearestGridPoint({ x: selectedAtom.x + width, y: selectedAtom.y + height });
     const child = createAtom(x, y);
     store.dispatch(addAtom(child));
-    window.kosmos.api.dispatch(["canvas/add-node", child]);
 
     store.dispatch(connectAtoms(selectedAtom.id, child.id));
-    window.kosmos.api.dispatch(["canvas/connect-nodes", [selectedAtom.id, child.id]]);
     store.dispatch(select(child.id));
   };
-
   const handleCmdEnter = (event) => {
     if (!selectedAtom) return;
 
@@ -90,10 +86,8 @@ export default function Keyboard(store: Store<ApplicationState>) {
     const { x, y } = nearestGridPoint({ x: selectedAtom.x, y: bottomAtom.y + height });
     const child = createAtom(x, y);
     store.dispatch(addAtom(child));
-    window.kosmos.api.dispatch(["canvas/add-node", child]);
 
     store.dispatch(connectAtoms(parent.id, child.id));
-    window.kosmos.api.dispatch(["canvas/connect-nodes", [parent.id, child.id]]);
     store.dispatch(select(child.id));
   };
 
