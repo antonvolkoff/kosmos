@@ -4,7 +4,12 @@
             [kosmos.window :as window])
   (:import [org.jetbrains.skija Paint Font FontMgr FontStyle]))
 
-(defonce lines (atom ""))
+(defonce db (atom []))
+
+(defonce lines (atom []))
+
+(defn random-uuid []
+  (java.util.UUID/randomUUID))
 
 (defn read-lines [path]
   (str/split-lines (slurp path)))
@@ -18,7 +23,7 @@
 (defn color [rgba]
   (.intValue (Long/valueOf rgba)))
 
-(defn draw [canvas]
+(defn draw [db canvas]
   (.clear canvas (color 0xFFF0F0F0))
   (let [typeface (-> (FontMgr/getDefault) (.matchFamilyStyle "JetBrains Mono" FontStyle/NORMAL))
         font (-> (new Font) (.setTypeface typeface) (.setSize 32))
@@ -26,10 +31,25 @@
     (doall
      (map-indexed (fn [idx line]
                     (.drawString canvas line 40 (+ 60 (* idx 44)) font black-paint))
-                  @lines))))
+                  @lines)))
+  db)
 
-(defn keypress [_win _key _scancode _action _mods]
-  true)
+(defn keyboard-event? [{:keys [keyboard-event]}]
+  (boolean keyboard-event))
+
+(defn process-keyboard [db]
+  (remove keyboard-event? db))
+
+(defn update-window [canvas]
+  (let [updated-db (-> @db
+                       (process-keyboard)
+                       (draw canvas))]
+    (reset! db updated-db)))
+
+(defn keypress [_win key scancode action mods]
+  (let [entity {:id (random-uuid)
+                :keyboard-event {:key key :action action :scancode scancode :mods mods}}]
+    (swap! db conj entity)))
 
 (defn -main [& _args]
   (nrepl/start-server :port 8888)
@@ -37,7 +57,7 @@
   (window/create {:width 800
                   :height 640
                   :title "Kosmos"
-                  :on-draw draw
+                  :on-draw update-window
                   :on-keypress keypress}))
 
 (comment
