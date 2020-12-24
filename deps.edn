@@ -1,0 +1,12 @@
+{:mvn/repos {"space-maven" {:url "https://packages.jetbrains.team/maven/p/skija/maven"}}
+ :deps {org.lwjgl/lwjgl {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl$natives-macos {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl-glfw {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl-glfw$natives-macos {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl-opengl {:mvn/version "3.2.3"}
+        org.lwjgl/lwjgl-opengl$natives-macos {:mvn/version "3.2.3"}
+        org.jetbrains.skija/skija-macos {:mvn/version "0.6.43"}
+        nrepl/nrepl {:mvn/version "0.8.3"}
+        org.clojure/core.async {:mvn/version "1.3.610"}}
+ :aliases {:nrepl {:extra-deps
+                   {nrepl/nrepl {:mvn/version "0.8.3"}}}}}
