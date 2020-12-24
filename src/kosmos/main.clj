@@ -5,6 +5,7 @@
 
 (ns kosmos.main
   (:require [clojure.string :as str]
+            [clojure.core.async :refer [go]]
             [nrepl.server :as nrepl]
             [kosmos.window :as window]
             [kosmos.db :as db]
@@ -38,8 +39,8 @@
   {:id (db/random-uuid) :keyboard {:events []}})
 
 (defn -main [& _args]
-  (nrepl/start-server :port 8888)
-  (-> (Thread. #(clojure.main/main)) (.start))
+  (go (nrepl/start-server :port 7888)
+      (println "nREPL is running on localhost:7888"))
 
   (db/add! (make-caret))
   (db/add! (make-keyboard))

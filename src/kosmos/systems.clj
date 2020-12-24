@@ -36,10 +36,6 @@
 
 (defn draw-text [db canvas]
   (let [text-shapes (filter text-shape? (vals db))]
-    #_(doall
-     (map-indexed (fn [idx line]
-                    (.drawString canvas line 40 (+ 60 (* idx 44)) font black-paint))
-                  text-shapes))
     (->> text-shapes (map (draw-text-fn canvas)) doall)))
 
 (defn draw-lines [db canvas]
