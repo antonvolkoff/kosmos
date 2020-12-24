@@ -13,5 +13,9 @@
 (defn random-uuid []
   (java.util.UUID/randomUUID))
 
+; TODO: Rename to insert! or transact!
 (defn add! [entity]
   (swap! db assoc (:id entity) entity))
+
+(defn select-by-key [db key]
+  (filter #(contains? % key) (vals db)))

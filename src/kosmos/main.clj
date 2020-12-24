@@ -20,13 +20,18 @@
 (defn apply-system [state system]
   (merge state (system state)))
 
+(defn update-db [state]
+  (reset! db/db (:db state))
+  state)
+
 (defn tick [canvas]
   (-> {:db @db/db :canvas canvas}
       (apply-system systems/keyboard)
-      (apply-system systems/render)))
+      (apply-system systems/render)
+      (update-db)))
 
 (defn keypress [_win key scancode action mods]
-  (let [keyboard-entity (first (filter #(contains? % :keyboard) @db/db))
+  (let [keyboard-entity (first (db/select-by-key @db/db :keyboard))
         event {:key key :action action :scancode scancode :mods mods}]
     (db/add! (update-in keyboard-entity [:keyboard :events] conj event))))
 
@@ -58,7 +63,5 @@
                       {:id (db/random-uuid)
                        :shape [:text {:x 40 :y (+ 60 (* idx 44)) :value line}]}))
        (map db/add!)
-       (doall))
+       (doall)))
 
-  ; Edit
-  (swap! kosmos.main/lines conj "; Adding comment"))
