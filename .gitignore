@@ -7,3 +7,5 @@ out/
 .calva
 *.log
 .cpcache/
+.clj-kondo
+.lsp
