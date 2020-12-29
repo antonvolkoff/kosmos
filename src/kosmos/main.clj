@@ -4,64 +4,53 @@
 ; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (ns kosmos.main
-  (:require [clojure.string :as str]
-            [clojure.core.async :refer [go]]
-            [nrepl.server :as nrepl]
-            [kosmos.window :as window]
-            [kosmos.db :as db]
-            [kosmos.systems :as systems]))
+  (:require [nrepl.server :as nrepl]
+            [kosmos.core :as core]
+            [kosmos.lib.glfw :as glfw]
+            [kosmos.lib.opengl :as gl]
+            [kosmos.lib.skija :as skija]))
 
-(defn read-lines [path]
-  (str/split-lines (slurp path)))
+(def window-width 640)
 
-(defn save-lines [path lines]
-  (spit path (str/join "\r\n" lines)))
+(def window-height 480)
 
-(defn apply-system [state system]
-  (merge state (system state)))
+(def window-title "Kosmos")
 
-(defn update-db [state]
-  (reset! db/db (:db state))
-  state)
-
-(defn tick [canvas]
-  (-> {:db @db/db :canvas canvas}
-      (apply-system systems/keyboard)
-      (apply-system systems/render)
-      (update-db)))
-
-(defn keypress [_win key scancode action mods]
-  (let [keyboard-entity (first (db/select-by-key @db/db :keyboard))
-        event {:key key :action action :scancode scancode :mods mods}]
-    (db/add! (update-in keyboard-entity [:keyboard :events] conj event))))
-
-(defn make-caret []
-  {:id (db/random-uuid)
-   :caret {}
-   :shape [:line {:x0 100 :y0 100 :x1 100 :y1 130}]})
-
-(defn make-keyboard []
-  {:id (db/random-uuid) :keyboard {:events []}})
+(def nrepl-port 7888)
 
 (defn -main [& _args]
-  (go (nrepl/start-server :port 7888)
-      (println "nREPL is running on localhost:7888"))
+  (core/init)
 
-  (db/add! (make-caret))
-  (db/add! (make-keyboard))
+  (glfw/init)
+  (glfw/window-hint glfw/visible glfw/glfw-false)
+  (glfw/window-hint glfw/resizable glfw/glfw-false)
+  (glfw/window-hint glfw/cocoa_retina_framebuffer glfw/glfw-true)
+  (let [window (glfw/create-window window-width window-height window-title glfw/null glfw/null)]
+    (glfw/make-context-current window)
+    (glfw/swap-interval 1)
+    (glfw/show-window window)
+    (gl/create-capabilities)
 
-  (window/create {:width 800
-                  :height 640
-                  :title "Kosmos"
-                  :on-draw tick
-                  :on-keypress keypress}))
+    (nrepl/start-server :port nrepl-port)
+    (println (str "nREPL server started at locahost:" nrepl-port))
 
-(comment
-  ; Open file
-  (->> (kosmos.main/read-lines "/Users/antonvolkoff/Code/github.com/antonvolkoff/kosmos/src/kosmos/fx.cljs")
-       (map-indexed (fn [idx line]
-                      {:id (db/random-uuid)
-                       :shape [:text {:x 40 :y (+ 60 (* idx 44)) :value line}]}))
-       (map db/add!)
-       (doall)))
+    (glfw/set-key-callback window core/handle-key)
 
+    (let [framebuffer-id (gl/gl-get-integer gl/gl-framebuffer-binding)
+          context (skija/make-gl-context)
+          target (skija/make-gl-target (* window-width 2) (* window-height 2) framebuffer-id)
+          surface (skija/make-surface-from-target context target)
+          canvas (.getCanvas surface)]
+      (while (not (glfw/window-should-close? window))
+        (try
+          (core/render canvas)
+          (catch Exception e
+            (println "Error: " (.getMessage e))))
+        (.flush context)
+        (glfw/swap-buffers window)
+        (glfw/poll-events))
+
+    (glfw/hide-window window)
+    (glfw/destroy-window window)
+    (glfw/terminate)
+    (shutdown-agents))))

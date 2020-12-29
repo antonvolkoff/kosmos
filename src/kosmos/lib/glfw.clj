@@ -1,3 +1,8 @@
+; Copyright (c) 2020 Anton Volkov. All rights reserved.
+; This Source Code Form is subject to the terms of the Mozilla Public
+; License, v. 2.0. If a copy of the MPL was not distributed with this
+; file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 (ns kosmos.lib.glfw
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallback]
            [org.lwjgl.system MemoryUtil]))
@@ -43,3 +48,5 @@
 (defn destroy-window [w] (GLFW/glfwDestroyWindow w))
 
 (defn set-error-callback [cb] (GLFW/glfwSetErrorCallback cb))
+
+(defn hide-window [w] (GLFW/glfwHideWindow w))

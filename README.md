@@ -13,6 +13,14 @@ get you started:
 | npm run test | Compiles code and executes tests. |
 | npm run release | Compiles code and packages application with electron forge. |
 
-## License
+# Version v21.0
 
-[MIT](https://github.com/antonvolkoff/kosmos/blob/master/LICENSE.md)
+## Development
+
+Kosmos uses `make` tool to execute development tasks.
+
+| Command | Description |
+|---------|-------------|
+| make run | Starts application with nREPL. Best workflow for development. |
+
+
