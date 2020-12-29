@@ -36,7 +36,7 @@
 
     (glfw/set-key-callback window core/handle-key)
 
-    (let [framebuffer-id (gl/gl-get-integer 0x8CA6)
+    (let [framebuffer-id (gl/gl-get-integer gl/gl-framebuffer-binding)
           context (skija/make-gl-context)
           target (skija/make-gl-target (* window-width 2) (* window-height 2) framebuffer-id)
           surface (skija/make-surface-from-target context target)

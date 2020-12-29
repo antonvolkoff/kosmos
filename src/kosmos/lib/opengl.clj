@@ -4,8 +4,10 @@
 ; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (ns kosmos.lib.opengl
-  (:import [org.lwjgl.opengl GL GL11]))
+  (:import [org.lwjgl.opengl GL GL46]))
+
+(def gl-framebuffer-binding GL46/GL_FRAMEBUFFER_BINDING)
 
 (defn create-capabilities [] (GL/createCapabilities))
 
-(defn gl-get-integer [i] (GL11/glGetInteger i))
+(defn gl-get-integer [i] (GL46/glGetInteger i))
