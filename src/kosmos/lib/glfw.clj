@@ -7,6 +7,21 @@
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallback]
            [org.lwjgl.system MemoryUtil]))
 
+; Keyboard keys
+(def glfw-key-right GLFW/GLFW_KEY_RIGHT)
+(def glfw-key-left GLFW/GLFW_KEY_LEFT)
+(def glfw-key-down GLFW/GLFW_KEY_DOWN)
+(def glfw-key-up GLFW/GLFW_KEY_UP)
+
+; The key or mouse button was released.
+(def glfw-release GLFW/GLFW_RELEASE)
+
+; The key or mouse button was pressed.
+(def glfw-press GLFW/GLFW_PRESS)
+
+; The key was held down until it repeated.
+(def glfw-repeat GLFW/GLFW_REPEAT)
+
 (def null MemoryUtil/NULL)
 
 (def visible GLFW/GLFW_VISIBLE)

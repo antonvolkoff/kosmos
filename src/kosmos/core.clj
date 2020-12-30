@@ -6,8 +6,10 @@
 (ns kosmos.core
   (:require [clojure.string :as str]
             [clojure.zip :as zip]
+            [clojure.core.async :refer [>!!]]
             [kosmos.lib.skija :refer [color]]
-            [kosmos.db :as db])
+            [kosmos.db :as db]
+            [kosmos.behaviours.keyboard :as keyboard])
   (:import [org.jetbrains.skija Canvas FontMgr FontStyle Paint Font]))
 
 (def black-paint (.setColor (Paint.) (color 0xFF000000)))
@@ -39,37 +41,35 @@
   (println "Warning: Unknown element"))
 
 (defn init []
-  (swap! db/db assoc :buffer {:tokens []}))
+  (swap! db/db assoc :buffer {:tokens []})
+  (keyboard/init))
 
 (defn render [^Canvas canvas]
   (.clear canvas (color 0xFFFAFAFA))
   (let [layer (.save canvas)
-        shapes (db/select-by-key @db/db :shape)
         tokens (get-in @db/db [:buffer :tokens])
         lines (map #(str/join " " %) tokens)
         text-shapes (map-indexed (fn [idx line]
-                                   {:x 40 :y (+ 20 (* 40 (inc idx))) :value line})
+                                   [:text {:x 40 :y (+ 20 (* 40 (inc idx))) :value line}])
                                  lines)]
-    (->> shapes
-         (map :shape)
-         (map #(draw canvas %))
-         doall)
     (->> text-shapes
-         (map #(draw-text canvas %))
+         (map #(draw canvas %))
          doall)
     (.restoreToCount canvas layer)))
 
 (defn handle-key [_win key scancode action mods]
-  {:key key :action action :scancode scancode :mods mods})
+  (>!! keyboard/in {:key key :action action :scancode scancode :mods mods}))
 
 (comment
   ; load text into a buffer
   (let [lines (str/split-lines "# Hello\r\nThis is a sentance.\r\n")
         tokens (mapv #(str/split % #" ") lines)]
-    (swap! db/db assoc :buffer {:tokens tokens}))
+    (swap! db/db assoc :buffer {:tokens tokens
+                                :zipper (zip/vector-zip tokens)}))
 
   ; update text in a buffer
-  (let [tokens (get-in @db/db [:buffer :tokens])
-        zipper (zip/vector-zip tokens)
-        updated (-> zipper zip/down zip/down (zip/replace "#") zip/root)]
-    (swap! db/db assoc :buffer {:tokens updated})))
+  (let [zipper (get-in @db/db [:buffer :zipper])
+        updated-tokens (-> zipper (zip/replace "X") zip/root)]
+    (swap! db/db assoc-in [:buffer :tokens] updated-tokens))
+
+  (get-in @db/db [:buffer :zipper]))
