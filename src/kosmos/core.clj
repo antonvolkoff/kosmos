@@ -7,8 +7,7 @@
   (:require [clojure.string :as str]
             [clojure.zip :as zip]
             [kosmos.lib.skija :refer [color]]
-            [kosmos.db :as db]
-            [kosmos.systems :as systems])
+            [kosmos.db :as db])
   (:import [org.jetbrains.skija Canvas FontMgr FontStyle Paint Font]))
 
 (def black-paint (.setColor (Paint.) (color 0xFF000000)))
@@ -40,16 +39,9 @@
   (println "Warning: Unknown element"))
 
 (defn init []
-  (db/add! {:id "caret" :caret {} :shape [:line {:x0 100 :y0 100 :x1 100 :y1 130}]})
-  (db/add! {:id "keyboard" :keyboard {:events []}})
   (swap! db/db assoc :buffer {:tokens []}))
 
-(defn update-state []
-  (let [changeset (systems/keyboard @db/db)]
-    (swap! db/db merge changeset)))
-
 (defn render [^Canvas canvas]
-  (update-state)
   (.clear canvas (color 0xFFFAFAFA))
   (let [layer (.save canvas)
         shapes (db/select-by-key @db/db :shape)
@@ -68,9 +60,7 @@
     (.restoreToCount canvas layer)))
 
 (defn handle-key [_win key scancode action mods]
-  (let [keyboard-entity (first (db/select-by-key @db/db :keyboard))
-        event {:key key :action action :scancode scancode :mods mods}]
-    (db/add! (update-in keyboard-entity [:keyboard :events] conj event))))
+  {:key key :action action :scancode scancode :mods mods})
 
 (comment
   ; load text into a buffer
