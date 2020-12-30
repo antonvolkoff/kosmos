@@ -1,3 +1,8 @@
+; Copyright (c) 2020 Anton Volkov. All rights reserved.
+; This Source Code Form is subject to the terms of the Mozilla Public
+; License, v. 2.0. If a copy of the MPL was not distributed with this
+; file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 (ns kosmos.behaviours.keyboard
   (:require [clojure.core.async :as async :refer [chan go-loop <!]]
             [clojure.spec.alpha :as s]
@@ -18,24 +23,29 @@
 (defn repeated? [{action :action}]
   (= action glfw/glfw-repeat))
 
-(defn move-down [db]
-  (update-in db [:buffer :zipper] zip/down))
+(defn find-buffer []
+  (db/pull @db/db '[:db/id :zipper] :buffer))
 
-(defn move-up [db]
-  (update-in db [:buffer :zipper] zip/up))
+(defn move-down [buffer]
+  [(update buffer :zipper zip/down)])
 
-(defn move-left [db]
-  (update-in db [:buffer :zipper] zip/left))
+(defn move-up [buffer]
+  [(update buffer :zipper zip/up)])
 
-(defn move-right [db]
-  (update-in db [:buffer :zipper] zip/right))
+(defn move-left [buffer]
+  [(update buffer :zipper zip/left)])
+
+(defn move-right [buffer]
+  [(update buffer :zipper zip/right)])
 
 (defn on-key-pressed [key]
   (condp = key
-    glfw/glfw-key-down (swap! db/db move-down)
-    glfw/glfw-key-up (swap! db/db move-up)
-    glfw/glfw-key-left (swap! db/db move-left)
-    glfw/glfw-key-right (swap! db/db move-right)))
+    glfw/glfw-key-down (->> (find-buffer) (move-down) (db/transact! db/db))
+    glfw/glfw-key-up (->> (find-buffer) (move-up) (db/transact! db/db))
+    glfw/glfw-key-left (->> (find-buffer) (move-left) (db/transact! db/db))
+    glfw/glfw-key-right (->> (find-buffer) (move-right) (db/transact! db/db))))
+
+(on-key-pressed glfw/glfw-key-down)
 
 (defn process [{:keys [key] :as signal}]
   (cond
@@ -45,5 +55,8 @@
 
 (defn init []
   (go-loop []
-    (process (<! in))
+    (try
+      (process (<! in))
+      (catch Exception e
+        (println "Error:" (.getMessage e))))
     (recur)))

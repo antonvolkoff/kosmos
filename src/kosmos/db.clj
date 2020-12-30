@@ -4,18 +4,15 @@
 ; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (ns kosmos.db
-  (:require [clojure.spec.alpha :as s]))
+  (:require [datascript.core :as datascript]))
 
-(s/def ::db map?)
+(def schema {:children {:db/cardinality :db.cardinality/many
+                        :db/valueType :db.type/ref}})
 
-(defonce db (atom {}))
+(defonce db (datascript/create-conn schema))
 
-(defn random-uuid []
-  (java.util.UUID/randomUUID))
+(def transact! datascript/transact!)
 
-; TODO: Rename to insert! or transact!
-(defn add! [entity]
-  (swap! db assoc (:id entity) entity))
+(def query datascript/q)
 
-(defn select-by-key [db key]
-  (filter #(contains? % key) (vals db)))
+(def pull datascript/pull)

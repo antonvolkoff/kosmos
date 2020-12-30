@@ -41,13 +41,13 @@
   (println "Warning: Unknown element"))
 
 (defn init []
-  (swap! db/db assoc :buffer {:tokens []})
+  (db/transact! db/db [{:db/ident :buffer :tokens [] :zipper (zip/vector-zip [])}])
   (keyboard/init))
 
 (defn render [^Canvas canvas]
   (.clear canvas (color 0xFFFAFAFA))
   (let [layer (.save canvas)
-        tokens (get-in @db/db [:buffer :tokens])
+        {tokens :tokens} (db/pull @db/db '[:tokens] :buffer)
         lines (map #(str/join " " %) tokens)
         text-shapes (map-indexed (fn [idx line]
                                    [:text {:x 40 :y (+ 20 (* 40 (inc idx))) :value line}])
@@ -62,14 +62,15 @@
 
 (comment
   ; load text into a buffer
-  (let [lines (str/split-lines "# Hello\r\nThis is a sentance.\r\n")
-        tokens (mapv #(str/split % #" ") lines)]
-    (swap! db/db assoc :buffer {:tokens tokens
-                                :zipper (zip/vector-zip tokens)}))
+  (let [tokens (->> "# Hello\r\nThis is a sentance.\r\n"
+                    str/split-lines
+                    (mapv #(str/split % #" ")))
+        txs [{:db/ident :buffer :tokens tokens :zipper (zip/vector-zip tokens)}]]
+    (db/transact! db/db txs))
 
   ; update text in a buffer
-  (let [zipper (get-in @db/db [:buffer :zipper])
-        updated-tokens (-> zipper (zip/replace "X") zip/root)]
-    (swap! db/db assoc-in [:buffer :tokens] updated-tokens))
+  (let [{id :db/id zipper :zipper} (db/pull @db/db '[:db/id :zipper] :buffer)
+        tokens (-> zipper (zip/replace "X") zip/root)]
+    (db/transact! db/db [{:db/id id :tokens tokens}]))
 
-  (get-in @db/db [:buffer :zipper]))
+  (db/pull @db/db '[:zipper] :buffer))
