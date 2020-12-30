@@ -6,7 +6,7 @@
 (ns kosmos.db
   (:require [clojure.spec.alpha :as s]))
 
-(s/def ::db vector?)
+(s/def ::db map?)
 
 (defonce db (atom {}))
 
