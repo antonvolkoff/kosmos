@@ -24,7 +24,10 @@
   (= action glfw/glfw-repeat))
 
 (defn find-buffer []
-  (db/pull @db/db '[:db/id :zipper] :buffer))
+  (try
+    (db/pull @db/db '[:db/id :zipper] :buffer)
+    (catch Exception _e
+      nil)))
 
 (defn move-down [buffer]
   [(update buffer :zipper zip/down)])
@@ -40,10 +43,10 @@
 
 (defn on-key-pressed [key]
   (condp = key
-    glfw/glfw-key-down (->> (find-buffer) (move-down) (db/transact! db/db))
-    glfw/glfw-key-up (->> (find-buffer) (move-up) (db/transact! db/db))
-    glfw/glfw-key-left (->> (find-buffer) (move-left) (db/transact! db/db))
-    glfw/glfw-key-right (->> (find-buffer) (move-right) (db/transact! db/db))))
+    glfw/glfw-key-down (some->> (find-buffer) (move-down) (db/transact! db/db))
+    glfw/glfw-key-up (some->> (find-buffer) (move-up) (db/transact! db/db))
+    glfw/glfw-key-left (some->> (find-buffer) (move-left) (db/transact! db/db))
+    glfw/glfw-key-right (some->> (find-buffer) (move-right) (db/transact! db/db))))
 
 (on-key-pressed glfw/glfw-key-down)
 
