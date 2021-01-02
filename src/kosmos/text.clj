@@ -1,45 +1,44 @@
 (ns kosmos.text
   (:require [blancas.kern.core :as kern]))
 
-(def document-node {:type :document
-                    :children [:paragraphs]
-                    :paragraphs []})
+(defn make-node [type]
+  {:type type :children []})
 
-(def paragraph-node {:type :paragraph
-                     :children [:sentences]
-                     :sentences []})
+(defn add-child [node child-type child]
+  (if child
+    (-> node
+        (update :children conj child-type)
+        (assoc child-type child))
+    node))
 
-(def sentence-node {:type :sentence
-                    :children [:words]
-                    :punctuation ""
-                    :words []})
+(def word (kern/<+> (kern/many
+                     (kern/<|> kern/letter kern/digit (kern/sym* \,)))))
 
-(defn build-ast [ast token]
-  ast)
-
-(def word (kern/<+> (kern/many kern/letter)))
-
-(def punctuation (kern/sym* \!))
+(def punctuation (kern/<|> (kern/sym* \!)
+                           (kern/sym* \.)
+                           (kern/sym* \?)))
 
 (def sentance
   (kern/bind
    [words (kern/many (kern/<< word (kern/optional kern/space)))
     end-of-sentance (kern/optional punctuation)]
-   (kern/return {:type :sentence
-                 :children [:words :punctuation]
-                 :words words
-                 :punctuation end-of-sentance})))
+   (kern/return
+    (-> (make-node :sentence)
+        (add-child :words (remove empty? words))
+        (add-child :punctuation end-of-sentance)))))
 
 (def paragraph
   (kern/bind
    [[sentances _] (kern/<*> (kern/many sentance)
                             (kern/optional kern/new-line*))]
-   (kern/return (assoc paragraph-node :sentences sentances))))
+   (kern/return
+    (-> (make-node :paragraph) (add-child :sentences sentances)))))
 
 (def document
   (kern/bind
    [paragraphs (kern/many paragraph)]
-   (kern/return (assoc document-node :paragraphs paragraphs))))
+   (kern/return
+    (-> (make-node :document) (add-child :paragraphs paragraphs)))))
 
 (defn unpack [text]
   (kern/value document text))

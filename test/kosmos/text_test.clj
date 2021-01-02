@@ -36,4 +36,36 @@
                                        :children [:words :punctuation]
                                        :punctuation \!
                                        :words ["Hello" "World"]}]}]}
-           (text/unpack "Hello World!\n")))))
+           (text/unpack "Hello World!\n")))
+
+    (is (= {:type :document
+            :children [:paragraphs]
+            :paragraphs [{:type :paragraph
+                          :children [:sentences]
+                          :sentences [{:type :sentence
+                                       :children [:words :punctuation]
+                                       :punctuation \.
+                                       :words ["One" "1"]}
+                                      {:type :sentence
+                                       :children [:words :punctuation]
+                                       :punctuation \?
+                                       :words ["Two"]}]}
+                         {:type :paragraph
+                          :children [:sentences]
+                          :sentences []}
+                         {:type :paragraph
+                          :children [:sentences]
+                          :sentences [{:type :sentence
+                                       :children [:words]
+                                       :words ["Three"]}]}]}
+           (text/unpack "One 1. Two?\n\nThree\n")))
+
+    (is (= {:type :document
+            :children [:paragraphs]
+            :paragraphs [{:type :paragraph
+                          :children [:sentences]
+                          :sentences [{:type :sentence
+                                       :children [:words :punctuation]
+                                       :punctuation \.
+                                       :words ["Hello," "John"]}]}]}
+           (text/unpack "Hello, John.\n")))))
