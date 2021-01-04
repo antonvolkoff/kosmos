@@ -10,7 +10,8 @@
             [kosmos.lib.skija :refer [color]]
             [kosmos.db :as db]
             [kosmos.behaviours.keyboard :as keyboard]
-            [kosmos.editor.view :refer [editor]])
+            [kosmos.editor.view :refer [editor]]
+            [kosmos.text :as text-format])
   (:import [org.jetbrains.skija Canvas FontMgr FontStyle Paint Font]))
 
 (def black-paint (.setColor (Paint.) (color 0xFF000000)))
@@ -60,6 +61,12 @@
                     str/split-lines
                     (mapv #(str/split % #" ")))
         txs [{:db/ident :buffer :tokens tokens :zipper (zip/vector-zip tokens)}]]
+    (db/transact! db/db txs))
+
+  (let [content "Hello\r\nThis is a sentance.\r\n"
+        ast (text-format/unpack content)
+        tokens (->> content str/split-lines (mapv #(str/split % #" ")))
+        txs [{:db/ident :buffer :tokens tokens :zipper (zip/vector-zip tokens) :ast ast}]]
     (db/transact! db/db txs))
 
   ; update text in a buffer

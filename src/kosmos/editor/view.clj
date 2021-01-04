@@ -8,7 +8,16 @@
 (defn line [idx line]
   (line* {:x 40 :y (+ 20 (* 40 (inc idx))) :value line}))
 
+(defn get-ast []
+  (:ast (db/pull @db/db '[:ast] :buffer)))
+
+(defn sentance [{words :words punctuation :punctuation}]
+  (str (str/join " " words) punctuation))
+
+(defn paragraph [{sentences :sentences}]
+  (str/join " " (map sentance sentences)))
+
 (defn editor []
-  (let [{tokens :tokens} (db/pull @db/db '[:tokens] :buffer)
-        lines (map #(str/join " " %) tokens)]
-    (map-indexed line lines)))
+  (->>
+   (mapv paragraph (:paragraphs (get-ast)))
+   (map-indexed line)))
