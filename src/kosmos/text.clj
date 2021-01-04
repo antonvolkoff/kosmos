@@ -1,44 +1,59 @@
 (ns kosmos.text
-  (:require [blancas.kern.core :as kern]))
+  (:require [clojure.set :refer [rename-keys]]
+            [clojure.zip :as z]
+            [blancas.kern.core :as kern]))
 
-(defn make-node [type]
-  {:type type :children []})
+(def children-types {:word :words
+                     :sentence :sentences
+                     :paragraph :paragraphs
+                     :punctuation :punctuation})
 
-(defn add-child [node child-type child]
-  (if child
-    (-> node
-        (update :children conj child-type)
-        (assoc child-type child))
-    node))
+(defn make-node [node children]
+  (let [children-by-type (rename-keys (group-by :type children) children-types)
+        children-keys (keys children-by-type)]
+    (cond-> (merge node children-by-type)
+      children-keys (assoc :children children-keys))))
 
-(def word (kern/<+> (kern/many
-                     (kern/<|> kern/letter kern/digit (kern/sym* \,)))))
+(def word
+  (kern/bind
+   [value (kern/<+> (kern/many (kern/<|> kern/letter kern/digit (kern/sym* \,))))]
+   (kern/return
+    (make-node {:type :word :value value} []))))
 
-(def punctuation (kern/<|> (kern/sym* \!)
-                           (kern/sym* \.)
-                           (kern/sym* \?)))
+(def punctuation
+  (kern/bind
+   [value (kern/<|> (kern/sym* \!) (kern/sym* \.) (kern/sym* \?))]
+   (kern/return
+    (make-node {:type :punctuation :value value} []))))
 
 (def sentance
   (kern/bind
-   [words (kern/many (kern/<< word (kern/optional kern/space)))
+   [begining-of-sentance (kern/optional kern/space)
+    words (kern/many (kern/<< word (kern/optional kern/space)))
     end-of-sentance (kern/optional punctuation)]
    (kern/return
-    (-> (make-node :sentence)
-        (add-child :words (remove empty? words))
-        (add-child :punctuation end-of-sentance)))))
+    (if end-of-sentance
+      (make-node {:type :sentence} (conj words end-of-sentance))
+      (make-node {:type :sentence} words)))))
 
 (def paragraph
   (kern/bind
    [[sentances _] (kern/<*> (kern/many sentance)
                             (kern/optional kern/new-line*))]
    (kern/return
-    (-> (make-node :paragraph) (add-child :sentences sentances)))))
+    (make-node {:type :paragraph :children [:sentences], :sentences []} sentances))))
 
 (def document
   (kern/bind
    [paragraphs (kern/many paragraph)]
    (kern/return
-    (-> (make-node :document) (add-child :paragraphs paragraphs)))))
+    (make-node {:type :document :children [:paragraphs] :paragraphs []} paragraphs))))
 
 (defn unpack [text]
   (kern/value document text))
+
+(defn zipper [root]
+  (let [branch? map?
+        children (fn [node]
+                   (mapcat #(% node) (:children node)))]
+    (z/zipper branch? children make-node root)))

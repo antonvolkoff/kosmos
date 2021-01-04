@@ -1,5 +1,6 @@
 (ns kosmos.text-test
   (:require [clojure.test :refer [deftest testing is]]
+            [clojure.zip :as z]
             [kosmos.text :as text]))
 
 (deftest unpack-test
@@ -34,8 +35,9 @@
                           :children [:sentences]
                           :sentences [{:type :sentence
                                        :children [:words :punctuation]
-                                       :punctuation \!
-                                       :words ["Hello" "World"]}]}]}
+                                       :punctuation [{:type :punctuation :value \!}]
+                                       :words [{:type :word :value "Hello"}
+                                               {:type :word :value "World"}]}]}]}
            (text/unpack "Hello World!\n")))
 
     (is (= {:type :document
@@ -44,12 +46,13 @@
                           :children [:sentences]
                           :sentences [{:type :sentence
                                        :children [:words :punctuation]
-                                       :punctuation \.
-                                       :words ["One" "1"]}
+                                       :punctuation [{:type :punctuation :value \.}]
+                                       :words [{:type :word :value "One"}
+                                               {:type :word :value "1"}]}
                                       {:type :sentence
                                        :children [:words :punctuation]
-                                       :punctuation \?
-                                       :words ["Two"]}]}
+                                       :punctuation [{:type :punctuation :value \?}]
+                                       :words [{:type :word :value "Two"}]}]}
                          {:type :paragraph
                           :children [:sentences]
                           :sentences []}
@@ -57,7 +60,7 @@
                           :children [:sentences]
                           :sentences [{:type :sentence
                                        :children [:words]
-                                       :words ["Three"]}]}]}
+                                       :words [{:type :word :value "Three"}]}]}]}
            (text/unpack "One 1. Two?\n\nThree\n")))
 
     (is (= {:type :document
@@ -66,6 +69,39 @@
                           :children [:sentences]
                           :sentences [{:type :sentence
                                        :children [:words :punctuation]
-                                       :punctuation \.
-                                       :words ["Hello," "John"]}]}]}
+                                       :punctuation [{:type :punctuation :value \.}]
+                                       :words [{:type :word :value "Hello,"}
+                                               {:type :word :value "John"}]}]}]}
            (text/unpack "Hello, John.\n")))))
+
+(def example-tree
+  {:type :document
+   :children [:paragraphs]
+   :paragraphs [{:type :paragraph
+                 :children [:sentences]
+                 :sentences [{:type :sentence
+                              :children [:words :punctuation]
+                              :punctuation [{:type :punctuation :value \.}]
+                              :words [{:type :word :value "Hello,"}
+                                      {:type :word :value "John"}]}]}]})
+
+(deftest zipper-test
+  (let [zipper (text/zipper example-tree)]
+    (testing "should fetch children"
+      (is (= [{:type :word :value "Hello,"}
+              {:type :word :value "John"}
+              {:type :punctuation :value \.}]
+             (-> zipper z/down z/down z/children))))
+
+    (testing "should add a child"
+      (is (= [{:type :word :value "Hello,"}
+              {:type :word :value "John"}
+              {:type :word :value "and"}
+              {:type :word :value "Emmy"}
+              {:type :punctuation :value \.}]
+             (-> zipper
+                 z/down
+                 z/down
+                 (z/append-child {:type :word :value "and"})
+                 (z/append-child {:type :word :value "Emmy"})
+                 (z/children)))))))
