@@ -9,7 +9,8 @@
             [clojure.core.async :refer [>!!]]
             [kosmos.lib.skija :refer [color]]
             [kosmos.db :as db]
-            [kosmos.behaviours.keyboard :as keyboard])
+            [kosmos.behaviours.keyboard :as keyboard]
+            [kosmos.editor.view :refer [editor]])
   (:import [org.jetbrains.skija Canvas FontMgr FontStyle Paint Font]))
 
 (def black-paint (.setColor (Paint.) (color 0xFF000000)))
@@ -46,15 +47,8 @@
 
 (defn render [^Canvas canvas]
   (.clear canvas (color 0xFFFAFAFA))
-  (let [layer (.save canvas)
-        {tokens :tokens} (db/pull @db/db '[:tokens] :buffer)
-        lines (map #(str/join " " %) tokens)
-        text-shapes (map-indexed (fn [idx line]
-                                   [:text {:x 40 :y (+ 20 (* 40 (inc idx))) :value line}])
-                                 lines)]
-    (->> text-shapes
-         (map #(draw canvas %))
-         doall)
+  (let [layer (.save canvas)]
+    (doall (map #(draw canvas %) (editor)))
     (.restoreToCount canvas layer)))
 
 (defn handle-key [_win key scancode action mods]
