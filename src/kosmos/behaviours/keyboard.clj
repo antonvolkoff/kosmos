@@ -6,9 +6,8 @@
 (ns kosmos.behaviours.keyboard
   (:require [clojure.core.async :as async :refer [chan go-loop <!]]
             [clojure.spec.alpha :as s]
-            [clojure.zip :as zip]
-            [kosmos.db :as db]
-            [kosmos.lib.glfw :as glfw]))
+            [kosmos.lib.glfw :as glfw]
+            [kosmos.editor.events :as editor]))
 
 (s/def ::keyboard-signal (s/keys :req [::key ::action ::scancode ::mode]))
 
@@ -23,32 +22,12 @@
 (defn repeated? [{action :action}]
   (= action glfw/glfw-repeat))
 
-(defn find-buffer []
-  (try
-    (db/pull @db/db '[:db/id :zipper] :buffer)
-    (catch Exception _e
-      nil)))
-
-(defn move-down [buffer]
-  [(update buffer :zipper zip/down)])
-
-(defn move-up [buffer]
-  [(update buffer :zipper zip/up)])
-
-(defn move-left [buffer]
-  [(update buffer :zipper zip/left)])
-
-(defn move-right [buffer]
-  [(update buffer :zipper zip/right)])
-
 (defn on-key-pressed [key]
   (condp = key
-    glfw/glfw-key-down (some->> (find-buffer) (move-down) (db/transact! db/db))
-    glfw/glfw-key-up (some->> (find-buffer) (move-up) (db/transact! db/db))
-    glfw/glfw-key-left (some->> (find-buffer) (move-left) (db/transact! db/db))
-    glfw/glfw-key-right (some->> (find-buffer) (move-right) (db/transact! db/db))))
-
-(on-key-pressed glfw/glfw-key-down)
+    glfw/glfw-key-down (editor/down)
+    glfw/glfw-key-up (editor/up)
+    glfw/glfw-key-left (editor/left)
+    glfw/glfw-key-right (editor/right)))
 
 (defn process [{:keys [key] :as signal}]
   (cond

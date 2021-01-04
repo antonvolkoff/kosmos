@@ -4,14 +4,12 @@
 ; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (ns kosmos.core
-  (:require [clojure.string :as str]
-            [clojure.zip :as zip]
-            [clojure.core.async :refer [>!!]]
+  (:require [clojure.core.async :refer [>!!]]
             [kosmos.lib.skija :refer [color]]
-            [kosmos.db :as db]
             [kosmos.behaviours.keyboard :as keyboard]
             [kosmos.editor.view :refer [editor]]
-            [kosmos.text :as text-format])
+            [kosmos.editor.events]
+            [kosmos.db :refer [seed!]])
   (:import [org.jetbrains.skija Canvas FontMgr FontStyle Paint Font]))
 
 (def black-paint (.setColor (Paint.) (color 0xFF000000)))
@@ -43,7 +41,7 @@
   (println "Warning: Unknown element"))
 
 (defn init []
-  (db/transact! db/db [{:db/ident :buffer :tokens [] :zipper (zip/vector-zip [])}])
+  (seed!)
   (keyboard/init))
 
 (defn render [^Canvas canvas]
@@ -54,24 +52,3 @@
 
 (defn handle-key [_win key scancode action mods]
   (>!! keyboard/in {:key key :action action :scancode scancode :mods mods}))
-
-(comment
-  ; load text into a buffer
-  (let [tokens (->> "# Hello\r\nThis is a sentance.\r\n"
-                    str/split-lines
-                    (mapv #(str/split % #" ")))
-        txs [{:db/ident :buffer :tokens tokens :zipper (zip/vector-zip tokens)}]]
-    (db/transact! db/db txs))
-
-  (let [content "Hello\r\nThis is a sentance.\r\n"
-        ast (text-format/unpack content)
-        tokens (->> content str/split-lines (mapv #(str/split % #" ")))
-        txs [{:db/ident :buffer :tokens tokens :zipper (zip/vector-zip tokens) :ast ast}]]
-    (db/transact! db/db txs))
-
-  ; update text in a buffer
-  (let [{id :db/id zipper :zipper} (db/pull @db/db '[:db/id :zipper] :buffer)
-        tokens (-> zipper (zip/replace "X") zip/root)]
-    (db/transact! db/db [{:db/id id :tokens tokens}]))
-
-  (db/pull @db/db '[:zipper] :buffer))

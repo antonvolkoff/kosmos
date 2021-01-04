@@ -4,10 +4,13 @@
 ; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (ns kosmos.db
-  (:require [datascript.core :as datascript]))
+  (:require [datascript.core :as datascript]
+            [kosmos.editor.db :as editor]))
 
-(def schema {:children {:db/cardinality :db.cardinality/many
-                        :db/valueType :db.type/ref}})
+(def base-schema {:children {:db/cardinality :db.cardinality/many
+                             :db/valueType :db.type/ref}})
+
+(def schema (merge base-schema editor/schema))
 
 (defonce db (datascript/create-conn schema))
 
@@ -16,3 +19,10 @@
 (def query datascript/q)
 
 (def pull datascript/pull)
+
+(def base-seeds [])
+
+(def seeds (concat base-seeds editor/seeds))
+
+(defn seed! []
+  (transact! db seeds))
