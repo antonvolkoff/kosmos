@@ -14,6 +14,9 @@
     (cond-> (merge node children-by-type)
       children-keys (assoc :children children-keys))))
 
+(defn children [node]
+  (mapcat #(% node) (:children node)))
+
 (def word
   (kern/bind
    [value (kern/<+> (kern/many (kern/<|> kern/letter kern/digit (kern/sym* \,))))]
@@ -53,7 +56,5 @@
   (kern/value document text))
 
 (defn zipper [root]
-  (let [branch? map?
-        children (fn [node]
-                   (mapcat #(% node) (:children node)))]
+  (let [branch? map?]
     (z/zipper branch? children make-node root)))

@@ -7,8 +7,8 @@
   (:require [datascript.core :as datascript]
             [kosmos.editor.db :as editor]))
 
-(def base-schema {:children {:db/cardinality :db.cardinality/many
-                             :db/valueType :db.type/ref}})
+(def base-schema {:node/child {:db/cardinality :db.cardinality/many
+                               :db/valueType :db.type/ref}})
 
 (def schema (merge base-schema editor/schema))
 

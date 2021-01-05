@@ -24,10 +24,10 @@
 
 (defn on-key-pressed [key]
   (condp = key
-    glfw/glfw-key-down (editor/down)
-    glfw/glfw-key-up (editor/up)
-    glfw/glfw-key-left (editor/left)
-    glfw/glfw-key-right (editor/right)))
+    glfw/glfw-key-down (editor/commit! (editor/down))
+    glfw/glfw-key-up (editor/commit! (editor/up))
+    glfw/glfw-key-left (editor/commit! (editor/left))
+    glfw/glfw-key-right (editor/commit! (editor/right))))
 
 (defn process [{:keys [key] :as signal}]
   (cond

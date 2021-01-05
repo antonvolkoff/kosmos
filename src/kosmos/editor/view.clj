@@ -4,11 +4,14 @@
 
 ;; Getters
 
-(defn pull-editor []
-  (db/pull @db/db '[*] :editor))
+(def editor-pattern '[:db/ident :editor/current :db/id :type :value {:node/child ...}])
 
-(defn ast []
-  (:editor/ast (pull-editor)))
+(def current-id-query '[:find [?e]
+                        :where
+                        [_ :editor/current ?e]])
+
+(defn current-id []
+  (-> (db/query current-id-query @db/db) first))
 
 ;; Components
 
@@ -20,16 +23,21 @@
 (defn line [idx line]
   (line* {:x 40 :y (+ 20 (* 40 (inc idx))) :value line}))
 
-(defn sentance [{words :words punctuation :punctuation}]
-  (let [word-values (map :value words)
-        punctuation-values (map :value punctuation)]
-    (str (str/join " " word-values) (str/join "" punctuation-values))))
+(defn join-with-space [parts]
+  (str/join " " parts))
 
-(defn paragraph [{sentences :sentences}]
-  (str/join " " (map sentance sentences)))
+(defn sentance [{words-n-punctuation :node/child}]
+  (-> (map :value words-n-punctuation)
+      join-with-space))
+
+(defn paragraph [{sentences :node/child}]
+  (-> (map sentance sentences)
+      join-with-space))
 
 (defn editor []
-  (let [paragraphs (:paragraphs (ast))]
-    (->>
-     (mapv paragraph paragraphs)
-     (map-indexed line))))
+  (let [node (db/pull @db/db editor-pattern :editor)
+        tree (-> node :node/child first)
+        paragraphs (-> tree :node/child)]
+    (->> paragraphs
+         (mapv paragraph)
+         (map-indexed line))))
