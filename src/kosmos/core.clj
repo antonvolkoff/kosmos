@@ -4,16 +4,19 @@
 ; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (ns kosmos.core
-  (:require [kosmos.lib.skija :refer [color]]
-            [kosmos.db :as db]
-            [kosmos.systems :as systems])
+  (:require [clojure.core.async :refer [>!!]]
+            [kosmos.lib.skija :refer [color]]
+            [kosmos.behaviours.keyboard :as keyboard]
+            [kosmos.editor.view :refer [editor]]
+            [kosmos.editor.events]
+            [kosmos.db :refer [seed!]])
   (:import [org.jetbrains.skija Canvas FontMgr FontStyle Paint Font]))
 
 (def black-paint (.setColor (Paint.) (color 0xFF000000)))
 
 (def typeface (-> (FontMgr/getDefault) (.matchFamilyStyle "JetBrains Mono" FontStyle/NORMAL)))
 
-(def font (-> (new Font) (.setTypeface typeface) (.setSize 32)))
+(def font (-> (new Font) (.setTypeface typeface) (.setSize 28)))
 
 (def elements [[:line {:x0 0 :y0 0 :x1 100 :y1 100}]
                [:text {:x 100 :y 100 :value "Hello"}]])
@@ -38,25 +41,14 @@
   (println "Warning: Unknown element"))
 
 (defn init []
-  (db/add! {:id "caret" :caret {} :shape [:line {:x0 100 :y0 100 :x1 100 :y1 130}]})
-  (db/add! {:id "keyboard" :keyboard {:events []}}))
-
-(defn update-state []
-  (let [changeset (systems/keyboard @db/db)]
-    (swap! db/db merge changeset)))
+  (seed!)
+  (keyboard/init))
 
 (defn render [^Canvas canvas]
-  (update-state)
   (.clear canvas (color 0xFFFAFAFA))
-  (let [layer (.save canvas)
-        shapes (db/select-by-key @db/db :shape)]
-    (->> shapes
-         (map :shape)
-         (map #(draw canvas %))
-         doall)
+  (let [layer (.save canvas)]
+    (doall (map #(draw canvas %) (editor)))
     (.restoreToCount canvas layer)))
 
 (defn handle-key [_win key scancode action mods]
-  (let [keyboard-entity (first (db/select-by-key @db/db :keyboard))
-        event {:key key :action action :scancode scancode :mods mods}]
-    (db/add! (update-in keyboard-entity [:keyboard :events] conj event))))
+  (>!! keyboard/in {:key key :action action :scancode scancode :mods mods}))

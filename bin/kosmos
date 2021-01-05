@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+clj -J-XstartOnFirstThread -M -m kosmos.main

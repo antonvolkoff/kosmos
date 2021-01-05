@@ -17,10 +17,10 @@ get you started:
 
 ## Development
 
-Kosmos uses `make` tool to execute development tasks.
+Kosmos has few scripts inside of `/bin` directory to help with development.
 
-| Command | Description |
+| Example | Description |
 |---------|-------------|
-| make run | Starts application with nREPL. Best workflow for development. |
-
-
+| ./bin/kosmos | Starts application with nREPL. Best workflow for development. |
+| ./bin/test | Run unit tests. |
+| ./bin/test --watch | Watch for file changes and run tests. |
