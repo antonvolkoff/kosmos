@@ -9,7 +9,8 @@
             [kosmos.behaviours.keyboard :as keyboard]
             [kosmos.editor.view :refer [editor]]
             [kosmos.editor.events]
-            [kosmos.db :refer [seed!]])
+            [kosmos.db :refer [seed!]]
+            [kosmos.lib.ui :as ui])
   (:import [org.jetbrains.skija Canvas FontMgr FontStyle Paint Font]))
 
 (def black-paint (.setColor (Paint.) (color 0xFF000000)))
@@ -47,7 +48,7 @@
 (defn render [^Canvas canvas]
   (.clear canvas (color 0xFFFAFAFA))
   (let [layer (.save canvas)]
-    (doall (map #(draw canvas %) (editor)))
+    (ui/skia canvas (ui/text "Hey"))
     (.restoreToCount canvas layer)))
 
 (defn handle-key [_win key scancode action mods]
