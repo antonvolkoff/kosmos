@@ -4,11 +4,14 @@
 ; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (ns kosmos.main
-  (:require [nrepl.server :as nrepl]
+  (:require [clojure.core.async :refer [>!!]]
+            [nrepl.server :as nrepl]
             [kosmos.core :as core]
             [kosmos.lib.glfw :as glfw]
             [kosmos.lib.opengl :as gl]
-            [kosmos.lib.skija :as skija]))
+            [kosmos.lib.skija :as skija]
+            [kosmos.lib.ui :as ui]
+            [kosmos.behaviours.keyboard :as keyboard]))
 
 (def window-width 640)
 
@@ -17,6 +20,9 @@
 (def window-title "Kosmos")
 
 (def nrepl-port 7888)
+
+(defn handle-key [_win key scancode action mods]
+  (>!! keyboard/in {:key key :action action :scancode scancode :mods mods}))
 
 (defn -main [& _args]
   (core/init)
@@ -34,7 +40,7 @@
     (nrepl/start-server :port nrepl-port)
     (println (str "nREPL server started at locahost:" nrepl-port))
 
-    (glfw/set-key-callback window core/handle-key)
+    (glfw/set-key-callback window handle-key)
 
     (let [framebuffer-id (gl/gl-get-integer gl/gl-framebuffer-binding)
           context (skija/make-gl-context)
@@ -43,7 +49,10 @@
           canvas (.getCanvas surface)]
       (while (not (glfw/window-should-close? window))
         (try
-          (core/render canvas)
+          (.clear canvas (skija/color 0xFFFAFAFA))
+          (let [layer (.save canvas)]
+            (ui/skia canvas (core/view))
+            (.restoreToCount canvas layer))
           (catch Exception e
             (println "Error: " (.getMessage e))))
         (.flush context)
