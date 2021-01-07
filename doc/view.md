@@ -1,54 +1,43 @@
-# View declarative data 
+# View 
 
-## Layer element
-
-Layer is a grouping element that does not have any visual representation.
-
-```clojure
-[:layer {:elements [[:text {:x 100 :y 100 :value "1"}]
-                    [:text {:x 200 :y 200 :value "2"}]]}]
-```
-
-## Text elements
+## Text
 
 ```clojure
 ; Simple text
-[:text {:value "Text"}]
-
-; Text with an absolute position
-[:text {:x 100 :y 100 :value "Text"}]
+[:text "Text"]
 ```
 
-## Stack element
-
-```clojure
-; Elements stacked horizontally
-[:stack {:direction :horizontal 
-         :elements [[:text {:value "Line 1"}]
-                    [:text {:value "Line 2"}]]}]
-
-; Elements stacked vertically
-[:stack {:direction :vertical 
-         :elements [[:text {:value "Line 1"}]
-                    [:text {:value "Line 2"}]]}]
-```
-
-## Rectangle element
+## Rectangle
 
 ```clojure
 ; Simple rectangle
-[:rect {:width 100 :height 100}]
-
-; Rectangle with color property
-[:rect {:width 100 :height 100 :fill 0xFFFFFFFF}]
+[:frame {:width 200 :height 200}
+ [:fill 0xFFFF0000
+  [:rectangle]]]
 ```
 
-## padding
-
-### Example
+## Stacks
 
 ```clojure
-[:padding
-  10.0 
-  [:text {:value "Hey"}]]
+[:h-stack 
+  [:text "Top line"]
+  [:text "Bottom line"]]
+
+[:v-stack 
+  [:text "Left line"]
+  [:text "Right line"]]
+
+[:z-stack 
+  [:text "Over line"]
+  [:text "Under line"]]
+```
+
+## Modifiers
+
+```clojure
+[:padding 10.0 [:text "Hey"]]
+
+[:frame {:width 100 :height 100} ...]
+
+[:fill 0xFFFF0000 [:rectangle]]
 ```

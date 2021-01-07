@@ -13,6 +13,4 @@
 
 (defn view []
   [:padding 20
-   [:stack
-    {:direction :horizontal
-     :elements (editor/view)}]])
+   (concat [:h-stack] (editor/view))])
