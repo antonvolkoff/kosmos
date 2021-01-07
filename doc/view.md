@@ -32,3 +32,13 @@ Layer is a grouping element that does not have any visual representation.
          :elements [[:text {:value "Line 1"}]
                     [:text {:value "Line 2"}]]}]
 ```
+
+## Rectangle element
+
+```clojure
+; Simple rectangle
+[:rect {:width 100 :height 100}]
+
+; Rectangle with color property
+[:rect {:width 100 :height 100 :fill 0xFFFFFFFF}]
+```

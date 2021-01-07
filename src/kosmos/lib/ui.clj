@@ -1,7 +1,7 @@
 (ns kosmos.lib.ui
   (:require [clojure.spec.alpha :as s]
             [kosmos.lib.skija :refer [color]])
-  (:import [org.jetbrains.skija FontMgr FontStyle Paint Font]))
+  (:import [org.jetbrains.skija FontMgr FontStyle Paint Font Rect]))
 
 (def default-paint (-> (new Paint) (.setColor (color 0xFF000000))))
 
@@ -20,9 +20,12 @@
 
 (def default-text-args {:x 0 :y 0 :value ""})
 
+(def default-rect-args {:x 0 :y 0 :width 0 :height 0 :fill 0xFF000000})
+
 (declare draw-text)
 (declare draw-stack)
 (declare draw-layer)
+(declare draw-rect)
 
 (defmulti draw
   (fn [_ [type _]]
@@ -36,6 +39,9 @@
 
 (defmethod draw :layer [canvas [_ args]]
   (draw-layer canvas args))
+
+(defmethod draw :rect [canvas [_ args]]
+  (draw-rect canvas (merge default-rect-args args)))
 
 (defmethod draw :unknown [_ _]
   nil)
@@ -77,6 +83,11 @@
 
 (defn draw-layer [canvas {:keys [elements]}]
   (run! #(draw canvas %) elements))
+
+(defn draw-rect [canvas {:keys [x y width height fill]}]
+  (let [skia-rect (Rect/makeXYWH x y width height)
+        paint (-> (new Paint) (.setColor (color fill)))]
+    (-> canvas (.drawRect skia-rect paint))))
 
 (defn skia [canvas & elements]
   (run! #(draw canvas %) elements))
