@@ -26,6 +26,7 @@
 (declare draw-stack)
 (declare draw-layer)
 (declare draw-rect)
+(declare draw-padding)
 
 (defmulti draw
   (fn [_ [type _]]
@@ -42,6 +43,9 @@
 
 (defmethod draw :rect [canvas [_ args]]
   (draw-rect canvas (merge default-rect-args args)))
+
+(defmethod draw :padding [canvas [_ length element]]
+  (draw-padding canvas length element))
 
 (defmethod draw :unknown [_ _]
   nil)
@@ -88,6 +92,12 @@
   (let [skia-rect (Rect/makeXYWH x y width height)
         paint (-> (new Paint) (.setColor (color fill)))]
     (-> canvas (.drawRect skia-rect paint))))
+
+(defn draw-padding [canvas pad-size element]
+  (-> canvas .save)
+  (-> canvas (.translate pad-size pad-size))
+  (draw canvas element)
+  (-> canvas .restore))
 
 (defn skia [canvas & elements]
   (run! #(draw canvas %) elements))
