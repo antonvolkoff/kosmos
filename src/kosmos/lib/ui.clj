@@ -22,6 +22,7 @@
 
 (declare draw-text)
 (declare draw-stack)
+(declare draw-layer)
 
 (defmulti draw
   (fn [_ [type _]]
@@ -32,6 +33,9 @@
 
 (defmethod draw :stack [canvas [_ args]]
   (draw-stack canvas args))
+
+(defmethod draw :layer [canvas [_ args]]
+  (draw-layer canvas args))
 
 (defmethod draw :unknown [_ _]
   nil)
@@ -70,6 +74,9 @@
       (->> elements
            (align direction-fn)
            (run! #(draw canvas %))))))
+
+(defn draw-layer [canvas {:keys [elements]}]
+  (run! #(draw canvas %) elements))
 
 (defn skia [canvas & elements]
   (run! #(draw canvas %) elements))

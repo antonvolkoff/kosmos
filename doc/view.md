@@ -1,5 +1,14 @@
 # View declarative data 
 
+## Layer element
+
+Layer is a grouping element that does not have any visual representation.
+
+```clojure
+[:layer {:elements [[:text {:x 100 :y 100 :value "1"}]
+                    [:text {:x 200 :y 200 :value "2"}]]}]
+```
+
 ## Text elements
 
 ```clojure
