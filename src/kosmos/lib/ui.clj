@@ -22,35 +22,35 @@
 
 (def default-rect-args {:x 0 :y 0 :width 0 :height 0 :fill 0xFF000000})
 
-(declare draw-text)
-(declare draw-stack)
-(declare draw-layer)
-(declare draw-rect)
-(declare draw-padding)
+(declare text)
+(declare stack)
+(declare layer)
+(declare rect)
+(declare padding)
 
 (defmulti draw
   (fn [_ [type _]]
     (or type :unknown)))
 
 (defmethod draw :text [canvas [_ args]]
-  (draw-text canvas (merge default-text-args args)))
+  (text canvas (merge default-text-args args)))
 
 (defmethod draw :stack [canvas [_ args]]
-  (draw-stack canvas args))
+  (stack canvas args))
 
 (defmethod draw :layer [canvas [_ args]]
-  (draw-layer canvas args))
+  (layer canvas args))
 
 (defmethod draw :rect [canvas [_ args]]
-  (draw-rect canvas (merge default-rect-args args)))
+  (rect canvas (merge default-rect-args args)))
 
 (defmethod draw :padding [canvas [_ length element]]
-  (draw-padding canvas length element))
+  (padding canvas length element))
 
 (defmethod draw :unknown [_ _]
   nil)
 
-(defn draw-text [canvas {:keys [x y value]}]
+(defn text [canvas {:keys [x y value]}]
   (let [{height :height} (text-dimentions value)]
     (.drawString canvas value x (+ y height) default-font default-paint)))
 
@@ -75,7 +75,7 @@
      (let [aligned-element (direction-fn (last aligned) (first unaligned))]
        (recur direction-fn (rest unaligned) (conj aligned aligned-element))))))
 
-(defn draw-stack [canvas {:keys [direction elements]}]
+(defn stack [canvas {:keys [direction elements]}]
   (when (seq elements)
     (let [direction-fn
           (case direction
@@ -85,15 +85,15 @@
            (align direction-fn)
            (run! #(draw canvas %))))))
 
-(defn draw-layer [canvas {:keys [elements]}]
+(defn layer [canvas {:keys [elements]}]
   (run! #(draw canvas %) elements))
 
-(defn draw-rect [canvas {:keys [x y width height fill]}]
+(defn rect [canvas {:keys [x y width height fill]}]
   (let [skia-rect (Rect/makeXYWH x y width height)
         paint (-> (new Paint) (.setColor (color fill)))]
     (-> canvas (.drawRect skia-rect paint))))
 
-(defn draw-padding [canvas pad-size element]
+(defn padding [canvas pad-size element]
   (-> canvas .save)
   (-> canvas (.translate pad-size pad-size))
   (draw canvas element)
