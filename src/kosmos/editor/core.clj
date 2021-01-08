@@ -1,5 +1,6 @@
 (ns kosmos.editor.core
-  (:require [kosmos.db :as db]))
+  (:require [kosmos.db :as db]
+            [kosmos.lib.ui :as ui]))
 
 (def editor-pattern
   '[:db/ident :editor/current :db/id :type :value {:node/child ...}])
@@ -9,10 +10,16 @@
     (= id (:editor/current editor-node))))
 
 (defn- word-view [word]
-  [:z-stack
-   (when (current-word? word)
-     [:rect {:x 0 :y 0 :width 10 :height 28 :fill 0xFFE4E4E4}])
-   [:text (str (:value word))]])
+  (let [value (str (:value word))]
+    [:z-stack
+     (when (current-word? word)
+       [:rect {:x 0
+               :y 0
+               ;; TODO: add function to get text width without making it an element
+               :width (ui/width [:text value])
+               :height 28
+               :fill 0xFFE4E4E4}])
+     [:text value]]))
 
 (defn- sentence-view [sentence]
   (concat [:v-stack]
