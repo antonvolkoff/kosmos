@@ -4,40 +4,38 @@
 
 ```clojure
 ; Simple text
-[:text "Text"]
+(text "Text")
 ```
 
 ## Rectangle
 
 ```clojure
 ; Simple rectangle
-[:frame {:width 200 :height 200}
- [:fill 0xFFFF0000
-  [:rectangle]]]
+(-> (rectangle)
+    (frame {:width 200 :height 200})
+    (fill 0xFFFF0000))
 ```
 
 ## Stacks
 
 ```clojure
-[:h-stack 
-  [:text "Top line"]
-  [:text "Bottom line"]]
+(h-stack 
+ [(text "Top line")
+  (text "Bottom line")])
 
-[:v-stack 
-  [:text "Left line"]
-  [:text "Right line"]]
+(v-stack [(text "Left") (text "Right")] :spacing 10)
 
-[:z-stack 
-  [:text "Over line"]
-  [:text "Under line"]]
+(z-stack
+ [(text "Background")
+  (text "Foreground")])
 ```
 
 ## Modifiers
 
 ```clojure
-[:padding 10.0 [:text "Hey"]]
+(padding (text "Hey") 20)
 
-[:frame {:width 100 :height 100} ...]
+(frame (rectangle) {:width 200 :height 200})
 
-[:fill 0xFFFF0000 [:rectangle]]
+(fill (rectangle) 0xFFFF0000)
 ```
