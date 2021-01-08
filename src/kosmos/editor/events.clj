@@ -55,8 +55,8 @@
 (comment
   (commit! (load-from-string "Hello\r\nThis is a sentance.\r\n"))
   (commit! (add-zipper))
-  (commit! (down)) ; paragraph
-  (commit! (down)) ; sentance
-  (commit! (down)) ; word
+  (commit! (down))
   (commit! (up)) 
+  (commit! (left))
+  (commit! (right))
   (commit! (replace-node {:type :word :value "Hey"})))

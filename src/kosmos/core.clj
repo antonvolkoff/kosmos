@@ -6,11 +6,12 @@
 (ns kosmos.core
   (:require [kosmos.editor.core :as editor]
             [kosmos.editor.events]
-            [kosmos.db :refer [seed!]]))
+            [kosmos.db :refer [seed!]]
+            [kosmos.lib.ui.elements :as e]))
 
 (defn init []
   (seed!))
 
 (defn view []
-  [:padding 20
-   (editor/view)])
+  (-> (editor/view)
+      (e/padding 20)))

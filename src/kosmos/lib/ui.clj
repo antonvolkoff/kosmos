@@ -19,56 +19,65 @@
         height (-> bounding-box .getHeight)]
     {:width width :height height}))
 
-(defn height [[type & opts]]
+(defn height [{:keys [type] :as element}]
   (case type
     :text default-font-size
-    :v-stack (apply max (map height opts))
-    :z-stack (apply max (map height opts))
+    :v-stack (apply max (map height (:children element)))
+    :z-stack (apply max (map height (:children element)))
     0))
 
-(defn width [[type & opts]]
+(defn width [{:keys [type] :as element}]
   (case type
-    :text (-> opts first text-dimentions :width)
-    :v-stack (reduce + (map width opts))
-    :z-stack (apply max (map width opts))
+    :text (-> element :body text-dimentions :width)
+    :v-stack (reduce + (conj (map width (:children element))
+                             (* (:spacing element) (count (:children element)))))
+    :z-stack (apply max (map width (:children element)))
     0))
 
-(def default-text-args {:x 0 :y 0 :value ""})
-
-(def default-rect-args {:x 0 :y 0 :width 0 :height 0 :fill 0xFF000000})
+(def default-rectangle 
+  {:type :rectangle :frame {:width 0 :height 0} :fill 0xFF000000})
 
 (defmulti draw
-  (fn [_ [type _]]
+  (fn [_canvas {:keys [type]}]
     (or type :unknown)))
 
-(defn text [canvas value]
-  (.drawString canvas value 0 default-font-size default-font default-paint))
+(defn text [canvas {:keys [body padding]}]
+  (when padding 
+    (-> canvas (.translate (:size padding) (:size padding))))
+  (-> canvas (.drawString body 0 default-font-size default-font default-paint)))
 
-(defn h-stack [canvas elements]
+(defn h-stack [canvas {:keys [children spacing padding]}]
+  (when padding
+    (-> canvas (.translate (:size padding) (:size padding))))
   (-> canvas .save)
-  (->> elements
-       (map (fn [el]
-              (draw canvas el)
-              (-> canvas (.translate 0 (height el)))))
+  (->> children
+       (map (fn [child]
+              (draw canvas child)
+              (-> canvas (.translate 0 (+ (height child) spacing)))))
        doall)
   (-> canvas .restore))
 
-(defn v-stack [canvas elements]
+(defn v-stack [canvas {:keys [children spacing padding]}]
+  (when padding
+    (-> canvas (.translate (:size padding) (:size padding))))
   (-> canvas .save)
-  (->> elements
-       (map (fn [el]
-              (draw canvas el)
-              (-> canvas (.translate (width el) 0))))
+  (->> children
+       (map (fn [child]
+              (draw canvas child)
+              (-> canvas (.translate (+ (width child) spacing) 0))))
        doall)
   (-> canvas .restore))
 
-(defn z-stack [canvas elements]
+(defn z-stack [canvas {:keys [children padding]}]
+  (when padding
+    (-> canvas (.translate (:size padding) (:size padding))))
   (-> canvas .save)
-  (->> elements (map #(draw canvas %)) doall)
+  (->> children (map #(draw canvas %)) doall)
   (-> canvas .restore))
 
-(defn rect [canvas {:keys [x y width height fill]}]
-  (let [skia-rect (Rect/makeXYWH x y width height)
+(defn rect [canvas {:keys [frame fill]}]
+  (let [{:keys [width height]} frame
+        skia-rect (Rect/makeXYWH 0 0 width height)
         paint (-> (new Paint) (.setColor (color fill)))]
     (-> canvas (.drawRect skia-rect paint))))
 
@@ -79,14 +88,12 @@
   (-> canvas .restore))
 
 (defmethod draw :unknown [_ _] nil)
-(defmethod draw :text [canvas [_ value]] (text canvas value))
-(defmethod draw :h-stack [canvas [_ & elements]] (h-stack canvas elements))
-(defmethod draw :v-stack [canvas [_ & elements]] (v-stack canvas elements))
-(defmethod draw :z-stack [canvas [_ & elements]] (z-stack canvas elements))
-(defmethod draw :rect [canvas [_ args]]
-  (rect canvas (merge default-rect-args args)))
-(defmethod draw :padding [canvas [_ length element]]
-  (padding canvas length element))
+(defmethod draw :text [canvas element] (text canvas element))
+(defmethod draw :h-stack [canvas element] (h-stack canvas element))
+(defmethod draw :v-stack [canvas element] (v-stack canvas element))
+(defmethod draw :z-stack [canvas element] (z-stack canvas element))
+(defmethod draw :rectangle [canvas element] 
+  (rect canvas (merge default-rectangle element)))
 
 (defn skia [canvas & elements]
   (run! #(draw canvas %) elements))
