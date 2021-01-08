@@ -31,7 +31,7 @@
 
 (defn up []
   (let [{loc :editor/loc} (db/pull @db/db '[:editor/loc] :editor)
-        updated-loc (z/down loc)]
+        updated-loc (z/up loc)]
     [{:db/ident :editor :editor/loc updated-loc :editor/current (-> updated-loc z/node :db/id)}]))
 
 (defn left []
@@ -58,4 +58,5 @@
   (commit! (down)) ; paragraph
   (commit! (down)) ; sentance
   (commit! (down)) ; word
+  (commit! (up)) 
   (commit! (replace-node {:type :word :value "Hey"})))
