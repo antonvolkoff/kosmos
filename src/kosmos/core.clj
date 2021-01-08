@@ -13,4 +13,4 @@
 
 (defn view []
   [:padding 20
-   (concat [:h-stack] (editor/view))])
+   (editor/view)])

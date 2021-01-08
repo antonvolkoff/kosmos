@@ -23,12 +23,14 @@
   (case type
     :text default-font-size
     :v-stack (apply max (map height opts))
+    :z-stack (apply max (map height opts))
     0))
 
 (defn width [[type & opts]]
   (case type
     :text (-> opts first text-dimentions :width)
     :v-stack (reduce + (map width opts))
+    :z-stack (apply max (map width opts))
     0))
 
 (def default-text-args {:x 0 :y 0 :value ""})
