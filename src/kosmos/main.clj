@@ -26,6 +26,7 @@
 
 (defn -main [& _args]
   (core/init)
+  (keyboard/init)
 
   (glfw/init)
   (glfw/window-hint glfw/visible glfw/glfw-false)
