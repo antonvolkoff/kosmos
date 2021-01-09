@@ -7,6 +7,7 @@
   (:require [clojure.core.async :refer [>!!]]
             [nrepl.server :as nrepl]
             [kosmos.core :as core]
+            [kosmos.db :as db]
             [kosmos.lib.glfw :as glfw]
             [kosmos.lib.opengl :as gl]
             [kosmos.lib.skija :as skija]
@@ -52,7 +53,7 @@
         (try
           (.clear canvas (skija/color 0xFFFAFAFA))
           (let [layer (.save canvas)]
-            (ui/skia canvas (core/view))
+            (ui/skia canvas (core/view {:db @db/db}))
             (.restoreToCount canvas layer))
           (catch Exception e
             (println "Error: " (.getMessage e))))

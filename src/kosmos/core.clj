@@ -12,6 +12,6 @@
 (defn init []
   (seed!))
 
-(defn view []
-  (-> (editor/view)
+(defn view [state]
+  (-> (editor/view state)
       (e/padding 20)))
