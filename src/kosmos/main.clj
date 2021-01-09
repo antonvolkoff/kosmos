@@ -50,13 +50,13 @@
           surface (skija/make-surface-from-target context target)
           canvas (.getCanvas surface)]
       (while (not (glfw/window-should-close? window))
-        (try
-          (.clear canvas (skija/color 0xFFFAFAFA))
-          (let [layer (.save canvas)]
+        (.clear canvas (skija/color 0xFFFAFAFA))
+        (let [layer (.save canvas)]
+          (try
             (ui/skia canvas (core/view {:db @db/db}))
-            (.restoreToCount canvas layer))
-          (catch Exception e
-            (println "Error: " (.getMessage e))))
+            (catch Exception e
+              (println "Error: " (.getMessage e))))
+          (.restoreToCount canvas layer))
         (.flush context)
         (glfw/swap-buffers window)
         (glfw/poll-events))
