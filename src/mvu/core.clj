@@ -16,6 +16,7 @@
   (go-loop []
     (let [msg (<! messages)]
       (when msg
+        (println "[message] " msg)
         (reset! *state (:db (update-fn {:db @*state} msg)))
         (recur)))))
 

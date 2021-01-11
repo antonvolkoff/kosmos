@@ -4,15 +4,13 @@
 ; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (ns kosmos.main
-  (:require [clojure.core.async :refer [>!!]]
-            [nrepl.server :as nrepl]
+  (:require [nrepl.server :as nrepl]
+            [mvu.core :as m]
             [kosmos.core :as core]
-            [kosmos.db :as db]
             [kosmos.lib.glfw :as glfw]
             [kosmos.lib.opengl :as gl]
             [kosmos.lib.skija :as skija]
-            [kosmos.lib.ui :as ui]
-            [kosmos.behaviours.keyboard :as keyboard]))
+            [kosmos.lib.ui :as ui]))
 
 (def window-width 640)
 
@@ -22,12 +20,13 @@
 
 (def nrepl-port 7888)
 
-(defn handle-key [_win key scancode action mods]
-  (>!! keyboard/in {:key key :action action :scancode scancode :mods mods}))
+(def app (m/make-application core/init core/handle-message core/view))
 
-(defn -main [& _args]
-  (core/init)
-  (keyboard/init)
+(defn handle-key [_win key scancode action mods]
+  (m/dispatch [:key {:key key :action action :scancode scancode :mods mods}]))
+
+(defn -main [& args]
+  (m/start app [])
 
   (glfw/init)
   (glfw/window-hint glfw/visible glfw/glfw-false)
@@ -53,7 +52,7 @@
         (.clear canvas (skija/color 0xFFFAFAFA))
         (let [layer (.save canvas)]
           (try
-            (ui/skia canvas (core/view {:db @db/db}))
+            (ui/skia canvas (m/render app))
             (catch Exception e
               (println "Error: " (.getMessage e))))
           (.restoreToCount canvas layer))
@@ -65,3 +64,8 @@
     (glfw/destroy-window window)
     (glfw/terminate)
     (shutdown-agents))))
+
+(comment
+  (m/dispatch [:editor/load "Hello\r\nThis is a sentance.\r\n"])
+  (-> @m/*state :editor :current)
+  )

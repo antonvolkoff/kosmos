@@ -5,13 +5,14 @@
 
 (ns kosmos.core
   (:require [kosmos.editor.core :as editor]
-            [kosmos.editor.events]
-            [kosmos.db :refer [seed!]]
-            [kosmos.lib.ui.elements :as e]))
+            [kosmos.lib.ui.elements :refer [padding]]))
 
-(defn init []
-  (seed!))
+(defn init [args]
+  (editor/init args))
 
-(defn view [state]
-  (-> (editor/view state)
-      (e/padding 20)))
+(defn handle-message [state event]
+  (editor/handle-message state event))
+
+(defn view [db]
+  (-> (editor/view db)
+      (padding 20)))

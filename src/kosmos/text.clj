@@ -3,6 +3,9 @@
             [clojure.zip :as z]
             [blancas.kern.core :as kern]))
 
+(defn gen-id []
+  (java.util.UUID/randomUUID))
+
 (def children-types {:word :words
                      :sentence :sentences
                      :paragraph :paragraphs
@@ -11,7 +14,7 @@
 (defn make-node [node children]
   (let [children-by-type (rename-keys (group-by :type children) children-types)
         children-keys (keys children-by-type)]
-    (cond-> (merge node children-by-type)
+    (cond-> (merge node {:id (gen-id)} children-by-type)
       children-keys (assoc :children children-keys))))
 
 (defn children [node]
@@ -56,5 +59,5 @@
   (kern/value document text))
 
 (defn zipper [root]
-  (let [branch? map?]
+  (let [branch? (fn [node] (seq (children node)))]
     (z/zipper branch? children make-node root)))
