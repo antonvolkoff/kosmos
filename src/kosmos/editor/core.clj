@@ -10,6 +10,7 @@
 (defn handle-message [state event]
   (case (first event)
     :key (handlers/on-key state event)
+    :char (handlers/on-char state event)
     :editor/load (handlers/on-load state event)
     state))
 

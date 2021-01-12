@@ -25,6 +25,9 @@
 (defn handle-key [_win key scancode action mods]
   (m/dispatch [:key {:key key :action action :scancode scancode :mods mods}]))
 
+(defn handle-char [_win code]
+  (m/dispatch [:char (char code)]))
+
 (defn -main [& args]
   (m/start app [])
 
@@ -42,6 +45,7 @@
     (println (str "nREPL server started at locahost:" nrepl-port))
 
     (glfw/set-key-callback window handle-key)
+    (glfw/set-set-char-callback window handle-char)
 
     (let [framebuffer-id (gl/gl-get-integer gl/gl-framebuffer-binding)
           context (skija/make-gl-context)
@@ -66,5 +70,5 @@
     (shutdown-agents))))
 
 (comment
-  (m/dispatch [:editor/load "Hello\r\nThis is a sentance.\r\n"])
-  (-> @m/*state :editor))
+  (m/dispatch [:editor/load "Hello. How are you?\r\nHi! I'm good.\r\n"])
+  (-> @m/*state :editor :zipper))

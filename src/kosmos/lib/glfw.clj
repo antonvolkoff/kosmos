@@ -5,7 +5,7 @@
 
 (ns kosmos.lib.glfw
   (:require [clojure.set :refer [map-invert]])
-  (:import [org.lwjgl.glfw GLFW GLFWKeyCallback]
+  (:import [org.lwjgl.glfw GLFW GLFWKeyCallback GLFWCharCallback]
            [org.lwjgl.system MemoryUtil]))
 
 ; Keyboard keys
@@ -56,11 +56,17 @@
 
 (def glfw-true GLFW/GLFW_TRUE)
 
-(defn set-key-callback [win calback]
+(defn set-key-callback [win callback]
   (GLFW/glfwSetKeyCallback win
                            (proxy [GLFWKeyCallback] []
                              (invoke [window key scancode action mods]
-                               (calback window key scancode action mods)))))
+                               (callback window key scancode action mods)))))
+
+(defn set-set-char-callback [win callback]
+  (GLFW/glfwSetCharCallback win
+                            (proxy [GLFWCharCallback] []
+                              (invoke [window codepoint]
+                                (callback window codepoint)))))
 
 (defn window-hint [h v] (GLFW/glfwWindowHint h v))
 
