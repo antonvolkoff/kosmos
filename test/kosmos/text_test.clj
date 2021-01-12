@@ -72,7 +72,34 @@
                                        :punctuation [{:type :punctuation :value \.}]
                                        :words [{:type :word :value "Hello,"}
                                                {:type :word :value "John"}]}]}]}
-           (text/unpack "Hello, John.\n")))))
+           (text/unpack "Hello, John.\n")))
+
+    (is (= {:type :document
+            :children [:paragraphs]
+            :paragraphs [{:type :paragraph
+                          :children [:sentences]
+                          :sentences [{:type :sentence
+                                       :children [:words :punctuation]
+                                       :punctuation [{:type :punctuation :value \.}]
+                                       :words [{:type :word :value "Hi"}]}
+                                      {:type :sentence
+                                       :children [:words :punctuation]
+                                       :punctuation [{:type :punctuation :value \?}]
+                                       :words [{:type :word :value "How"}
+                                               {:type :word :value "are"}
+                                               {:type :word :value "you"}]}]}
+                         {:type :paragraph
+                          :children [:sentences]
+                          :sentences [{:type :sentence
+                                       :children [:words :punctuation]
+                                       :punctuation [{:type :punctuation :value \.}]
+                                       :words [{:type :word :value "Hey"}]}
+                                      {:type :sentence
+                                       :children [:words :punctuation]
+                                       :punctuation [{:type :punctuation :value \!}]
+                                       :words [{:type :word :value "I'm"}
+                                               {:type :word :value "good"}]}]}]}
+           (text/unpack "Hi. How are you?\nHey. I'm good!\n")))))
 
 (def example-tree
   {:type :document

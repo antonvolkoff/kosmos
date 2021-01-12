@@ -4,7 +4,7 @@
             [kosmos.text :as text-format]))
 
 (defn- make-editor [body]
-  (let [ast (text-format/unpack body)
+  (let [ast (-> body (text-format/unpack) (text-format/set-ids))
         zipper (text-format/zipper ast)]
     {:ast ast :zipper zipper :body body}))
 

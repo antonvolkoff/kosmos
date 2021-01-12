@@ -16,7 +16,7 @@
 
 (defn -main [& args]
   (m/start app args)
-  
+
   (loop []
     (Thread/sleep 2000)
     (dispatch [:inc])

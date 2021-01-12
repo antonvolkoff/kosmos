@@ -11,13 +11,25 @@
 (defn dispatch [event]
   (put! messages event))
 
+(defmacro rescue [& body]
+  (try
+    ~@body
+    (catch Exception e
+      (println "Failed while processing message with:" (.getMessage e)))))
+
+(defn handle-update! [{:keys [db]}]
+  (when db (reset! *state db)))
+
 (defn start [{:keys [init-fn update-fn]} args]
   (reset! *state (:db (init-fn args)))
   (go-loop []
     (let [msg (<! messages)]
       (when msg
-        (println "[message] " msg)
-        (reset! *state (:db (update-fn {:db @*state} msg)))
+        (try
+          (println "[message] " msg)
+          (handle-update! (update-fn {:db @*state} msg))
+          (catch Exception e
+            (println "Failed while processing message with:" (.getMessage e))))
         (recur)))))
 
 (defn stop []
