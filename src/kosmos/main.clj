@@ -67,5 +67,4 @@
 
 (comment
   (m/dispatch [:editor/load "Hello\r\nThis is a sentance.\r\n"])
-  (-> @m/*state :editor :current)
-  )
+  (-> @m/*state :editor))

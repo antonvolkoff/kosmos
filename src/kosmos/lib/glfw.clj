@@ -4,14 +4,36 @@
 ; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (ns kosmos.lib.glfw
+  (:require [clojure.set :refer [map-invert]])
   (:import [org.lwjgl.glfw GLFW GLFWKeyCallback]
            [org.lwjgl.system MemoryUtil]))
 
 ; Keyboard keys
-(def glfw-key-right GLFW/GLFW_KEY_RIGHT)
-(def glfw-key-left GLFW/GLFW_KEY_LEFT)
-(def glfw-key-down GLFW/GLFW_KEY_DOWN)
-(def glfw-key-up GLFW/GLFW_KEY_UP)
+(def key-index {:space GLFW/GLFW_KEY_SPACE
+                :apostrophe GLFW/GLFW_KEY_APOSTROPHE
+                :comma GLFW/GLFW_KEY_COMMA
+                :minus GLFW/GLFW_KEY_MINUS
+                :period GLFW/GLFW_KEY_PERIOD
+                :slash GLFW/GLFW_KEY_SLASH
+                :0 GLFW/GLFW_KEY_0
+                :1 GLFW/GLFW_KEY_1
+                :2 GLFW/GLFW_KEY_2
+                :3 GLFW/GLFW_KEY_3
+                :4 GLFW/GLFW_KEY_4
+                :5 GLFW/GLFW_KEY_5
+                :6 GLFW/GLFW_KEY_6
+                :7 GLFW/GLFW_KEY_7
+                :8 GLFW/GLFW_KEY_8
+                :9 GLFW/GLFW_KEY_9
+                :semicolon GLFW/GLFW_KEY_SEMICOLON
+                :equal GLFW/GLFW_KEY_EQUAL
+                :backspace GLFW/GLFW_KEY_BACKSPACE
+                :right GLFW/GLFW_KEY_RIGHT
+                :left GLFW/GLFW_KEY_LEFT
+                :down GLFW/GLFW_KEY_DOWN
+                :up GLFW/GLFW_KEY_UP})
+
+(def keyboard-keys (map-invert key-index))
 
 ; The key or mouse button was released.
 (def glfw-release GLFW/GLFW_RELEASE)
