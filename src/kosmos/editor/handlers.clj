@@ -42,5 +42,18 @@
         (assoc :zipper updated-zipper)
         (assoc :ast (z/root updated-zipper)))))
 
+(defn- add-sibling [editor]
+  (let [zipper (-> editor
+                   :zipper
+                   (z/insert-right {:type :word
+                                    :id (text-format/gen-id)
+                                    :value ""})
+                   (z/right))]
+    (-> editor
+        (assoc :zipper zipper)
+        (assoc :ast (z/root zipper)))))
+
 (defn on-char [state [_ ch]]
-  (update-in state [:db :editor] type-key ch))
+  (cond
+    (= ch \space) (update-in state [:db :editor] add-sibling)
+    :else (update-in state [:db :editor] type-key ch)))
