@@ -21,16 +21,21 @@
         (e/fill 0xFFE4E4E4))
     element]))
 
+(defn- punctuation-view [{:keys [value]}]
+  (e/text (str value)))
+
 (defn- word-view [{id :id body :value} current-node-id]
   (let [element (e/text (str body))]
     (if (= id current-node-id)
       (current-wrapper element)
       element)))
 
-(defn- sentence-view [{id :id words :words} current-node-id]
+(defn- sentence-view [{:keys [id words punctuation]} current-node-id]
   (let [element (e/v-stack
-                 (map #(word-view % current-node-id) words)
-                 :spacing 10)]
+                 (concat [(e/v-stack
+                           (map #(word-view % current-node-id) words)
+                           :spacing 10)]
+                         (map punctuation-view punctuation)))]
     (if (= id current-node-id)
       (current-wrapper element)
       element)))
