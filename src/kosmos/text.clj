@@ -59,7 +59,7 @@
   (kern/value document text))
 
 (defn zipper [root]
-  (let [branch? (fn [node] (seq (children node)))]
+  (let [branch? (fn [node] (boolean (seq (children node))))]
     (z/zipper branch? children make-node root)))
 
 ;; TODO: Find a better place for the code below
