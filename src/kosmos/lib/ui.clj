@@ -34,7 +34,7 @@
     :z-stack (apply max (map width (:children element)))
     0))
 
-(def default-rectangle 
+(def default-rectangle
   {:type :rectangle :frame {:width 0 :height 0} :fill 0xFF000000})
 
 (defmulti draw
@@ -42,13 +42,13 @@
     (or type :unknown)))
 
 (defn text [canvas {:keys [body padding]}]
-  (when padding 
-    (-> canvas (.translate (:size padding) (:size padding))))
+  (when padding
+    (-> canvas (.translate (:left padding) (:top padding))))
   (-> canvas (.drawString body 0 default-font-size default-font default-paint)))
 
 (defn h-stack [canvas {:keys [children spacing padding]}]
   (when padding
-    (-> canvas (.translate (:size padding) (:size padding))))
+    (-> canvas (.translate (:left padding) (:top padding))))
   (-> canvas .save)
   (->> children
        (map (fn [child]
@@ -59,7 +59,7 @@
 
 (defn v-stack [canvas {:keys [children spacing padding]}]
   (when padding
-    (-> canvas (.translate (:size padding) (:size padding))))
+    (-> canvas (.translate (:left padding) (:top padding))))
   (-> canvas .save)
   (->> children
        (map (fn [child]
@@ -70,7 +70,7 @@
 
 (defn z-stack [canvas {:keys [children padding]}]
   (when padding
-    (-> canvas (.translate (:size padding) (:size padding))))
+    (-> canvas (.translate (:left padding) (:top padding))))
   (-> canvas .save)
   (->> children (map #(draw canvas %)) doall)
   (-> canvas .restore))
@@ -81,18 +81,12 @@
         paint (-> (new Paint) (.setColor (color fill)))]
     (-> canvas (.drawRect skia-rect paint))))
 
-(defn padding [canvas pad-size element]
-  (-> canvas .save)
-  (-> canvas (.translate pad-size pad-size))
-  (draw canvas element)
-  (-> canvas .restore))
-
 (defmethod draw :unknown [_ _] nil)
 (defmethod draw :text [canvas element] (text canvas element))
 (defmethod draw :h-stack [canvas element] (h-stack canvas element))
 (defmethod draw :v-stack [canvas element] (v-stack canvas element))
 (defmethod draw :z-stack [canvas element] (z-stack canvas element))
-(defmethod draw :rectangle [canvas element] 
+(defmethod draw :rectangle [canvas element]
   (rect canvas (merge default-rectangle element)))
 
 (defn skia [canvas & elements]

@@ -25,8 +25,13 @@
 ;; Modifiers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn padding [element size]
-  (assoc element :padding {:size size}))
+(defn padding
+  ([element size]
+   (padding element size size size size))
+  ([element x y]
+   (padding element x y x y))
+  ([element top right bottom left]
+   (assoc element :padding {:top top :right right :bottom bottom :left left})))
 
 (defn frame [element {:keys [width height]}]
   (assoc element :frame {:width width :height height}))
