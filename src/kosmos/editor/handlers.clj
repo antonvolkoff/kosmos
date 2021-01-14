@@ -11,10 +11,14 @@
 (defn- pressed? [{:keys [action]}]
   (= action glfw/glfw-press))
 
+(defn- remove-last-char [value]
+  (subs value 0 (dec (count value))))
+
 (defn- remove-char [zipper]
-  (z/edit zipper (fn [node]
-                   (assoc node :value
-                          (apply str (drop-last (:value node)))))))
+  (let [current-node (z/node zipper)]
+    (if (empty? (:value current-node))
+      (z/remove zipper)
+      (z/replace zipper (update current-node :value remove-last-char)))))
 
 (defn- add-char [zipper key]
   (z/edit zipper #(update % :value str key)))
