@@ -54,6 +54,8 @@
    :spacing 10))
 
 (defn view [{:keys [editor]}]
-  (let [document (:ast editor)
-        current-id (some-> editor :zipper z/node :id)]
-    (document-view document current-id)))
+  (let [zipper (some-> editor :zipper)
+        document (some-> zipper z/root)
+        current-id (some-> zipper z/node :id)]
+    (when document
+      (document-view document current-id))))

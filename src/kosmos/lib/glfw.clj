@@ -27,6 +27,7 @@
                 :9 GLFW/GLFW_KEY_9
                 :semicolon GLFW/GLFW_KEY_SEMICOLON
                 :equal GLFW/GLFW_KEY_EQUAL
+                :enter GLFW/GLFW_KEY_ENTER
                 :backspace GLFW/GLFW_KEY_BACKSPACE
                 :right GLFW/GLFW_KEY_RIGHT
                 :left GLFW/GLFW_KEY_LEFT

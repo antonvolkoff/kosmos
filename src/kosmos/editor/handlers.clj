@@ -6,56 +6,54 @@
 (defn- make-editor [body]
   (let [ast (-> body (text-format/unpack) (text-format/set-ids))
         zipper (text-format/zipper ast)]
-    {:ast ast :zipper zipper :body body}))
+    {:original ast :zipper zipper :body body}))
 
 (defn- pressed? [{:keys [action]}]
   (= action glfw/glfw-press))
 
-(defn- remove-letter [{:keys [zipper] :as editor}]
-  (let [updated-zipper
-        (z/edit zipper (fn [node]
-                         (assoc node :value
-                                (apply str (drop-last (:value node))))))]
-    (-> editor
-        (assoc :zipper updated-zipper)
-        (assoc :ast (z/root updated-zipper)))))
+(defn- remove-char [zipper]
+  (z/edit zipper (fn [node]
+                   (assoc node :value
+                          (apply str (drop-last (:value node)))))))
 
-(defn- add-char [{:keys [zipper] :as editor} key]
-  (let [updated-zipper
-        (z/edit zipper (fn [node]
-                         (update node :value str key)))]
-    (-> editor
-        (assoc :zipper updated-zipper)
-        (assoc :ast (z/root updated-zipper)))))
+(defn- add-char [zipper key]
+  (z/edit zipper #(update % :value str key)))
 
-(defn- add-word [editor]
-  (let [zipper (-> editor
-                   :zipper
-                   (z/insert-right {:type :word
-                                    :id (text-format/gen-id)
-                                    :value ""})
-                   (z/right))]
-    (-> editor
-        (assoc :zipper zipper)
-        (assoc :ast (z/root zipper)))))
+(defn- make-word []
+  {:type :word :id (text-format/gen-id) :value ""})
 
-(defn- add-sentence [editor]
-  (let [word {:type :word
-              :id (text-format/gen-id)
-              :value ""}
-        sentence {:type :sentence
-                  :id (text-format/gen-id)
-                  :children [:words]
-                  :words [word]}
-        zipper (-> editor
-                   :zipper
-                   (z/up)
-                   (z/insert-right sentence)
-                   (z/right)
-                   (z/down))]
-    (-> editor
-        (assoc :zipper zipper)
-        (assoc :ast (z/root zipper)))))
+(defn- make-sentence []
+  {:type :sentence :id (text-format/gen-id) :children [:words] :words []})
+
+(defn- make-paragraph []
+  {:type :paragraph :id (text-format/gen-id) :children [:sentences]
+   :sentences []})
+
+(defn- add-word [zipper]
+  (-> zipper
+      (z/insert-right (make-word))
+      (z/right)))
+
+(defn- add-sentence [zipper]
+  (let [word (make-word)
+        sentence (assoc (make-sentence) :words [word])]
+    (-> zipper
+        (z/up)
+        (z/insert-right sentence)
+        (z/right)
+        (z/down))))
+
+(defn- add-paragraph [zipper]
+  (let [word (make-word)
+        sentence (assoc (make-sentence) :words [word])
+        paragraph (assoc (make-paragraph) :sentences [sentence])]
+    (-> zipper
+        (z/up)
+        (z/up)
+        (z/insert-right paragraph)
+        (z/right)
+        (z/down)
+        (z/down))))
 
 (defn on-load [state [_ body]]
   (assoc-in state [:db :editor] (make-editor body)))
@@ -68,11 +66,12 @@
         :up (update-in state [:db :editor :zipper] z/up)
         :left (update-in state [:db :editor :zipper] z/left)
         :right (update-in state [:db :editor :zipper] z/right)
-        :backspace (update-in state [:db :editor] remove-letter)
+        :backspace (update-in state [:db :editor :zipper] remove-char)
+        :enter (update-in state [:db :editor :zipper] add-paragraph)
         state))))
 
 (defn on-char [state [_ ch]]
   (case ch
-    \space (update-in state [:db :editor] add-word)
-    (\. \? \!) (update-in state [:db :editor] add-sentence)
-    (update-in state [:db :editor] add-char ch)))
+    \space (update-in state [:db :editor :zipper] add-word)
+    (\. \? \!) (update-in state [:db :editor :zipper] add-sentence)
+    (update-in state [:db :editor :zipper] add-char ch)))
