@@ -5,7 +5,7 @@
 
 (ns kosmos.core
   (:require [kosmos.editor.core :as editor]
-            [kosmos.lib.ui.elements :refer [padding]]))
+            [kosmos.lib.ui.elements :as el]))
 
 (defn init [args]
   (editor/init args))
@@ -13,6 +13,33 @@
 (defn handle-message [state event]
   (editor/handle-message state event))
 
+;; Views
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def header-bg 0xFFD5D5D5)
+(def body-bg 0xFFFFFFFF)
+(def panel-width 800)
+(def panel-header-height 80)
+
+(defn panel-header-view [filename]
+  (let [bg (-> (el/rectangle)
+               (el/frame {:width panel-width :height panel-header-height})
+               (el/fill header-bg))]
+    (el/z-stack
+     [bg
+      (el/text filename)])))
+
+(defn panel-view [inside]
+  (let [width 800]
+    (el/h-stack
+     [(panel-header-view "Filename")
+      (el/z-stack
+       [(-> (el/rectangle)
+            (el/frame {:width width :height 1000})
+            (el/fill body-bg))
+        (-> inside
+            (el/padding 20))])])))
+
 (defn view [db]
-  (-> (editor/view db)
-      (padding 20)))
+  (-> (panel-view (editor/view db))
+      (el/padding 20)))
