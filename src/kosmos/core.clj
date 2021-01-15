@@ -17,29 +17,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def header-bg 0xFFD5D5D5)
-(def body-bg 0xFFFFFFFF)
-(def panel-width 800)
 (def panel-header-height 80)
 
-(defn panel-header-view [filename]
+(defn panel-header [filename]
   (let [bg (-> (el/rectangle)
-               (el/frame {:width panel-width :height panel-header-height})
+               (el/frame {:height panel-header-height})
                (el/fill header-bg))]
     (el/z-stack
      [bg
-      (el/text filename)])))
+      (-> (el/text filename)
+          (el/padding 20))])))
 
-(defn panel-view [inside]
-  (let [width 800]
-    (el/h-stack
-     [(panel-header-view "Filename")
-      (el/z-stack
-       [(-> (el/rectangle)
-            (el/frame {:width width :height 1000})
-            (el/fill body-bg))
-        (-> inside
-            (el/padding 20))])])))
+(defn panel-body [inner]
+  (el/z-stack [inner]))
+
+(defn panel [header body]
+  (el/h-stack [header body]))
 
 (defn view [db]
-  (-> (panel-view (editor/view db))
-      (el/padding 20)))
+  (let [content (editor/view db)]
+    (panel
+     (panel-header "Filename")
+     (panel-body
+      (el/padding content 10 20)))))
