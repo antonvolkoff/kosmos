@@ -22,6 +22,12 @@
 (defn rectangle []
   {:type :rectangle})
 
+(defn rounded-rectangle
+  ([]
+   (rounded-rectangle {}))
+  ([{:keys [radius] :or {radius 10}}]
+   {:type :rounded-rectangle :radius radius}))
+
 ;; Modifiers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -1,6 +1,7 @@
 (ns kosmos.lib.ui
   (:require [kosmos.lib.skija :refer [color]])
-  (:import [org.jetbrains.skija FontMgr FontStyle Paint Font Rect PaintMode]))
+  (:import [org.jetbrains.skija FontMgr FontStyle Paint Font Rect PaintMode
+            RRect]))
 
 (def default-paint (-> (new Paint) (.setColor (color 0xFF000000))))
 
@@ -38,14 +39,10 @@
   (fn [_canvas {:keys [type]}]
     (or type :unknown)))
 
-(defn text [canvas {:keys [body padding]}]
-  (when padding
-    (-> canvas (.translate (:left padding) (:top padding))))
+(defn text [canvas {:keys [body]}]
   (-> canvas (.drawString body 0 default-font-size default-font default-paint)))
 
-(defn h-stack [canvas {:keys [children spacing padding]}]
-  (when padding
-    (-> canvas (.translate (:left padding) (:top padding))))
+(defn h-stack [canvas {:keys [children spacing]}]
   (-> canvas .save)
   (->> children
        (map (fn [child]
@@ -54,9 +51,7 @@
        doall)
   (-> canvas .restore))
 
-(defn v-stack [canvas {:keys [children spacing padding]}]
-  (when padding
-    (-> canvas (.translate (:left padding) (:top padding))))
+(defn v-stack [canvas {:keys [children spacing]}]
   (-> canvas .save)
   (->> children
        (map (fn [child]
@@ -65,9 +60,7 @@
        doall)
   (-> canvas .restore))
 
-(defn z-stack [canvas {:keys [children padding]}]
-  (when padding
-    (-> canvas (.translate (:left padding) (:top padding))))
+(defn z-stack [canvas {:keys [children]}]
   (-> canvas .save)
   (->> children (map #(draw canvas %)) doall)
   (-> canvas .restore))
@@ -85,12 +78,47 @@
                       (.setStrokeWidth (:width border)))]
         (-> canvas (.drawRect skia-rect paint))))))
 
+(defn rrect [canvas {:keys [radius frame fill border]}]
+  (let [shape (RRect/makeXYWH 0 0 (:width frame) (:height frame) radius)]
+    (when fill
+      (let [paint (-> (new Paint) (.setColor (color fill)))]
+        (-> canvas (.drawRRect shape paint))))
+    (when border
+      (let [paint (-> (new Paint)
+                      (.setMode PaintMode/STROKE)
+                      (.setColor (color (:color border)))
+                      (.setStrokeWidth (:width border)))]
+        (-> canvas (.drawRRect shape paint))))))
+
+(defn apply-padding [canvas {:keys [padding]}]
+  (when padding
+    (-> canvas (.translate (:left padding) (:top padding)))))
+
 (defmethod draw :unknown [_ _] nil)
-(defmethod draw :text [canvas element] (text canvas element))
-(defmethod draw :h-stack [canvas element] (h-stack canvas element))
-(defmethod draw :v-stack [canvas element] (v-stack canvas element))
-(defmethod draw :z-stack [canvas element] (z-stack canvas element))
-(defmethod draw :rectangle [canvas element] (rect canvas element))
+
+(defmethod draw :text [canvas element]
+  (apply-padding canvas element)
+  (text canvas element))
+
+(defmethod draw :h-stack [canvas element]
+  (apply-padding canvas element)
+  (h-stack canvas element))
+
+(defmethod draw :v-stack [canvas element]
+  (apply-padding canvas element)
+  (v-stack canvas element))
+
+(defmethod draw :z-stack [canvas element]
+  (apply-padding canvas element)
+  (z-stack canvas element))
+
+(defmethod draw :rectangle [canvas element]
+  (apply-padding canvas element)
+  (rect canvas element))
+
+(defmethod draw :rounded-rectangle [canvas element]
+  (apply-padding canvas element)
+  (rrect canvas element))
 
 (defn skia [canvas & elements]
   (run! #(draw canvas %) elements))

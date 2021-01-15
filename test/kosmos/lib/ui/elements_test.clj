@@ -2,6 +2,15 @@
   (:require [clojure.test :refer [deftest is testing]]
             [kosmos.lib.ui.elements :as elements]))
 
+(deftest rounded-rectangle-test
+  (testing "defines element"
+    (is (= {:type :rounded-rectangle :radius 6}
+           (elements/rounded-rectangle {:radius 6})))
+    (is (= {:type :rounded-rectangle :radius 10}
+           (elements/rounded-rectangle {})))
+    (is (= {:type :rounded-rectangle :radius 10}
+           (elements/rounded-rectangle)))))
+
 (deftest padding-test
   (testing "adds padding to an element"
     (is (= {:padding {:top 10 :right 10 :bottom 10 :left 10}}

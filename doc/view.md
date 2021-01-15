@@ -16,6 +16,20 @@
     (fill 0xFFFF0000))
 ```
 
+## Rounded Rectangle
+
+Default radius is 10.
+
+```clojure
+(-> (rounded-rectangle)
+    (frame {:width 200 :height 200})
+    (fill 0xFFFF0000))
+
+(-> (rounded-rectangle {:radius 5})
+    (frame {:width 200 :height 200})
+    (fill 0xFFFF0000))
+```
+
 ## Stacks
 
 ```clojure
