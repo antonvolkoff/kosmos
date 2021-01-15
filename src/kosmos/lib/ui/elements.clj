@@ -38,3 +38,6 @@
 
 (defn fill [element color]
   (assoc element :fill color))
+
+(defn border [element color & {:keys [width] :or {width 1}}]
+  (assoc element :border {:width width :color color}))

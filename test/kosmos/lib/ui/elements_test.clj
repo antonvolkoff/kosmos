@@ -10,3 +10,12 @@
            (elements/padding {} 10 20)))
     (is (= {:padding {:top 10 :right 11 :bottom 12 :left 13}}
            (elements/padding {} 10 11 12 13)))))
+
+(deftest border-test
+  (testing "adds border with fixed width"
+    (is (= {:border {:width 1 :color 0xFF000000}}
+           (elements/border {} 0xFF000000))))
+
+  (testing "adds border with variable width"
+    (is (= {:border {:width 3 :color 0xFF000000}}
+           (elements/border {} 0xFF000000 :width 3)))))

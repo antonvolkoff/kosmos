@@ -1,4 +1,4 @@
-# View 
+# View
 
 ## Text
 
@@ -19,7 +19,7 @@
 ## Stacks
 
 ```clojure
-(h-stack 
+(h-stack
  [(text "Top line")
   (text "Bottom line")])
 
@@ -33,9 +33,16 @@
 ## Modifiers
 
 ```clojure
+; Padding. Options work the same way as in CSS.
 (padding (text "Hey") 20)
+(padding (text "Hey") 20 10)
+(padding (text "Hey") 1 2 3 4)
 
 (frame (rectangle) {:width 200 :height 200})
 
 (fill (rectangle) 0xFFFF0000)
+
+; Border
+(border (rectangle) 0xFFFF0000)
+(border (rectangle) 0xFFFF0000 :width 2)
 ```

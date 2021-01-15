@@ -1,6 +1,6 @@
 (ns kosmos.lib.ui
   (:require [kosmos.lib.skija :refer [color]])
-  (:import [org.jetbrains.skija FontMgr FontStyle Paint Font Rect]))
+  (:import [org.jetbrains.skija FontMgr FontStyle Paint Font Rect PaintMode]))
 
 (def default-paint (-> (new Paint) (.setColor (color 0xFF000000))))
 
@@ -33,9 +33,6 @@
                              (* (:spacing element) (count (:children element)))))
     :z-stack (apply max (map width (:children element)))
     0))
-
-(def default-rectangle
-  {:type :rectangle :frame {:width 0 :height 0} :fill 0xFF000000})
 
 (defmulti draw
   (fn [_canvas {:keys [type]}]
@@ -75,19 +72,25 @@
   (->> children (map #(draw canvas %)) doall)
   (-> canvas .restore))
 
-(defn rect [canvas {:keys [frame fill]}]
+(defn rect [canvas {:keys [frame fill border]}]
   (let [{:keys [width height]} frame
-        skia-rect (Rect/makeXYWH 0 0 width height)
-        paint (-> (new Paint) (.setColor (color fill)))]
-    (-> canvas (.drawRect skia-rect paint))))
+        skia-rect (Rect/makeXYWH 0 0 width height)]
+    (when fill
+      (let [paint (-> (new Paint) (.setColor (color fill)))]
+        (-> canvas (.drawRect skia-rect paint))))
+    (when border
+      (let [paint (-> (new Paint)
+                      (.setMode PaintMode/STROKE)
+                      (.setColor (color (:color border)))
+                      (.setStrokeWidth (:width border)))]
+        (-> canvas (.drawRect skia-rect paint))))))
 
 (defmethod draw :unknown [_ _] nil)
 (defmethod draw :text [canvas element] (text canvas element))
 (defmethod draw :h-stack [canvas element] (h-stack canvas element))
 (defmethod draw :v-stack [canvas element] (v-stack canvas element))
 (defmethod draw :z-stack [canvas element] (z-stack canvas element))
-(defmethod draw :rectangle [canvas element]
-  (rect canvas (merge default-rectangle element)))
+(defmethod draw :rectangle [canvas element] (rect canvas element))
 
 (defn skia [canvas & elements]
   (run! #(draw canvas %) elements))
