@@ -40,36 +40,36 @@
     0))
 
 (defmulti draw
-  (fn [_canvas {:keys [type]}]
+  (fn [_ {:keys [type]}]
     (or type :unknown)))
 
-(defn text [canvas {:keys [body]}]
+(defn text [{:keys [canvas]} {:keys [body]}]
   (-> canvas (.drawString body 0 default-font-size default-font default-paint)))
 
-(defn h-stack [canvas {:keys [children spacing]}]
+(defn h-stack [{:keys [canvas] :as context} {:keys [children spacing]}]
   (-> canvas .save)
   (->> children
        (map (fn [child]
-              (draw canvas child)
+              (draw context child)
               (-> canvas (.translate 0 (+ (height child) spacing)))))
        doall)
   (-> canvas .restore))
 
-(defn v-stack [canvas {:keys [children spacing]}]
+(defn v-stack [{:keys [canvas] :as context} {:keys [children spacing]}]
   (-> canvas .save)
   (->> children
        (map (fn [child]
-              (draw canvas child)
+              (draw context child)
               (-> canvas (.translate (+ (width child) spacing) 0))))
        doall)
   (-> canvas .restore))
 
-(defn z-stack [canvas {:keys [children]}]
+(defn z-stack [{:keys [canvas] :as context} {:keys [children]}]
   (-> canvas .save)
-  (->> children (map #(draw canvas %)) doall)
+  (->> children (map #(draw context %)) doall)
   (-> canvas .restore))
 
-(defn rect [canvas {:keys [frame fill border]}]
+(defn rect [{:keys [canvas]} {:keys [frame fill border]}]
   (let [{:keys [width height]} frame
         skia-rect (Rect/makeXYWH 0 0 width height)]
     (when fill
@@ -82,7 +82,7 @@
                       (.setStrokeWidth (:width border)))]
         (-> canvas (.drawRect skia-rect paint))))))
 
-(defn rrect [canvas {:keys [radius frame fill border]}]
+(defn rrect [{:keys [canvas]} {:keys [radius frame fill border]}]
   (let [shape (RRect/makeXYWH 0 0 (:width frame) (:height frame) radius)]
     (when fill
       (let [paint (-> (new Paint) (.setColor (color fill)))]
@@ -94,35 +94,42 @@
                       (.setStrokeWidth (:width border)))]
         (-> canvas (.drawRRect shape paint))))))
 
-(defn apply-padding [canvas {:keys [padding]}]
+(defn apply-padding [{:keys [canvas]} {:keys [padding]}]
   (when padding
     (-> canvas (.translate (:left padding) (:top padding)))))
 
+(defn expand-frame [context {:keys [frame] :as element}]
+  (cond-> element
+    (nil? (:width frame)) (assoc-in [:frame :width] (:width context))
+    (nil? (:height frame)) (assoc-in [:frame :height] (:height context))))
+
 (defmethod draw :unknown [_ _] nil)
 
-(defmethod draw :text [canvas element]
-  (apply-padding canvas element)
-  (text canvas element))
+(defmethod draw :text [context element]
+  (apply-padding context element)
+  (text context element))
 
-(defmethod draw :h-stack [canvas element]
-  (apply-padding canvas element)
-  (h-stack canvas element))
+(defmethod draw :h-stack [context element]
+  (apply-padding context element)
+  (h-stack context element))
 
-(defmethod draw :v-stack [canvas element]
-  (apply-padding canvas element)
-  (v-stack canvas element))
+(defmethod draw :v-stack [context element]
+  (apply-padding context element)
+  (v-stack context element))
 
-(defmethod draw :z-stack [canvas element]
-  (apply-padding canvas element)
-  (z-stack canvas element))
+(defmethod draw :z-stack [context element]
+  (apply-padding context element)
+  (z-stack context element))
 
-(defmethod draw :rectangle [canvas element]
-  (apply-padding canvas element)
-  (rect canvas element))
+(defmethod draw :rectangle [context element]
+  (let [full-element (expand-frame context element)]
+    (apply-padding context full-element)
+    (rect context full-element)))
 
-(defmethod draw :rounded-rectangle [canvas element]
-  (apply-padding canvas element)
-  (rrect canvas element))
+(defmethod draw :rounded-rectangle [context element]
+  (let [full-element (expand-frame context element)]
+    (apply-padding context full-element)
+    (rrect context full-element)))
 
-(defn skia [canvas & elements]
-  (run! #(draw canvas %) elements))
+(defn skia [context & elements]
+  (run! #(draw context %) elements))

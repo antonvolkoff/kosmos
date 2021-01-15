@@ -47,18 +47,22 @@
     (glfw/set-key-callback window handle-key)
     (glfw/set-set-char-callback window handle-char)
 
-    (let [framebuffer-id (gl/gl-get-integer gl/gl-framebuffer-binding)
+    (let [width (* window-width 2)
+          height (* window-height 2)
+          framebuffer-id (gl/gl-get-integer gl/gl-framebuffer-binding)
           context (skija/make-gl-context)
-          target (skija/make-gl-target (* window-width 2) (* window-height 2) framebuffer-id)
+          target (skija/make-gl-target width height framebuffer-id)
           surface (skija/make-surface-from-target context target)
           canvas (.getCanvas surface)]
       (while (not (glfw/window-should-close? window))
         (.clear canvas (skija/color 0xFFFAFAFA))
         (let [layer (.save canvas)]
           (try
-            (ui/skia canvas (m/render app))
+            (ui/skia {:canvas canvas :width width :height height}
+                     (m/render app))
             (catch Exception e
-              (println "Error: " (.getMessage e))))
+              (println "Render: " (.getMessage e))
+              (.printStackTrace e)))
           (.restoreToCount canvas layer))
         (.flush context)
         (glfw/swap-buffers window)
