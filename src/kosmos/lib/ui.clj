@@ -25,6 +25,8 @@
     :text default-font-size
     :v-stack (apply max (map height (:children element)))
     :z-stack (apply max (map height (:children element)))
+    :rectangle (-> element :frame :height)
+    :rounded-rectangle (-> element :frame :height)
     0))
 
 (defn width [{:keys [type] :as element}]
@@ -33,6 +35,8 @@
     :v-stack (reduce + (conj (map width (:children element))
                              (* (:spacing element) (count (:children element)))))
     :z-stack (apply max (map width (:children element)))
+    :rectangle (-> element :frame :width)
+    :rounded-rectangle (-> element :frame :width)
     0))
 
 (defmulti draw
