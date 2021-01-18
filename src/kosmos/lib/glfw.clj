@@ -5,7 +5,9 @@
 
 (ns kosmos.lib.glfw
   (:require [clojure.set :refer [map-invert]])
-  (:import [org.lwjgl.glfw GLFW GLFWKeyCallback GLFWCharCallback]
+  (:import [org.lwjgl.glfw
+            GLFW GLFWKeyCallback GLFWCharCallback GLFWMouseButtonCallback
+            GLFWCursorPosCallback GLFWScrollCallback]
            [org.lwjgl.system MemoryUtil]))
 
 ; Keyboard keys
@@ -63,11 +65,30 @@
                              (invoke [window key scancode action mods]
                                (callback window key scancode action mods)))))
 
+// TODO: Remove double set here :)
 (defn set-set-char-callback [win callback]
   (GLFW/glfwSetCharCallback win
                             (proxy [GLFWCharCallback] []
                               (invoke [window codepoint]
                                 (callback window codepoint)))))
+
+(defn set-mouse-button-callback [win callback]
+  (GLFW/glfwSetMouseButtonCallback win
+                                   (proxy [GLFWMouseButtonCallback] []
+                                     (invoke [window button action mode]
+                                       (callback window button action mode)))))
+
+(defn set-mouse-pos-callback [win callback]
+  (GLFW/glfwSetCursorPosCallback win
+                                 (proxy [GLFWCursorPosCallback] []
+                                   (invoke [window pos-x pos-y]
+                                     (callback window pos-x pos-y)))))
+
+(defn set-scroll-callback [win callback]
+  (GLFW/glfwSetScrollCallback win
+                              (proxy [GLFWScrollCallback] []
+                                (invoke [window x-offset y-offset]
+                                  (callback window x-offset y-offset)))))
 
 (defn window-hint [h v] (GLFW/glfwWindowHint h v))
 

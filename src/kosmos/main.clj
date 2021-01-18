@@ -28,6 +28,15 @@
 (defn handle-char [_win code]
   (m/dispatch [:char (char code)]))
 
+(defn handle-mouse-button [_win button action mode]
+  (println {:button button :action action :mode mode}))
+
+(defn handle-mouse-pos [_win pos-x pos-y]
+  (println {:x pos-x :y pos-y}))
+
+(defn handle-scroll [_win x-offset y-offset]
+  (println {:x-offset x-offset :y-offset y-offset}))
+
 (defn -main [& args]
   (m/start app [])
 
@@ -46,6 +55,9 @@
 
     (glfw/set-key-callback window handle-key)
     (glfw/set-set-char-callback window handle-char)
+    (glfw/set-mouse-button-callback window handle-mouse-button)
+    (glfw/set-mouse-pos-callback window handle-mouse-pos)
+    (glfw/set-scroll-callback window handle-scroll)
 
     (let [width (* window-width 2)
           height (* window-height 2)
