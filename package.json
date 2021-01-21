@@ -39,7 +39,7 @@
     "electron-devtools-installer": "^2.2.4",
     "graphlib-dot": "^0.6.4",
     "htm": "^3.0.3",
-    "immer": "^6.0.5",
+    "immer": "^8.0.1",
     "lodash": "4.17.19",
     "mousetrap": "^1.6.5",
     "nrepl-client": "0.3.0",
