@@ -1,7 +1,9 @@
 (ns kosmos.lib.ui
-  (:require [kosmos.lib.skija :refer [color]])
+  (:require [hiccup.core :refer [html]]
+            [kosmos.lib.skija :refer [color]])
   (:import [org.jetbrains.skija FontMgr FontStyle Paint Font Rect PaintMode
-            RRect]))
+            RRect Data]
+           org.jetbrains.skija.svg.DOM))
 
 (def default-paint (-> (new Paint) (.setColor (color 0xFF000000))))
 
@@ -130,6 +132,11 @@
   (let [full-element (expand-frame context element)]
     (apply-padding context full-element)
     (rrect context full-element)))
+
+(defmethod draw :svg [{:keys [canvas]} {:keys [body]}]
+  (let [body-data (-> body html .getBytes Data/makeFromBytes)
+        dom (new DOM body-data)]
+    (-> dom (.render canvas))))
 
 (defn skia [context & elements]
   (run! #(draw context %) elements))

@@ -65,7 +65,7 @@
                              (invoke [window key scancode action mods]
                                (callback window key scancode action mods)))))
 
-// TODO: Remove double set here :)
+;; TODO: Remove double set here :)
 (defn set-set-char-callback [win callback]
   (GLFW/glfwSetCharCallback win
                             (proxy [GLFWCharCallback] []

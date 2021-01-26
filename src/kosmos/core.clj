@@ -36,7 +36,10 @@
 
 (defn view [db]
   (let [content (editor/view db)]
-    (panel
-     (panel-header "Filename")
-     (panel-body
-      (el/padding content 10 20)))))
+    (el/v-stack
+     [(panel
+       (panel-header "Filename")
+       (panel-body
+        (el/padding content 10 20)))
+      (el/svg [:svg {:height 100 :width 100}
+               [:text {:x 20 :y 20 :stroke "black"} "Hello"]])])))

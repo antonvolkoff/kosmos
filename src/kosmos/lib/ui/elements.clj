@@ -28,6 +28,9 @@
   ([{:keys [radius] :or {radius 10}}]
    {:type :rounded-rectangle :radius radius}))
 
+(defn svg [body]
+  {:type :svg :body body})
+
 ;; Modifiers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

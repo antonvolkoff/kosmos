@@ -18,7 +18,7 @@
 
 (def window-title "Kosmos")
 
-(def nrepl-port 7888)
+(def nrepl-port 31337)
 
 (def app (m/make-application core/init core/handle-message core/view))
 
