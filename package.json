@@ -40,7 +40,7 @@
     "graphlib-dot": "^0.6.4",
     "htm": "^3.0.3",
     "immer": "^6.0.5",
-    "lodash": "4.17.19",
+    "lodash": "4.17.21",
     "mousetrap": "^1.6.5",
     "nrepl-client": "0.3.0",
     "p5": "1.0.0",
