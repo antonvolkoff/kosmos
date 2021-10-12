@@ -28,7 +28,7 @@
     "@types/react": "^16.9.32",
     "@types/react-dom": "^16.9.6",
     "concurrently": "5.3.0",
-    "electron": "8.5.2",
+    "electron": "11.5.0",
     "shadow-cljs": "^2.11.2",
     "typescript": "3.8.3"
   },
