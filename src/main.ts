@@ -21,8 +21,9 @@ function createWindow () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady()
-  .then(() => { return installExtension(REDUX_DEVTOOLS) })
-  .then((name) => console.log(`Added Extension:  ${name}`))
+  // UPDATE: Crashes with "An error occurred:  TypeError: BrowserWindow.addDevToolsExtension is not a function"
+  // .then(() => { return installExtension(REDUX_DEVTOOLS) })
+  // .then((name) => console.log(`Added Extension:  ${name}`))
   .then(() => { createWindow(); })
   .catch((err) => console.log('An error occurred: ', err));
 

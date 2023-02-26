@@ -1,10 +1,9 @@
-import { remote, ipcRenderer } from "electron";
+import { dialog, ipcRenderer } from "electron";
 import { Store } from "@reduxjs/toolkit";
 import { ApplicationState } from "../store";
 import { actions } from "../interface";
 import { send, call } from "../core/actor";
 
-const { dialog } = remote;
 const { toggleTranscript } = actions;
 
 export default function AppMenu(store: Store<ApplicationState>) {

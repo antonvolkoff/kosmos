@@ -11,9 +11,8 @@ import { actions, selectors } from "../canvas";
 import { actions as interfaceActions } from "../interface";
 import { Store } from "redux";
 import { send, call } from "../core/actor";
-import { remote } from "electron";
+import { dialog } from "electron";
 
-const { dialog } = remote;
 const { select, unselect, changeMode } = actions;
 const { toggleTranscript } = interfaceActions;
 const { getSelectedAtom, getMode, getSelectedEdgeId } = selectors;
